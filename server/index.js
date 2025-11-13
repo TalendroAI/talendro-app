@@ -200,6 +200,7 @@ import compression from 'compression'
 import morgan from 'morgan'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import fs from 'fs'
 import mongoose from 'mongoose'
 import userRoutes from './routes.user.js'
 import parseRoutes from './routes/parse.js'
@@ -403,7 +404,6 @@ app.post('/api/resume/parse-legacy', (req, res) => {
 })
 
 // --- Serve React build files ---
-import fs from 'fs'
 const clientBuildPath = path.resolve(__dirname, '../client/build')
 
 // Check if build directory exists
