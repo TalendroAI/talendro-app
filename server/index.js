@@ -402,33 +402,37 @@ app.post('/api/resume/parse-legacy', (req, res) => {
   })
 })
 
-// --- Development: proxy to React dev server or serve build in production ---
-if (process.env.NODE_ENV === 'production') {
-  const clientBuildPath = path.resolve(__dirname, '../client/build')
-  app.use(express.static(clientBuildPath))
-  
-  // Handle all non-API routes by serving the index.html
-  app.use((req, res, next) => {
-    if (req.path.startsWith('/api')) {
-      next()
-    } else {
-      res.sendFile(path.join(clientBuildPath, 'index.html'))
-    }
-  })
+// --- Serve React build files ---
+const clientBuildPath = path.resolve(__dirname, '../client/build')
+const fs = require('fs')
+
+// Check if build directory exists
+if (!fs.existsSync(clientBuildPath)) {
+  console.error('❌ ERROR: React build directory not found at:', clientBuildPath)
+  console.error('❌ Make sure Railway runs: npm run install:all && npm run build')
+  console.error('❌ Current NODE_ENV:', process.env.NODE_ENV)
 } else {
-  // In development, serve React build files from port 5000
-  const clientBuildPath = path.resolve(__dirname, '../client/build')
-  app.use(express.static(clientBuildPath))
-  
-  // Handle all non-API routes by serving the index.html
-  app.use((req, res, next) => {
-    if (req.path.startsWith('/api')) {
-      next()
-    } else {
-      res.sendFile(path.join(clientBuildPath, 'index.html'))
-    }
-  })
+  console.log('✅ React build directory found at:', clientBuildPath)
+  const buildFiles = fs.readdirSync(clientBuildPath)
+  console.log('✅ Build files:', buildFiles.slice(0, 5).join(', '), '...')
 }
+
+app.use(express.static(clientBuildPath))
+
+// Handle all non-API routes by serving the index.html
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api')) {
+    next()
+  } else {
+    const indexPath = path.join(clientBuildPath, 'index.html')
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath)
+    } else {
+      console.error('❌ index.html not found at:', indexPath)
+      res.status(500).send('React build not found. Please check Railway build logs.')
+    }
+  }
+})
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Talendro API server running on port ${PORT}`);
