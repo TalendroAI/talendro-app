@@ -1,0 +1,457 @@
+// The issue is in the front-end data flow after parsing completes
+// Here's the complete fix for your Onboarding Step 3 component
+
+import { useState, useEffect, useMemo } from 'react'
+import { getStep3Prefill } from '../lib/prefill'
+import { safeMergeResumeData } from '../lib/safeMergeResumeData'
+
+console.log('Onb3 BUILD', 'TS=' + new Date().toISOString());
+
+export default function Page(){
+  // REMOVE the localStorage protection - it's blocking legitimate updates
+  // The localStorage blocker is preventing the parsed data from being stored properly
+  
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    location: '',
+    linkedin: '',
+    currentJobTitle: '',
+    yearsExperience: '',
+    salaryRange: '',
+    availability: ''
+  });
+
+  const [dataLoaded, setDataLoaded] = useState(false);
+
+  // Helper function to extract LinkedIn from any format
+  const extractLinkedInUrl = (data) => {
+    if (!data) return '';
+    
+    const fields = ['linkedIn', 'linkedin', 'linkedinUrl'];
+    for (const field of fields) {
+      const value = data[field];
+      if (value && typeof value === 'string' && value.trim()) {
+        return value.trim();
+      }
+    }
+    return '';
+  };
+
+  // Monitor localStorage for changes after parsing
+  useEffect(() => {
+    const checkForParsedData = () => {
+      try {
+        const resumeData = JSON.parse(localStorage.getItem('resumeData') || 'null');
+        console.log('🔍 Checking localStorage for parsed data:', resumeData);
+        
+        if (resumeData?.prefill?.step3) {
+          const step3Data = resumeData.prefill.step3;
+          console.log('📊 Found Step 3 prefill data:', step3Data);
+          
+          // Parse name
+          const fullName = step3Data.fullLegalName || '';
+          const [first='', ...rest] = String(fullName).trim().split(/\s+/);
+          const last = rest.join(' ');
+          
+          const newData = {
+            firstName: first,
+            lastName: last,
+            email: step3Data.email || '',
+            phone: step3Data.phone || '',
+            location: step3Data.physicalAddress || '',
+            linkedin: extractLinkedInUrl(step3Data),
+            currentJobTitle: step3Data.currentJobTitle || step3Data.currentTitle || ''
+          };
+          
+          console.log('💡 Extracted form data:', newData);
+          
+          // Only update if we have meaningful data and haven't loaded yet
+          if ((newData.linkedin || newData.email) && !dataLoaded) {
+            console.log('✅ Updating form with parsed data');
+            setFormData(prev => ({
+              ...prev,
+              ...newData
+            }));
+            setDataLoaded(true);
+          }
+        }
+      } catch (error) {
+        console.warn('Error checking localStorage:', error);
+      }
+    };
+
+    // Check immediately
+    checkForParsedData();
+    
+    // Check every 500ms for new data (after parsing completes)
+    const interval = setInterval(checkForParsedData, 500);
+    
+    // Clean up after 30 seconds (parsing should be done by then)
+    const timeout = setTimeout(() => {
+      clearInterval(interval);
+    }, 30000);
+    
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [dataLoaded]);
+
+  // Also try to load from getStep3Prefill as fallback
+  useEffect(() => {
+    try {
+      const prefillData = getStep3Prefill();
+      console.log('📋 getStep3Prefill returned:', prefillData);
+      
+      if (prefillData && Object.keys(prefillData).length > 0) {
+        const fullName = prefillData.fullLegalName || '';
+        const [first='', ...rest] = String(fullName).trim().split(/\s+/);
+        const last = rest.join(' ');
+        
+        const fallbackData = {
+          firstName: first,
+          lastName: last,
+          email: prefillData.email || '',
+          phone: prefillData.phone || '',
+          location: prefillData.physicalAddress || '',
+          linkedin: extractLinkedInUrl(prefillData),
+          currentJobTitle: prefillData.currentJobTitle || prefillData.currentTitle || ''
+        };
+        
+        console.log('🔄 Fallback data from getStep3Prefill:', fallbackData);
+        
+        // Only use fallback if we don't have data yet
+        if (!dataLoaded && (fallbackData.linkedin || fallbackData.email)) {
+          setFormData(prev => ({
+            ...prev,
+            ...fallbackData
+          }));
+          setDataLoaded(true);
+        }
+      }
+    } catch (error) {
+      console.warn('Error with getStep3Prefill:', error);
+    }
+  }, [dataLoaded]);
+
+  // Handle server draft as additional data source
+  useEffect(() => {
+    const fetchProfileDraft = async () => {
+      try {
+        console.log('🌐 Fetching profile draft...');
+        const resp = await fetch('/api/profile/draft');
+        if (resp.ok) {
+          const serverDraft = await resp.json();
+          console.log('📥 Got server draft:', serverDraft);
+          
+          // Merge server data if available
+          if (serverDraft && Object.keys(serverDraft).length > 0) {
+            setFormData(prev => ({
+              ...prev,
+              firstName: serverDraft.firstName || prev.firstName,
+              lastName: serverDraft.lastName || prev.lastName,
+              email: serverDraft.email || prev.email,
+              phone: serverDraft.phone || prev.phone,
+              location: serverDraft.location || prev.location,
+              linkedin: extractLinkedInUrl(serverDraft) || prev.linkedin,
+              currentJobTitle: serverDraft.currentJobTitle || prev.currentJobTitle
+            }));
+          }
+        } else if (resp.status !== 204) {
+          console.warn('Profile draft fetch failed:', resp.status);
+        }
+      } catch (e) {
+        console.warn('Server draft fetch error:', e.message);
+      }
+    };
+
+    fetchProfileDraft();
+  }, []);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const validateForm = () => {
+    const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'location', 'currentJobTitle', 'yearsExperience', 'salaryRange', 'availability'];
+    const missingFields = requiredFields.filter(field => !formData[field]?.trim());
+    
+    if (missingFields.length > 0) {
+      alert(`Please fill in all required fields: ${missingFields.join(', ')}`);
+      return false;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      alert('Please enter a valid email address');
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (validateForm()) {
+      localStorage.setItem('step3Data', JSON.stringify(formData));
+      window.location.href = '/app/onboarding/step-4';
+    }
+  };
+
+  // Enhanced debug display
+  console.log('🎯 Current form data:', formData);
+  console.log('📊 Data loaded status:', dataLoaded);
+
+  return (
+    <section>
+      <h1 className="h1">Personal Information</h1>
+      <p className="body mt-2">Complete the required fields below.</p>
+
+      <div style={{background: '#e8f5e8', padding: '10px', margin: '10px 0', fontSize: '12px', border: '1px solid #4caf50'}}>
+        <strong>LIVE DATA STATUS:</strong><br/>
+        LinkedIn Value: "{formData.linkedin}"<br/>
+        Job Title: "{formData.currentJobTitle}"<br/>
+        Data Loaded: {dataLoaded ? '✅ YES' : '❌ NO'}<br/>
+        
+        <button onClick={() => {
+          const raw = JSON.parse(localStorage.getItem('resumeData')||'null');
+          console.log('📊 MANUAL CHECK:', {
+            localStorage: raw,
+            step3Prefill: raw?.prefill?.step3,
+            linkedInVariants: {
+              linkedIn: raw?.prefill?.step3?.linkedIn,
+              linkedin: raw?.prefill?.step3?.linkedin,
+              linkedinUrl: raw?.prefill?.step3?.linkedinUrl
+            },
+            currentFormData: formData
+          });
+        }} style={{backgroundColor: '#4caf50', color: 'white', padding: '5px 10px', marginRight: '5px'}}>
+          Debug Check
+        </button>
+
+        <button onClick={() => {
+          const raw = JSON.parse(localStorage.getItem('resumeData')||'null');
+          if (raw?.prefill?.step3) {
+            const step3 = raw.prefill.step3;
+            const fullName = step3.fullLegalName || '';
+            const [first='', ...rest] = String(fullName).trim().split(/\s+/);
+            const last = rest.join(' ');
+            
+            const forceData = {
+              firstName: first,
+              lastName: last,
+              email: step3.email || '',
+              phone: step3.phone || '',
+              location: step3.physicalAddress || '',
+              linkedin: extractLinkedInUrl(step3),
+              currentJobTitle: step3.currentJobTitle || step3.currentTitle || ''
+            };
+            
+            setFormData(prev => ({ ...prev, ...forceData }));
+            setDataLoaded(true);
+            console.log('🔧 FORCE LOADED:', forceData);
+            alert('Data force loaded! Check the form fields.');
+          } else {
+            alert('No parsed data found in localStorage');
+          }
+        }} style={{backgroundColor: '#ff9800', color: 'white', padding: '5px 10px'}}>
+          Force Load Data
+        </button>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* First Name */}
+          <div>
+            <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
+              First Name <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="firstName"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          {/* Last Name */}
+          <div>
+            <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
+              Last Name <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="lastName"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          {/* Email */}
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              Email Address <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          {/* Phone */}
+          <div>
+            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+              Phone Number <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              value={formData.phone}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          {/* Location */}
+          <div className="md:col-span-2">
+            <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
+              Location (City, State) <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="location"
+              name="location"
+              value={formData.location}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          {/* LinkedIn Profile URL */}
+          <div className="md:col-span-2">
+            <label htmlFor="linkedin" className="block text-sm font-medium text-gray-700 mb-2">
+              LinkedIn Profile URL
+            </label>
+            <input
+              type="url"
+              id="linkedin"
+              name="linkedin"
+              value={formData.linkedin}
+              onChange={handleInputChange}
+              placeholder="https://linkedin.com/in/yourprofile"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          {/* Current Job Title */}
+          <div className="md:col-span-2">
+            <label htmlFor="currentJobTitle" className="block text-sm font-medium text-gray-700 mb-2">
+              Current/Most Recent Job Title <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="currentJobTitle"
+              name="currentJobTitle"
+              value={formData.currentJobTitle}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          {/* Years of Experience */}
+          <div>
+            <label htmlFor="yearsExperience" className="block text-sm font-medium text-gray-700 mb-2">
+              Years of Experience <span className="text-red-500">*</span>
+            </label>
+            <select
+              id="yearsExperience"
+              name="yearsExperience"
+              value={formData.yearsExperience}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            >
+              <option value="">Select range</option>
+              <option value="0-2">0-2 years</option>
+              <option value="3-5">3-5 years</option>
+              <option value="6-10">6-10 years</option>
+              <option value="11-15">11-15 years</option>
+              <option value="16-20">16-20 years</option>
+              <option value="20+">20+ years</option>
+            </select>
+          </div>
+
+          {/* Target Salary Range */}
+          <div>
+            <label htmlFor="salaryRange" className="block text-sm font-medium text-gray-700 mb-2">
+              Target Salary Range <span className="text-red-500">*</span>
+            </label>
+            <select
+              id="salaryRange"
+              name="salaryRange"
+              value={formData.salaryRange}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            >
+              <option value="">Select range</option>
+              <option value="50k-75k">$50,000 - $75,000</option>
+              <option value="75k-100k">$75,000 - $100,000</option>
+              <option value="100k-150k">$100,000 - $150,000</option>
+              <option value="150k-200k">$150,000 - $200,000</option>
+              <option value="200k+">$200,000+</option>
+            </select>
+          </div>
+
+          {/* Availability to Start */}
+          <div className="md:col-span-2">
+            <label htmlFor="availability" className="block text-sm font-medium text-gray-700 mb-2">
+              Availability to Start <span className="text-red-500">*</span>
+            </label>
+            <select
+              id="availability"
+              name="availability"
+              value={formData.availability}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            >
+              <option value="">Select availability</option>
+              <option value="immediately">Immediately</option>
+              <option value="2weeks">2 weeks notice</option>
+              <option value="1month">1 month</option>
+              <option value="2months">2 months</option>
+              <option value="3months+">3+ months</option>
+            </select>
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 font-medium"
+        >
+          Continue to Step 4
+        </button>
+      </form>
+    </section>
+  );
+}

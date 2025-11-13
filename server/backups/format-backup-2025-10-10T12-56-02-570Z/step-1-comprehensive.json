@@ -1,0 +1,89 @@
+{
+  "id": "step-2-comprehensive",
+  "title": "Core Identity & Contact Information",
+  "route": "/app/onboarding/step-2",
+  "nextRoute": "/app/onboarding/step-3",
+  "sections": [
+    {
+      "title": "Personal Identity",
+      "description": "Your legal name and personal information",
+      "fields": [
+        { "key": "fullLegalName", "label": "Full Legal Name", "type": "text", "required": true, "prefillKeys": ["prefill.step1.fullLegalName", "candidateName", "name"] },
+        { "key": "preferredFirstName", "label": "Preferred First Name", "type": "text", "required": true, "prefillKeys": ["prefill.step1.preferredFirstName"], "hasNAButton": true },
+        { "key": "maidenName", "label": "Maiden Name", "type": "text", "required": true, "prefillKeys": ["prefill.step1.maidenName"], "hasNAButton": true },
+        { "key": "previouslyUsedNames", "label": "Previously Used Names", "type": "text", "required": true, "prefillKeys": ["prefill.step1.previouslyUsedNames"], "hasNAButton": true },
+        { "key": "email", "label": "Email Address", "type": "email", "required": true, "prefillKeys": ["prefill.step1.email", "email"] },
+        { "key": "phone", "label": "Phone Number", "type": "tel", "required": true, "prefillKeys": ["prefill.step1.phone", "phone"] },
+        { "key": "dateOfBirth", "label": "Date of Birth", "type": "date", "required": true, "prefillKeys": ["prefill.step1.dateOfBirth"] },
+        { "key": "ssnLast4", "label": "Social Security Number (last 4 digits)", "type": "text", "required": true, "prefillKeys": ["prefill.step1.ssnLast4"] }
+      ]
+    },
+    {
+      "title": "Current Address",
+      "description": "Your current residential address",
+      "fields": [
+        { "key": "streetAddress", "label": "Street Address", "type": "text", "required": true, "prefillKeys": ["prefill.step1.streetAddress"] },
+        { "key": "city", "label": "City", "type": "text", "required": true, "prefillKeys": ["prefill.step1.city", "location.city"] },
+        { "key": "stateRegion", "label": "State/Region", "type": "select", "required": true, "options": [
+          {"value":"","label":"Select"},
+          {"value":"AL","label":"Alabama"},{"value":"AK","label":"Alaska"},{"value":"AZ","label":"Arizona"},{"value":"AR","label":"Arkansas"},
+          {"value":"CA","label":"California"},{"value":"CO","label":"Colorado"},{"value":"CT","label":"Connecticut"},{"value":"DE","label":"Delaware"},
+          {"value":"FL","label":"Florida"},{"value":"GA","label":"Georgia"},{"value":"HI","label":"Hawaii"},{"value":"ID","label":"Idaho"},
+          {"value":"IL","label":"Illinois"},{"value":"IN","label":"Indiana"},{"value":"IA","label":"Iowa"},{"value":"KS","label":"Kansas"},
+          {"value":"KY","label":"Kentucky"},{"value":"LA","label":"Louisiana"},{"value":"ME","label":"Maine"},{"value":"MD","label":"Maryland"},
+          {"value":"MA","label":"Massachusetts"},{"value":"MI","label":"Michigan"},{"value":"MN","label":"Minnesota"},{"value":"MS","label":"Mississippi"},
+          {"value":"MO","label":"Missouri"},{"value":"MT","label":"Montana"},{"value":"NE","label":"Nebraska"},{"value":"NV","label":"Nevada"},
+          {"value":"NH","label":"New Hampshire"},{"value":"NJ","label":"New Jersey"},{"value":"NM","label":"New Mexico"},{"value":"NY","label":"New York"},
+          {"value":"NC","label":"North Carolina"},{"value":"ND","label":"North Dakota"},{"value":"OH","label":"Ohio"},{"value":"OK","label":"Oklahoma"},
+          {"value":"OR","label":"Oregon"},{"value":"PA","label":"Pennsylvania"},{"value":"RI","label":"Rhode Island"},{"value":"SC","label":"South Carolina"},
+          {"value":"SD","label":"South Dakota"},{"value":"TN","label":"Tennessee"},{"value":"TX","label":"Texas"},{"value":"UT","label":"Utah"},
+          {"value":"VT","label":"Vermont"},{"value":"VA","label":"Virginia"},{"value":"WA","label":"Washington"},{"value":"WV","label":"West Virginia"},
+          {"value":"WI","label":"Wisconsin"},{"value":"WY","label":"Wyoming"}
+        ], "prefillKeys": ["prefill.step1.stateRegion", "location.state"] },
+        { "key": "postalCode", "label": "Postal Code", "type": "text", "required": true, "prefillKeys": ["prefill.step1.postalCode"] },
+        { "key": "country", "label": "Country", "type": "text", "required": true, "prefillKeys": ["prefill.step1.country", "location.country"] },
+        { "key": "county", "label": "County", "type": "text", "required": true, "prefillKeys": ["prefill.step1.county"] }
+      ]
+    },
+    {
+      "title": "Professional Identity",
+      "description": "Your professional online presence and current role",
+      "fields": [
+        { "key": "linkedinUrl", "label": "LinkedIn URL", "type": "text", "required": true, "prefillKeys": ["prefill.step1.linkedinUrl", "socialMedia.linkedin", "linkedin"], "hasNAButton": true },
+        { "key": "website", "label": "Personal Website", "type": "text", "required": true, "prefillKeys": ["prefill.step1.website", "website"], "hasNAButton": true },
+        { "key": "currentJobTitle", "label": "Current / Most Recent Job Title", "type": "text", "required": true, "prefillKeys": ["prefill.step1.currentJobTitle", "currentJobTitle", "workExperience.position"] },
+        { "key": "yearsExperience", "label": "Years of Professional Experience", "type": "text", "required": true, "prefillKeys": ["prefill.step1.yearsExperience"] }
+      ]
+    },
+    {
+      "title": "Work Authorization",
+      "description": "Your legal work status and security clearance",
+      "fields": [
+        { "key": "workAuthorization", "label": "Work Authorization Status", "type": "select", "required": true, "options": [
+          {"value":"","label":"Select"},
+          {"value":"citizen","label":"U.S. Citizen"},
+          {"value":"permanent-resident","label":"Permanent Resident"},
+          {"value":"visa","label":"Visa Holder"},
+          {"value":"other","label":"Other"}
+        ], "prefillKeys": ["prefill.step1.workAuthorization"] },
+        { "key": "visaStatus", "label": "Visa Status (if applicable)", "type": "select", "required": true, "options": [
+          {"value":"","label":"Select"},
+          {"value":"h1b","label":"H-1B"},
+          {"value":"f1","label":"F-1"},
+          {"value":"l1","label":"L-1"},
+          {"value":"other","label":"Other"},
+          {"value":"not-applicable","label":"Not Applicable"}
+        ], "prefillKeys": ["prefill.step1.visaStatus"] },
+        { "key": "securityClearance", "label": "Security Clearance Level", "type": "select", "required": true, "options": [
+          {"value":"","label":"Select"},
+          {"value":"none","label":"None"},
+          {"value":"public-trust","label":"Public Trust"},
+          {"value":"secret","label":"Secret"},
+          {"value":"top-secret","label":"Top Secret"},
+          {"value":"ts-sci","label":"TS/SCI"}
+        ], "prefillKeys": ["prefill.step1.securityClearance"] }
+      ]
+    }
+  ]
+}
+

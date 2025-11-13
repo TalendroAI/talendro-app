@@ -1,0 +1,141 @@
+If you grab the items below, I can pinpoint the blocker fast. I’ve grouped them so it’s quick to collect.
+
+1) Client-side evidence (what the browser actually ran)
+
+A. Build stamp + console traces (paste + reload)
+Add at the very top of client/src/app/Onb2.js:
+
+console.log('Onb2 BUILD', 'TS=' + new Date().toISOString());
+
+
+Add at the top of client/src/app/Onb3.js:
+
+console.log('Onb3 BUILD', 'TS=' + new Date().toISOString());
+
+
+Reload with DevTools → Network → Disable cache ON.
+→ Send me a screenshot of the Console showing both stamps.
+
+B. One-time diagnostic helper (paste into Console)
+Paste this in the browser Console on the Step-2 page after you click “Parse Resume & Continue”:
+
+window.talDiag = () => {
+  try {
+    const d = JSON.parse(localStorage.getItem('resumeData') || 'null');
+    return {
+      path: location.pathname,
+      resumeParsed: localStorage.getItem('resumeParsed'),
+      hasResumeData: !!d,
+      keys: d ? Object.keys(d) : [],
+      step3Preview: d?.prefill?.step3 || null,
+      profileDraftBasics: d?.profileDraft?.basics || null
+    };
+  } catch (e) { return { error: String(e) }; }
+};
+console.log('talDiag:', window.talDiag());
+
+
+→ Copy the printed object (or screenshot it) and send it.
+
+C. Onb2 handler snippet
+Copy/paste the full current handleContinue / parseAndGo function from Onb2.js.
+(If you can, paste the whole Onb2.js file contents—helps catch stale branches.)
+
+D. Onb3 hydration
+Copy/paste the useEffect (or code) that reads localStorage.resumeData in Onb3.js.
+
+E. Router guard (if any)
+If you have a guard/HOC/ProtectedRoute around Step-3, share that file (or the guard condition). A strict guard that doesn’t recognize our resumeData will bounce you back.
+
+2) Network proof (what the server returned)
+
+A. HAR (best)
+
+In DevTools Network tab, click the POST /api/resume/parse entry.
+
+Right-click → Save all as HAR with content.
+
+Send the HAR file (or at least Response tab → raw JSON).
+
+B. Screenshots (good enough)
+
+Response tab for the POST /api/resume/parse.
+
+Preview tab for the same request.
+
+If there’s a redirect, include the request list screenshot.
+
+3) Server-side proof (env + logs)
+
+A. Affinda key visibility
+Hit this endpoint in the running app (add if you don’t have it yet):
+
+// server/index.js (once)
+app.get('/api/debug/config', (req, res) => {
+  res.json({ affindaConfigured: !!process.env.AFFINDA_API_KEY });
+});
+
+
+Open /api/debug/config in the browser.
+→ Send the JSON (should be { "affindaConfigured": true }).
+
+B. Parse route logs
+Add a couple of logs in server/routes/parse.js:
+
+console.log('[parse] start', new Date().toISOString());
+console.log('[parse] resp.shape', {
+  hasData: !!result?.data,
+  hasPrefill: !!result?.prefill,
+  hasProfile: !!result?.profileDraft
+});
+
+
+Share the server console output for one attempt (from click to response).
+
+C. Server response shape (final JSON)
+If you changed it to { success: true, data: {...} }, send that code block. Otherwise, send the actual res.json(...) you’re returning.
+
+4) Caching & service worker sanity
+
+In DevTools Application → Service Workers, screenshot the section (showing Unregistered).
+
+In DevTools Network, confirm Disable cache is checked (screenshot).
+
+After redeploy/restart, do a hard reload (Cmd/Ctrl+Shift+R) and send the screenshot of the Console showing the latest Onb2 BUILD stamp.
+
+5) Quick route inventory
+
+In the Console on any page, paste:
+
+// Quick-and-dirty route check (works if you export your routes)
+console.log('Path:', location.pathname);
+
+
+And send me your <Routes> snippet that includes:
+
+<Route path="/app/onboarding/step-3" element={<Onb3 />} />
+
+
+(If Step-3 lives behind a layout or wrapper, include that nesting.)
+
+Likeliest culprits (ties symptoms to causes)
+
+Extra “Continue” step: Onb2 is setting a “success” UI state instead of navigating; or there’s a double-handler (auto-parse in a useEffect) that flips UI before your new code runs.
+
+Still seeing “Sample Candidate”: server is in stub mode (AFFINDA_API_KEY not visible to process); or Step-3 is reading a different key than resumeData, or you’re saving the wrong shape (result.data without prefill).
+
+No new logs: stale client bundle (service worker, cached preview) or Replit didn’t restart. The BUILD stamp confirms this.
+
+If you want a one-shot repro checklist
+
+Verify /api/debug/config returns { affindaConfigured: true }.
+
+Add console.log('Onb2 BUILD', ...) + hard reload w/ cache disabled.
+
+Click Parse Resume & Continue → Confirm Network → /api/resume/parse → 200 and copy the Response JSON.
+
+In Console, run talDiag and send me the printed object.
+
+Navigate should jump to Step-3; if it doesn’t, send your Routes and any guard.
+
+Feed me those 5 pieces and I’ll tell you exactly where the break is (client branch, guard, caching, or server shape).

@@ -1,0 +1,212 @@
+Based on the screenshots and the symptoms, there are two root causes to kill:
+
+Step-2 shows a “success” state with a “Continue” button instead of auto-advancing → the component is still toggling a local “parsed” UI state somewhere. We’ll replace Step-2 with a single, deterministic path: on 200 OK, save data + navigate immediately (no intermediate success UI).
+
+Step-3 shows “Sample Candidate …” → either (a) the server is still in stub mode (no AFFINDA_API_KEY visible), or (b) Step-3 isn’t reading the object that contains prefill.step3. We’ll hydrate Step-3 directly from resumeData.prefill.step3, with a fallback to server profileDraft.
+
+Below are drop-in fixes that work regardless of the previous state in your repo.
+
+1) Replace Step-2 logic (no more extra click)
+
+client/src/app/Onb2.js (complete component you can paste over yours)
+
+import { useRef, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+export default function Onb2() {
+  const navigate = useNavigate();
+  const [file, setFile] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const jumped = useRef(false);
+
+  const parseAndGo = useCallback(async () => {
+    if (!file || jumped.current) return;
+    try {
+      setBusy(true); setError('');
+
+      const fd = new FormData();
+      fd.append('file', file, file.name);
+
+      const resp = await fetch('/api/resume/parse', { method: 'POST', body: fd });
+      if (!resp.ok) {
+        const t = await resp.text().catch(()=>'');
+        throw new Error(`Parse failed: ${resp.status} ${t}`);
+      }
+      const result = await resp.json();
+
+      // Accept either { success:true, data:{...} } or the flat shape we used earlier
+      const successLike = result?.success === true || result?.status === 'complete';
+      if (!successLike) throw new Error('Parser did not report success/complete');
+
+      const payload = result?.data?.prefill
+        ? result.data
+        : {
+            jobId: result.jobId ?? result.data?.jobId,
+            status: result.status ?? result.data?.status,
+            prefill: result.prefill ?? result.data?.prefill ?? {},
+            profileDraft: result.profileDraft ?? result.data?.profileDraft ?? {},
+            confidence: result.confidence ?? result.data?.confidence ?? {}
+          };
+
+      // Persist for Steps 3–6
+      localStorage.setItem('resumeData', JSON.stringify(payload));
+      localStorage.setItem('resumeParsed', 'true');
+
+      // Jump immediately to Step 3 (NO success screen, NO extra click)
+      jumped.current = true;
+      try { navigate('/app/onboarding/step-3', { replace: true }); }
+      catch { window.location.replace('/app/onboarding/step-3'); }
+
+      // Safety: if Router fails silently, hard jump
+      setTimeout(() => {
+        if (location.pathname !== '/app/onboarding/step-3') {
+          window.location.assign('/app/onboarding/step-3');
+        }
+      }, 100);
+    } catch (e) {
+      console.error(e);
+      setError('We had trouble parsing your résumé. You can continue manually—Talendro will backfill as parsing completes.');
+    } finally {
+      setBusy(false);
+    }
+  }, [file, navigate]);
+
+  return (
+    <section>
+      <h1 className="h1">Upload Résumé</h1>
+      <p className="body mt-2">We’ll parse your résumé to pre-fill your profile.</p>
+
+      <form className="card mt-6 max-w-xl" onSubmit={(e)=>{ e.preventDefault(); parseAndGo(); }}>
+        <input type="file" accept=".pdf,.docx" onChange={e => setFile(e.target.files?.[0] || null)} />
+        <div className="mt-4 flex gap-3">
+          <button className="btn btn-primary" disabled={!file || busy} onClick={(e)=>{ e.preventDefault(); parseAndGo(); }}>
+            {busy ? 'Parsing…' : 'Parse Resume & Continue'}
+          </button>
+          <a href="/app/onboarding/step-3" className="btn btn-tertiary">Continue Manually</a>
+        </div>
+        {error && <div className="mt-3 text-sm text-red-600">{error}</div>}
+      </form>
+    </section>
+  );
+}
+
+
+If you had any state like setParseSuccess(true) that swaps the UI to a “Continue” button, remove it. With this component, a success always navigates immediately.
+
+2) Hydrate Step-3 from parsed data (not placeholders)
+
+client/src/app/Onb3.js (top section + prefill effect)
+
+import { useEffect, useState } from 'react';
+
+export default function Onb3() {
+  const [form, setForm] = useState({
+    firstName: '', lastName: '', email: '', phone: '',
+    physicalAddress: '', linkedIn: ''
+  });
+
+  useEffect(() => {
+    (async () => {
+      try {
+        // Prefer the object saved by Onb2
+        let d = null;
+        try { d = JSON.parse(localStorage.getItem('resumeData') || 'null'); } catch {}
+        if (!d) {
+          // Optional: fallback to server source-of-truth if you add the endpoint below
+          const r = await fetch('/api/profile/draft').catch(()=>null);
+          if (r && r.ok) d = { profileDraft: await r.json() };
+        }
+        if (!d) return;
+
+        const s3 = d?.prefill?.step3 || {};
+        let fullName = s3.fullLegalName
+          || d?.profileDraft?.basics?.name?.value
+          || '';
+
+        const [first='', ...rest] = String(fullName).trim().split(/\s+/);
+        const last = rest.join(' ');
+
+        const email = s3.email || d?.profileDraft?.basics?.email?.value || '';
+        const phone = s3.phone || d?.profileDraft?.basics?.phone?.value || '';
+        const physicalAddress =
+          s3.physicalAddress
+          || [
+              d?.profileDraft?.basics?.location?.address?.value,
+              d?.profileDraft?.basics?.location?.city?.value,
+              d?.profileDraft?.basics?.location?.region?.value,
+              d?.profileDraft?.basics?.location?.postalCode?.value,
+              d?.profileDraft?.basics?.location?.countryCode?.value
+             ].filter(Boolean).join(', ');
+
+        setForm(f => ({
+          ...f,
+          firstName: first,
+          lastName: last,
+          email,
+          phone,
+          physicalAddress
+        }));
+      } catch {}
+    })();
+  }, []);
+
+  // …render using value={form.firstName} with onChange handlers…
+}
+
+
+This guarantees Step-3 shows the parsed values you saved in Step-2. If resumeData isn’t present, it optionally falls back to /api/profile/draft.
+
+3) (Optional but recommended) Add a tiny endpoint so Step-3 can always fetch the draft
+
+If you used the in-memory profileDraftStore I gave you, add this to your server routes:
+
+// server/routes/parse.js (or a new profile route)
+const { getDraft } = require('../profileDraftStore');
+
+router.get('/profile/draft', (req, res) => {
+  const userId = String(req.user?.id || 'demo-user');
+  const draft = getDraft(userId);
+  res.json(draft || {});
+});
+
+
+Now Step-3 can fetch('/api/profile/draft') if needed.
+
+4) Make sure you’re not in stub mode
+
+“Sample Candidate …” = the adapter didn’t see process.env.AFFINDA_API_KEY.
+
+In Replit → Secrets, set AFFINDA_API_KEY (no quotes).
+
+Restart the Replit server after setting the secret.
+
+Add a quick check endpoint:
+
+app.get('/api/debug/config', (req,res)=>res.json({ affindaConfigured: !!process.env.AFFINDA_API_KEY }));
+
+
+Hit /api/debug/config in the browser. You want:
+
+{ "affindaConfigured": true }
+
+
+If it’s false, you’ll keep seeing placeholder values.
+
+5) Caching sanity (just once)
+
+DevTools → Network → check Disable cache → hard reload (Cmd/Ctrl + Shift + R).
+
+If you ever added a service worker, unregister it in Application → Service Workers.
+
+6) What this fixes—tied to your screenshots
+
+“Parse Resume & Continue” → now jumps directly to Step-3.
+
+The intermediate “Continue” screen → gone.
+
+Step-3 shows your parsed email/phone/address (from resumeData.prefill.step3), not the Sample placeholders.
+
+If your Affinda key isn’t live, you’ll still see Sample values—use /api/debug/config to verify the key is loaded.
+
+If you want, send me the response JSON from POST /api/resume/parse and the value of localStorage.resumeData right after you click the button; I’ll confirm the exact mapping your Step-3 should expect. But the patches above should resolve both the extra click and the placeholder data in one go.

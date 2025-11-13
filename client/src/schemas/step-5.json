@@ -1,0 +1,34 @@
+{
+  "id": "step-5",
+  "title": "Education History",
+  "route": "/app/onboarding/step-5",
+  "nextRoute": "/app/onboarding/step-6",
+  "collection": {
+    "key": "educationHistory",
+    "itemTitle": "Education",
+    "addLabel": "Add Education",
+    "prefillCollectionKey": "resume.data.education",
+    "fields": [
+      { "key": "institution", "label": "Institution", "type": "text", "required": true, "prefillKeys": ["parsed.educationOrganization","organization","school"], "testId": "ed-institution" },
+      { "key": "city", "label": "City", "type": "text", "required": true, "testId": "ed-city" },
+      { "key": "state", "label": "State/Province", "type": "text", "required": true, "testId": "ed-state" },
+      { "key": "degree", "label": "Degree", "type": "text", "required": true, "prefillKeys": ["parsed.educationAccreditation","educationLevel.value","degree"], "testId": "ed-degree" },
+      { "key": "major", "label": "Major/Field of Study", "type": "text", "required": true, "prefillKeys": ["parsed.educationMajor.listItem[0]","area","fieldOfStudy"], "testId": "ed-major" },
+      { "key": "gpa", "label": "GPA (optional)", "type": "text", "required": false, "prefillKeys": ["educationGrade.educationGradeScore","score","grade"], "testId": "ed-gpa" },
+      { "key": "fromMonth", "label": "From (Month)", "type": "select", "required": true, "options": [
+        {"value":"01","label":"01"},{"value":"02","label":"02"},{"value":"03","label":"03"},{"value":"04","label":"04"},
+        {"value":"05","label":"05"},{"value":"06","label":"06"},{"value":"07","label":"07"},{"value":"08","label":"08"},
+        {"value":"09","label":"09"},{"value":"10","label":"10"},{"value":"11","label":"11"},{"value":"12","label":"12"}
+      ], "testId": "ed-from-month" },
+      { "key": "fromYear", "label": "From (Year)", "type": "text", "required": true, "testId": "ed-from-year" },
+      { "key": "toMonth", "label": "To (Month)", "type": "select", "required": false, "options": [
+        {"value":"01","label":"01"},{"value":"02","label":"02"},{"value":"03","label":"03"},{"value":"04","label":"04"},
+        {"value":"05","label":"05"},{"value":"06","label":"06"},{"value":"07","label":"07"},{"value":"08","label":"08"},
+        {"value":"09","label":"09"},{"value":"10","label":"10"},{"value":"11","label":"11"},{"value":"12","label":"12"}
+      ], "testId": "ed-to-month" },
+      { "key": "toYear", "label": "To (Year)", "type": "text", "required": false, "testId": "ed-to-year" },
+      { "key": "current", "label": "Currently Enrolled", "type": "checkbox", "required": false, "testId": "ed-current" }
+    ]
+  },
+  "fields": []
+}

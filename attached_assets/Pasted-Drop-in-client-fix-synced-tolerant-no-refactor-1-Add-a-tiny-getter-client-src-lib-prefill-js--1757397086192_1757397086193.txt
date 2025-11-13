@@ -1,0 +1,112 @@
+Drop-in client fix (synced, tolerant, no refactor)
+1) Add a tiny getter (client/src/lib/prefill.js)
+// client/src/lib/prefill.js
+export function getStep3Prefill() {
+  const raw = JSON.parse(localStorage.getItem('resumeData') || 'null');
+  const bag = raw?.prefill?.step3 || raw?.data?.prefill?.step3 || {};
+  const linkedIn =
+    bag.linkedin || bag.linkedIn || bag.linkedinUrl || '';
+  const currentJobTitle =
+    bag.currentJobTitle || bag.currentTitle || '';
+  return { ...bag, linkedIn, currentJobTitle };
+}
+
+2) Use it in Step 3 (Onb3.js) — pick one pattern below
+
+A) If you use plain React state
+
+import { useEffect, useState, useMemo } from 'react';
+import { getStep3Prefill } from '../lib/prefill';
+
+export default function Onb3() {
+  const pre = useMemo(() => getStep3Prefill(), []);
+  const [form, setForm] = useState({
+    fullLegalName: '',
+    email: '',
+    phone: '',
+    physicalAddress: '',
+    linkedin: '',          // <- normalize to "linkedin"
+    currentJobTitle: ''    // <- normalize to "currentJobTitle"
+  });
+
+  useEffect(() => {
+    setForm(f => ({
+      ...f,
+      fullLegalName: pre.fullLegalName || '',
+      email: pre.email || '',
+      phone: pre.phone || '',
+      physicalAddress: pre.physicalAddress || '',
+      linkedin: pre.linkedIn || '',
+      currentJobTitle: pre.currentJobTitle || ''
+    }));
+  }, [pre]);
+
+  // bind as controlled values (not placeholders)
+  // <input name="linkedin" value={form.linkedin} onChange={...} />
+  // <input name="currentJobTitle" value={form.currentJobTitle} onChange={...} />
+}
+
+
+B) If you use React Hook Form
+
+import { useEffect, useMemo } from 'react';
+import { useForm } from 'react-hook-form';
+import { getStep3Prefill } from '../lib/prefill';
+
+export default function Onb3() {
+  const pre = useMemo(() => getStep3Prefill(), []);
+  const { register, reset } = useForm({ defaultValues: {} });
+
+  useEffect(() => {
+    reset({
+      fullLegalName: pre.fullLegalName || '',
+      email: pre.email || '',
+      phone: pre.phone || '',
+      physicalAddress: pre.physicalAddress || '',
+      linkedin: pre.linkedIn || '',
+      currentJobTitle: pre.currentJobTitle || ''
+    });
+  }, [pre, reset]);
+
+  // <input {...register('linkedin')} />
+  // <input {...register('currentJobTitle')} />
+}
+
+3) Make sure your inputs are controlled
+<input
+  name="linkedin"
+  value={form.linkedin}             // not just placeholder
+  onChange={e => setForm(s => ({ ...s, linkedin: e.target.value }))}
+/>
+<input
+  name="currentJobTitle"
+  value={form.currentJobTitle}
+  onChange={e => setForm(s => ({ ...s, currentJobTitle: e.target.value }))}
+/>
+
+Quick 30-second verification
+
+Open DevTools Console on Step 3 and run:
+
+const raw = JSON.parse(localStorage.getItem('resumeData')||'null');
+const pre = raw?.prefill?.step3 || raw?.data?.prefill?.step3 || {};
+({
+  linkedIn: pre.linkedIn,
+  linkedin: pre.linkedin,
+  linkedinUrl: pre.linkedinUrl,
+  currentJobTitle: pre.currentJobTitle,
+  currentTitle: pre.currentTitle
+})
+
+
+You should see values on at least one of those keys. With the getter above, the form will now populate regardless of which one is present.
+
+Opinionated guardrails (recommended)
+
+One canonical UI key going forward: store in state as linkedin and currentJobTitle.
+
+Server keeps synonyms (cheap and safe) so older clients don’t break.
+
+Add a tiny banner when prefill differs from user edits (e.g., “Prefilled from résumé • Change”).
+
+If this still doesn’t render after the patch, the next place to look is form input names vs. what you submit (e.g., a <Field name="linkedIn"> somewhere). But the changes above usually resolve it on the spot.

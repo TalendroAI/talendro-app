@@ -1,0 +1,151 @@
+Greg — your server logs actually show both values are being parsed and produced:
+
+* `linkedinUrl`: `https://linkedin.com/in/kgregjackson`
+* `currentTitle`: e.g., `"Vice President Talent Acquisition"`
+
+…but Step-3 still doesn’t show them. That means it’s not a parsing problem anymore; it’s a **field-name mismatch between the server’s prefill and the Step-3 UI**.
+
+## What the logs prove
+
+From your logs (twice):
+
+```
+PREFILL STEP3: {
+  "fullLegalName": "K. JACKSON",
+  "email": "kgregjackson@gmail.com",
+  "phone": "+1 571-287-0086",
+  "physicalAddress": "Orlando, Florida, US",
+  "linkedinUrl": "https://linkedin.com/in/kgregjackson",  ← present
+  "currentTitle": "Vice President Talent Acquisition"       ← present
+}
+```
+
+So the backend is doing its job. The UI likely expects **different keys**:
+
+* LinkedIn: your UI probably reads `linkedIn` or `linkedin`, not `linkedinUrl`.
+* Current title: your UI probably reads `currentJobTitle`, not `currentTitle`.
+
+You also have a hint in your own mapping sheet: it lists **`currentJobTitle`** as the target field.
+
+---
+
+## Quickest fix (no refactor): support synonyms on **both** sides
+
+### 1) Tiny, backwards-compatible server tweak
+
+In your server prefill builder (where you assemble `prefill.step3`), **emit all common synonyms** so any UI variant picks it up:
+
+```js
+// after you computed linkedInUrl and currentTitle:
+const linkedInUrl = linkedInUrlRaw || null;
+const currentTitle = currentTitleRaw || null;
+
+prefill.step3 = {
+  ...prefill.step3,
+  // LinkedIn synonyms
+  linkedIn: linkedInUrl || prefill.step3?.linkedIn || '',
+  linkedin: linkedInUrl || prefill.step3?.linkedin || '',
+  linkedinUrl: linkedInUrl || prefill.step3?.linkedinUrl || '',
+  // Current title synonyms
+  currentJobTitle: currentTitle || prefill.step3?.currentJobTitle || '',
+  currentTitle: currentTitle || prefill.step3?.currentTitle || ''
+};
+```
+
+> This makes the API tolerant without breaking any existing UI.
+
+### 2) Step-3 UI: read with fallbacks (1-line per field)
+
+Where you hydrate the form in **Onb3.js**:
+
+```js
+const pre = (resumeData?.prefill?.step3) || {};
+
+const linkedInPrefill =
+  pre.linkedIn || pre.linkedin || pre.linkedinUrl || '';
+
+const currentJobTitlePrefill =
+  pre.currentJobTitle || pre.currentTitle || '';
+
+// then use these as `defaultValue` / `value`
+```
+
+If you’re using React Hook Form:
+
+```js
+useForm({
+  defaultValues: {
+    linkedIn: linkedInPrefill,
+    currentJobTitle: currentJobTitlePrefill,
+    // ...
+  }
+});
+```
+
+If you’re using local component state:
+
+```js
+const [form, setForm] = useState({
+  // ...
+  linkedIn: linkedInPrefill,
+  currentJobTitle: currentJobTitlePrefill,
+});
+```
+
+**Important:** make sure your inputs bind `value={form.linkedIn}` and `value={form.currentJobTitle}` (not just `placeholder`), otherwise they’ll *look* empty despite having a prefill.
+
+---
+
+## Verify in 20 seconds
+
+1. In the Step-3 page console:
+
+```js
+const pre = JSON.parse(localStorage.getItem('resumeData'))?.prefill?.step3;
+console.log(pre && { linkedIn: pre.linkedIn, linkedin: pre.linkedin, linkedinUrl: pre.linkedinUrl, currentJobTitle: pre.currentJobTitle, currentTitle: pre.currentTitle });
+```
+
+You should see the values present on at least one key.
+
+2. Ensure your inputs use the same names you’re setting:
+
+* If the input is `<input name="linkedin" ...>`, then bind it to `pre.linkedin || pre.linkedIn || pre.linkedinUrl`.
+* If the input is `<input name="currentJobTitle" ...>`, bind it to `pre.currentJobTitle || pre.currentTitle`.
+
+---
+
+## (Optional) Make the “current job” detection rock-solid
+
+Instead of assuming index `0`, pick the **work item with** `end.isCurrent === true` and if none, choose the latest by startDate:
+
+```js
+function pickCurrentTitle(work = []) {
+  const current = work.find(w => w?.end?.isCurrent === true);
+  if (current?.position?.value) return current.position.value;
+  // fallback: latest by start date
+  const sorted = [...work].sort((a,b) => (b.startDate?.value || '').localeCompare(a.startDate?.value || ''));
+  return sorted[0]?.position?.value || '';
+}
+```
+
+Then set both keys in prefill:
+
+```js
+const currentTitle = pickCurrentTitle(draft.work);
+prefill.step3.currentJobTitle = currentTitle;
+prefill.step3.currentTitle = currentTitle;
+```
+
+---
+
+## One more yellow flag in your logs
+
+I noticed a `GET /api/profile-draft 404`. If the client sometimes tries to fetch the draft from the server (instead of `localStorage`), add a simple read route that returns the draft you saved after parsing. If the GET 404s, your UI may fall back to placeholders.
+
+---
+
+### Bottom line
+
+* The backend **already** has the data.
+* It’s just **not wired to the field names** your Step-3 form reads.
+* Add the synonyms on the server (safe), and read with fallbacks on the client. That will make LinkedIn and current job title show up immediately.

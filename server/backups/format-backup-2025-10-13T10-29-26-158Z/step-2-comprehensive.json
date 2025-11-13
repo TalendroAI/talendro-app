@@ -1,0 +1,176 @@
+{
+  "id": "step-2-comprehensive",
+  "title": "Professional History & Qualifications",
+  "route": "/app/onboarding/step-2-comprehensive",
+  "nextRoute": "/app/onboarding/step-3-comprehensive",
+  "sections": [
+    {
+      "title": "Current Employment",
+      "description": "Your current or most recent position",
+      "fields": [
+        { "key": "currentEmployer", "label": "Current / Most Recent Employer", "type": "text", "required": true, "prefillKeys": ["prefill.step2.currentEmployer", "currentEmployer", "workExperience.company"] },
+        { "key": "currentJobTitle", "label": "Current / Most Recent Job Title", "type": "text", "required": true, "prefillKeys": ["prefill.step2.currentJobTitle", "currentJobTitle", "workExperience.position"] },
+        { "key": "currentStartDate", "label": "Start Date", "type": "date", "required": true, "prefillKeys": ["prefill.step2.currentStartDate", "workExperience.startDate"] },
+        { "key": "currentEndDate", "label": "End Date (if applicable)", "type": "date", "required": false, "prefillKeys": ["prefill.step2.currentEndDate", "workExperience.endDate"] },
+        { "key": "isCurrentRole", "label": "This is my current role", "type": "checkbox", "required": false, "prefillKeys": ["prefill.step2.isCurrentRole"] },
+        { "key": "currentResponsibilities", "label": "Key Responsibilities & Achievements", "type": "textarea", "required": false, "prefillKeys": ["prefill.step2.currentResponsibilities", "workExperience.description"] }
+      ]
+    },
+    {
+      "title": "Professional Preferences",
+      "description": "Your work preferences and availability",
+      "fields": [
+        { "key": "earliestStartDate", "label": "Earliest Available Start Date", "type": "date", "required": true, "prefillKeys": ["prefill.step2.earliestStartDate"] },
+        { "key": "workArrangement", "label": "Preferred Work Arrangement", "type": "select", "required": true, "options": [
+          {"value":"","label":"- Select -"},
+          {"value":"onsite","label":"Onsite"},
+          {"value":"remote","label":"Remote"},
+          {"value":"hybrid","label":"Hybrid"},
+          {"value":"flexible","label":"Flexible"}
+        ], "prefillKeys": ["prefill.step2.workArrangement"] },
+        { "key": "employmentType", "label": "Preferred Employment Type", "type": "select", "required": true, "options": [
+          {"value":"","label":"- Select -"},
+          {"value":"full-time","label":"Full-time"},
+          {"value":"part-time","label":"Part-time"},
+          {"value":"contract","label":"Contract"},
+          {"value":"temporary","label":"Temporary"},
+          {"value":"consulting","label":"Consulting"}
+        ], "prefillKeys": ["prefill.step2.employmentType"] },
+        { "key": "willingToRelocate", "label": "Willing to Relocate", "type": "select", "required": true, "options": [
+          {"value":"","label":"- Select -"},
+          {"value":"yes","label":"Yes"},
+          {"value":"no","label":"No"},
+          {"value":"maybe","label":"Maybe"},
+          {"value":"depends","label":"Depends on opportunity"}
+        ], "prefillKeys": ["prefill.step2.willingToRelocate"] },
+        { "key": "willingToTravel", "label": "Willing to Travel", "type": "select", "required": true, "options": [
+          {"value":"","label":"- Select -"},
+          {"value":"yes","label":"Yes"},
+          {"value":"no","label":"No"},
+          {"value":"limited","label":"Limited travel"},
+          {"value":"extensive","label":"Extensive travel"}
+        ], "prefillKeys": ["prefill.step2.willingToTravel"] },
+        { "key": "veteranStatus", "label": "Veteran Status", "type": "select", "required": true, "options": [
+          {"value":"","label":"- Select -"},
+          {"value":"not-veteran","label":"Not a Veteran"},
+          {"value":"veteran","label":"Veteran"},
+          {"value":"disabled-veteran","label":"Disabled Veteran"},
+          {"value":"prefer-not-to-say","label":"Prefer not to say"}
+        ], "prefillKeys": ["prefill.step2.veteranStatus"] }
+      ]
+    },
+    {
+      "title": "Education Summary",
+      "description": "Your highest level of education",
+      "fields": [
+        { "key": "highestDegree", "label": "Highest Degree/Diploma/Certificate", "type": "text", "required": true, "prefillKeys": ["prefill.step2.highestDegree", "education.degree"] },
+        { "key": "institutionName", "label": "Institution Name", "type": "text", "required": true, "prefillKeys": ["prefill.step2.institutionName", "education.institution"] },
+        { "key": "institutionCity", "label": "Institution City", "type": "text", "required": true, "prefillKeys": ["prefill.step2.institutionCity", "education.city"] },
+        { "key": "institutionState", "label": "Institution State", "type": "select", "required": true, "options": [
+          {"value":"","label":"- Select -"},
+          {"value":"AL","label":"Alabama"},{"value":"AK","label":"Alaska"},{"value":"AZ","label":"Arizona"},{"value":"AR","label":"Arkansas"},
+          {"value":"CA","label":"California"},{"value":"CO","label":"Colorado"},{"value":"CT","label":"Connecticut"},{"value":"DE","label":"Delaware"},
+          {"value":"FL","label":"Florida"},{"value":"GA","label":"Georgia"},{"value":"HI","label":"Hawaii"},{"value":"ID","label":"Idaho"},
+          {"value":"IL","label":"Illinois"},{"value":"IN","label":"Indiana"},{"value":"IA","label":"Iowa"},{"value":"KS","label":"Kansas"},
+          {"value":"KY","label":"Kentucky"},{"value":"LA","label":"Louisiana"},{"value":"ME","label":"Maine"},{"value":"MD","label":"Maryland"},
+          {"value":"MA","label":"Massachusetts"},{"value":"MI","label":"Michigan"},{"value":"MN","label":"Minnesota"},{"value":"MS","label":"Mississippi"},
+          {"value":"MO","label":"Missouri"},{"value":"MT","label":"Montana"},{"value":"NE","label":"Nebraska"},{"value":"NV","label":"Nevada"},
+          {"value":"NH","label":"New Hampshire"},{"value":"NJ","label":"New Jersey"},{"value":"NM","label":"New Mexico"},{"value":"NY","label":"New York"},
+          {"value":"NC","label":"North Carolina"},{"value":"ND","label":"North Dakota"},{"value":"OH","label":"Ohio"},{"value":"OK","label":"Oklahoma"},
+          {"value":"OR","label":"Oregon"},{"value":"PA","label":"Pennsylvania"},{"value":"RI","label":"Rhode Island"},{"value":"SC","label":"South Carolina"},
+          {"value":"SD","label":"South Dakota"},{"value":"TN","label":"Tennessee"},{"value":"TX","label":"Texas"},{"value":"UT","label":"Utah"},
+          {"value":"VT","label":"Vermont"},{"value":"VA","label":"Virginia"},{"value":"WA","label":"Washington"},{"value":"WV","label":"West Virginia"},
+          {"value":"WI","label":"Wisconsin"},{"value":"WY","label":"Wyoming"}
+        ], "prefillKeys": ["prefill.step2.institutionState", "education.state"] },
+        { "key": "majorFieldOfStudy", "label": "Major/Field of Study", "type": "text", "required": true, "prefillKeys": ["prefill.step2.majorFieldOfStudy", "education.fieldOfStudy"] },
+        { "key": "graduationDate", "label": "Graduation Date", "type": "date", "required": true, "prefillKeys": ["prefill.step2.graduationDate", "education.endDate"] },
+        { "key": "gpa", "label": "GPA (optional)", "type": "text", "required": false, "prefillKeys": ["prefill.step2.gpa", "education.gpa"] }
+      ]
+    },
+    {
+      "title": "Skills & Certifications",
+      "description": "Your professional skills and certifications",
+      "fields": [
+        { "key": "coreSkills", "label": "Core Skills (comma-separated)", "type": "textarea", "required": false, "prefillKeys": ["prefill.step2.coreSkills", "skills"] },
+        { "key": "professionalCertifications", "label": "Professional Certifications", "type": "textarea", "required": false, "prefillKeys": ["prefill.step2.professionalCertifications"] },
+        { "key": "languages", "label": "Languages Spoken", "type": "text", "required": false, "prefillKeys": ["prefill.step2.languages"] },
+        { "key": "softwareProficiency", "label": "Software/Technology Proficiency", "type": "textarea", "required": false, "prefillKeys": ["prefill.step2.softwareProficiency"] }
+      ]
+    }
+  ],
+  "collections": [
+    {
+      "key": "employmentHistory",
+      "title": "Employment History (10 Years)",
+      "description": "Complete work history for the past 10 years",
+      "itemTitle": "Employment",
+      "addLabel": "Add Employment",
+      "minYearsCoverage": 10,
+      "prefillCollectionKey": "resume.data.workExperience",
+      "fields": [
+        { "key": "companyName", "label": "Company Name", "type": "text", "required": true, "prefillKeys": ["parsed.workExperienceOrganization", "organization", "company"] },
+        { "key": "companyAddressLine1", "label": "Company Address Line 1", "type": "text", "required": false },
+        { "key": "companyAddressLine2", "label": "Company Address Line 2", "type": "text", "required": false },
+        { "key": "companyCity", "label": "Company City", "type": "text", "required": false },
+        { "key": "companyState", "label": "Company State/Province", "type": "text", "required": false },
+        { "key": "companyPostalCode", "label": "Company ZIP/Postal Code", "type": "text", "required": false },
+        { "key": "companyCountry", "label": "Company Country", "type": "text", "required": false },
+        { "key": "jobTitle", "label": "Job Title", "type": "text", "required": true, "prefillKeys": ["parsed.workExperienceJobTitle", "jobTitle", "position"] },
+        { "key": "fromMonth", "label": "From (Month)", "type": "select", "required": true, "options": [
+          {"value":"01","label":"01"},{"value":"02","label":"02"},{"value":"03","label":"03"},{"value":"04","label":"04"},
+          {"value":"05","label":"05"},{"value":"06","label":"06"},{"value":"07","label":"07"},{"value":"08","label":"08"},
+          {"value":"09","label":"09"},{"value":"10","label":"10"},{"value":"11","label":"11"},{"value":"12","label":"12"}
+        ] },
+        { "key": "fromYear", "label": "From (Year)", "type": "text", "required": true },
+        { "key": "toMonth", "label": "To (Month)", "type": "select", "required": false, "options": [
+          {"value":"01","label":"01"},{"value":"02","label":"02"},{"value":"03","label":"03"},{"value":"04","label":"04"},
+          {"value":"05","label":"05"},{"value":"06","label":"06"},{"value":"07","label":"07"},{"value":"08","label":"08"},
+          {"value":"09","label":"09"},{"value":"10","label":"10"},{"value":"11","label":"11"},{"value":"12","label":"12"}
+        ] },
+        { "key": "toYear", "label": "To (Year)", "type": "text", "required": false },
+        { "key": "current", "label": "Current Role", "type": "checkbox", "required": false },
+        { "key": "supervisorName", "label": "Supervisor Name", "type": "text", "required": false },
+        { "key": "supervisorTitle", "label": "Supervisor Title", "type": "text", "required": true },
+        { "key": "contactSupervisor", "label": "Contact Supervisor?", "type": "select", "required": false, "options": [
+          {"value":"yes","label":"Yes"},
+          {"value":"no","label":"No"},
+          {"value":"after-offer","label":"Please contact after offer"}
+        ] },
+        { "key": "startingSalary", "label": "Starting Salary", "type": "text", "required": false },
+        { "key": "endingSalary", "label": "Ending Salary", "type": "text", "required": false },
+        { "key": "reasonForLeaving", "label": "Reason for Leaving", "type": "text", "required": true },
+        { "key": "responsibilities", "label": "Responsibilities / Achievements", "type": "textarea", "required": false }
+      ]
+    },
+    {
+      "key": "educationHistory",
+      "title": "Education History",
+      "description": "All educational institutions attended",
+      "itemTitle": "Education",
+      "addLabel": "Add Education",
+      "prefillCollectionKey": "resume.data.education",
+      "fields": [
+        { "key": "institution", "label": "Institution", "type": "text", "required": true, "prefillKeys": ["parsed.educationOrganization", "organization", "school"] },
+        { "key": "city", "label": "City", "type": "text", "required": true },
+        { "key": "state", "label": "State/Province", "type": "text", "required": true },
+        { "key": "degree", "label": "Degree", "type": "text", "required": true, "prefillKeys": ["parsed.educationAccreditation", "educationLevel.value", "degree"] },
+        { "key": "major", "label": "Major/Field of Study", "type": "text", "required": true, "prefillKeys": ["parsed.educationMajor.listItem[0]", "area", "fieldOfStudy"] },
+        { "key": "gpa", "label": "GPA (optional)", "type": "text", "required": false, "prefillKeys": ["educationGrade.educationGradeScore", "score", "grade"] },
+        { "key": "fromMonth", "label": "From (Month)", "type": "select", "required": true, "options": [
+          {"value":"01","label":"01"},{"value":"02","label":"02"},{"value":"03","label":"03"},{"value":"04","label":"04"},
+          {"value":"05","label":"05"},{"value":"06","label":"06"},{"value":"07","label":"07"},{"value":"08","label":"08"},
+          {"value":"09","label":"09"},{"value":"10","label":"10"},{"value":"11","label":"11"},{"value":"12","label":"12"}
+        ] },
+        { "key": "fromYear", "label": "From (Year)", "type": "text", "required": true },
+        { "key": "toMonth", "label": "To (Month)", "type": "select", "required": false, "options": [
+          {"value":"01","label":"01"},{"value":"02","label":"02"},{"value":"03","label":"03"},{"value":"04","label":"04"},
+          {"value":"05","label":"05"},{"value":"06","label":"06"},{"value":"07","label":"07"},{"value":"08","label":"08"},
+          {"value":"09","label":"09"},{"value":"10","label":"10"},{"value":"11","label":"11"},{"value":"12","label":"12"}
+        ] },
+        { "key": "toYear", "label": "To (Year)", "type": "text", "required": false },
+        { "key": "current", "label": "Currently Enrolled", "type": "checkbox", "required": false }
+      ]
+    }
+  ]
+}
+

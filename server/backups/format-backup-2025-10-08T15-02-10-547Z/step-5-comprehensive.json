@@ -1,0 +1,57 @@
+{
+  "id": "step-5-comprehensive",
+  "title": "Disclosures & Authorizations",
+  "route": "/app/onboarding/step-5",
+  "nextRoute": "/app/checkout",
+  "sections": [
+    {
+      "title": "Voluntary Self-Identification Questions",
+      "fields": [
+        { "key": "gender", "label": "What is your gender?", "type": "select", "required": true, "options": [
+          {"value":"","label":"Select"},
+          {"value":"male","label":"Male"},
+          {"value":"female","label":"Female"},
+          {"value":"non-binary","label":"Non-binary"},
+          {"value":"prefer-not-to-say","label":"I prefer not to say"}
+        ] },
+        { "key": "protectedVeteran", "label": "Protected Veteran categories", "type": "multiselect", "required": true, "options": [
+          {"value":"disabled-veteran","label":"Disabled Veteran"},
+          {"value":"active-duty-wartime","label":"Active-Duty Wartime or Campaign Badge Veteran"},
+          {"value":"armed-forces-service","label":"Armed Forces Service Medal Veteran"},
+          {"value":"recently-separated","label":"Recently Separated Veteran"},
+          {"value":"veteran-not-protected","label":"I am a veteran but not a protected veteran"},
+          {"value":"prefer-not-to-say","label":"I prefer not to say"}
+        ] },
+        { "key": "hispanicLatino", "label": "Are you Hispanic or Latino?", "type": "select", "required": true, "options": [
+          {"value":"","label":"Select"},
+          {"value":"yes","label":"Yes"},
+          {"value":"no","label":"No"},
+          {"value":"prefer-not-to-say","label":"I prefer not to say"}
+        ] },
+        { "key": "disability", "label": "Do you have a disability?", "type": "select", "required": true, "options": [
+          {"value":"","label":"Select"},
+          {"value":"yes","label":"Yes, I have a disability, or have a history/record of having a disability"},
+          {"value":"no","label":"No, I don't have a disability, or a history/record of having a disability"},
+          {"value":"prefer-not-to-say","label":"I prefer not to say"}
+        ] },
+        { "key": "race", "label": "Racial categories", "type": "multiselect", "required": true, "options": [
+          {"value":"white","label":"White"},
+          {"value":"black-african-american","label":"Black or African American"},
+          {"value":"asian","label":"Asian"},
+          {"value":"native-hawaiian-pacific","label":"Native Hawaiian or Other Pacific Islander"},
+          {"value":"american-indian-alaska","label":"American Indian or Alaska Native"},
+          {"value":"two-or-more","label":"Two or More Races"},
+          {"value":"prefer-not-to-say","label":"I prefer not to say"}
+        ] },
+        { "key": "profileReview", "label": "I have reviewed and approve my profile for use in completing employment applications", "type": "checkbox", "required": true }
+      ]
+    },
+    {
+      "title": "Authorization",
+      "fields": [
+        { "key": "legalName", "label": "Typed Legal Name", "type": "text", "required": true },
+        { "key": "talendroAuthorization", "label": "I hereby authorize Talendro™ to apply to positions matching my subscriber profile", "type": "checkbox", "required": true }
+      ]
+    }
+  ]
+}

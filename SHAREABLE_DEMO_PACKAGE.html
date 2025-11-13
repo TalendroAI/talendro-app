@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Talendro Resume Parser Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .config-section {
+            background: #fef3c7;
+            border: 2px solid #fbbf24;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .config-section h3 {
+            color: #92400e;
+            margin-bottom: 15px;
+        }
+        
+        .config-input {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .config-input input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+        
+        .config-input button {
+            padding: 10px 20px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .config-input button:hover {
+            background: #2563eb;
+        }
+        
+        .upload-section {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s;
+        }
+        
+        .upload-section.dragover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        
+        .upload-section input[type="file"] {
+            display: none;
+        }
+        
+        .upload-label {
+            display: inline-block;
+            padding: 15px 30px;
+            background: #3b82f6;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        .upload-label:hover {
+            background: #2563eb;
+        }
+        
+        .file-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            display: none;
+        }
+        
+        .file-info.show {
+            display: block;
+        }
+        
+        .parse-button {
+            margin-top: 20px;
+            padding: 15px 40px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .parse-button:hover:not(:disabled) {
+            background: #059669;
+        }
+        
+        .parse-button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .results {
+            display: none;
+            margin-top: 30px;
+        }
+        
+        .results.show {
+            display: block;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e5e7eb;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 15px 25px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            color: #6b7280;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .data-section {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .data-section h3 {
+            color: #1e3a8a;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .data-item {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .data-item label {
+            display: block;
+            font-size: 0.85em;
+            color: #6b7280;
+            margin-bottom: 5px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .data-item value {
+            display: block;
+            font-size: 1em;
+            color: #1f2937;
+            font-weight: 500;
+        }
+        
+        .array-item {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border-left: 4px solid #10b981;
+        }
+        
+        .array-item h4 {
+            color: #059669;
+            margin-bottom: 10px;
+        }
+        
+        .error {
+            background: #fef2f2;
+            border: 2px solid #fecaca;
+            color: #991b1b;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .success {
+            background: #f0fdf4;
+            border: 2px solid #86efac;
+            color: #166534;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .metadata {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            color: #6b7280;
+            margin-top: 20px;
+        }
+        
+        .json-view {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-indicator.connected {
+            background: #10b981;
+            box-shadow: 0 0 8px #10b981;
+        }
+        
+        .status-indicator.disconnected {
+            background: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Talendro Resume Parser</h1>
+            <p>Upload your resume to see how we extract and populate your profile data</p>
+        </div>
+        
+        <div class="content">
+            <div class="config-section">
+                <h3>📡 Server Configuration</h3>
+                <p style="margin-bottom: 10px; color: #92400e;">
+                    <span class="status-indicator" id="statusIndicator"></span>
+                    <span id="statusText">Enter your Talendro API server URL below</span>
+                </p>
+                <div class="config-input">
+                    <input 
+                        type="text" 
+                        id="apiUrlInput" 
+                        placeholder="https://your-server.com or http://localhost:5001"
+                        value=""
+                    >
+                    <button onclick="updateApiUrl()">Connect</button>
+                </div>
+                <p style="margin-top: 10px; font-size: 0.9em; color: #92400e;">
+                    <strong>Examples:</strong><br>
+                    • Local: <code>http://localhost:5001</code><br>
+                    • Remote: <code>https://api.talendro.com</code> or <code>https://your-domain.com</code>
+                </p>
+            </div>
+            
+            <div class="upload-section" id="uploadSection">
+                <h2 style="margin-bottom: 20px; color: #1e3a8a;">Upload Your Resume</h2>
+                <p style="margin-bottom: 20px; color: #6b7280;">Supported formats: PDF, DOCX, DOC, RTF, TXT (Max 10MB)</p>
+                <label for="fileInput" class="upload-label">
+                    📄 Choose File
+                </label>
+                <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt,.rtf">
+                <div class="file-info" id="fileInfo"></div>
+                <button class="parse-button" id="parseButton" disabled>Parse Resume</button>
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 10px; color: #6b7280;">Parsing your resume... This may take 10-30 seconds</p>
+            </div>
+            
+            <div class="error" id="error" style="display: none;"></div>
+            <div class="success" id="success" style="display: none;"></div>
+            
+            <div class="results" id="results">
+                <div class="tabs">
+                    <button class="tab active" onclick="showTab('summary')">Summary</button>
+                    <button class="tab" onclick="showTab('prefill')">Form Prefill</button>
+                    <button class="tab" onclick="showTab('profile')">Profile Draft</button>
+                    <button class="tab" onclick="showTab('raw')">Raw JSON</button>
+                </div>
+                
+                <div id="summaryTab" class="tab-content active">
+                    <div class="data-section">
+                        <h3>👤 Personal Information</h3>
+                        <div class="data-grid" id="personalInfo"></div>
+                    </div>
+                    
+                    <div class="data-section">
+                        <h3>💼 Work Experience</h3>
+                        <div id="workExperience"></div>
+                    </div>
+                    
+                    <div class="data-section">
+                        <h3>🎓 Education</h3>
+                        <div id="education"></div>
+                    </div>
+                    
+                    <div class="data-section">
+                        <h3>🛠️ Skills</h3>
+                        <div id="skills"></div>
+                    </div>
+                </div>
+                
+                <div id="prefillTab" class="tab-content">
+                    <div class="data-section">
+                        <h3>Step 1 Prefill Data</h3>
+                        <div class="json-view" id="step1Prefill"></div>
+                    </div>
+                    <div class="data-section">
+                        <h3>Step 3 Prefill Data</h3>
+                        <div class="json-view" id="step3Prefill"></div>
+                    </div>
+                </div>
+                
+                <div id="profileTab" class="tab-content">
+                    <div class="json-view" id="profileDraft"></div>
+                </div>
+                
+                <div id="rawTab" class="tab-content">
+                    <div class="json-view" id="rawJson"></div>
+                </div>
+                
+                <div class="metadata" id="metadata"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let API_BASE = '';
+        let selectedFile = null;
+        let parseResult = null;
+        
+        // Load saved API URL from localStorage
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedUrl = localStorage.getItem('talendro_api_url');
+            if (savedUrl) {
+                document.getElementById('apiUrlInput').value = savedUrl;
+                API_BASE = savedUrl;
+                updateStatus();
+            } else {
+                // Try to detect if we're on a known domain
+                if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+                    // If hosted on a server, try using that origin
+                    API_BASE = window.location.origin;
+                    document.getElementById('apiUrlInput').value = API_BASE;
+                    updateApiUrl();
+                }
+            }
+        });
+        
+        function updateApiUrl() {
+            const input = document.getElementById('apiUrlInput');
+            let url = input.value.trim();
+            
+            // Remove trailing slash
+            url = url.replace(/\/$/, '');
+            
+            if (!url) {
+                alert('Please enter a server URL');
+                return;
+            }
+            
+            // Validate URL format
+            try {
+                new URL(url);
+            } catch (e) {
+                alert('Please enter a valid URL (e.g., http://localhost:5001 or https://api.example.com)');
+                return;
+            }
+            
+            API_BASE = url;
+            localStorage.setItem('talendro_api_url', API_BASE);
+            updateStatus();
+        }
+        
+        async function updateStatus() {
+            const indicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            
+            if (!API_BASE) {
+                indicator.className = 'status-indicator disconnected';
+                statusText.textContent = 'No server configured';
+                return;
+            }
+            
+            // Test connection
+            try {
+                const response = await fetch(`${API_BASE}/api/resume/parser-info`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    indicator.className = 'status-indicator connected';
+                    statusText.textContent = `Connected to: ${API_BASE}`;
+                } else {
+                    indicator.className = 'status-indicator disconnected';
+                    statusText.textContent = `Server responded with error (${response.status})`;
+                }
+            } catch (error) {
+                indicator.className = 'status-indicator disconnected';
+                statusText.textContent = `Cannot connect to: ${API_BASE}`;
+            }
+        }
+        
+        // Allow Enter key in API URL input
+        document.getElementById('apiUrlInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                updateApiUrl();
+            }
+        });
+        
+        // File input handler
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                selectedFile = file;
+                const fileInfo = document.getElementById('fileInfo');
+                fileInfo.innerHTML = `
+                    <strong>Selected:</strong> ${file.name}<br>
+                    <strong>Size:</strong> ${(file.size / 1024).toFixed(2)} KB<br>
+                    <strong>Type:</strong> ${file.type || 'Unknown'}
+                `;
+                fileInfo.classList.add('show');
+                document.getElementById('parseButton').disabled = !API_BASE;
+            }
+        });
+        
+        // Drag and drop
+        const uploadSection = document.getElementById('uploadSection');
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+        
+        uploadSection.addEventListener('dragleave', () => {
+            uploadSection.classList.remove('dragover');
+        });
+        
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                document.getElementById('fileInput').files = e.dataTransfer.files;
+                selectedFile = file;
+                const fileInfo = document.getElementById('fileInfo');
+                fileInfo.innerHTML = `
+                    <strong>Selected:</strong> ${file.name}<br>
+                    <strong>Size:</strong> ${(file.size / 1024).toFixed(2)} KB<br>
+                    <strong>Type:</strong> ${file.type || 'Unknown'}
+                `;
+                fileInfo.classList.add('show');
+                document.getElementById('parseButton').disabled = !API_BASE;
+            }
+        });
+        
+        // Parse button handler
+        document.getElementById('parseButton').addEventListener('click', async () => {
+            if (!selectedFile) return;
+            if (!API_BASE) {
+                alert('Please configure the server URL first');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            
+            // Show loading
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('success').style.display = 'none';
+            document.getElementById('results').classList.remove('show');
+            document.getElementById('parseButton').disabled = true;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/resume/parse`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(result.error || result.detail || 'Parsing failed');
+                }
+                
+                parseResult = result;
+                displayResults(result);
+                
+            } catch (error) {
+                let errorMessage = error.message;
+                let troubleshooting = '';
+                
+                if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError') || error.message.includes('CORS')) {
+                    errorMessage = 'Cannot connect to the server';
+                    troubleshooting = `
+                        <br><br><strong>🔧 Troubleshooting:</strong><br>
+                        <ul style="margin-top: 10px; padding-left: 20px;">
+                            <li>Verify the server URL is correct</li>
+                            <li>Check that the server is running and accessible</li>
+                            <li>If using HTTPS, ensure the server has a valid SSL certificate</li>
+                            <li>Check for CORS issues - the server must allow requests from this origin</li>
+                            <li>Try testing the connection: <code>${API_BASE}/api/resume/parser-info</code></li>
+                        </ul>
+                    `;
+                }
+                
+                document.getElementById('error').innerHTML = `
+                    <strong>❌ Error:</strong> ${errorMessage}<br>
+                    <small>API URL: ${API_BASE}/api/resume/parse</small>
+                    ${troubleshooting}
+                `;
+                document.getElementById('error').style.display = 'block';
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+                document.getElementById('parseButton').disabled = false;
+            }
+        });
+        
+        function displayResults(result) {
+            const data = result.data || result;
+            const summary = data.summary || {};
+            const prefill = data.prefill || {};
+            const profileDraft = data.profileDraft || {};
+            
+            // Display summary
+            displayPersonalInfo(summary);
+            displayWorkExperience(summary.workExperience || []);
+            displayEducation(summary.education || []);
+            displaySkills(summary.skills || []);
+            
+            // Display prefill data
+            document.getElementById('step1Prefill').innerHTML = 
+                '<pre>' + JSON.stringify(prefill.step1 || {}, null, 2) + '</pre>';
+            document.getElementById('step3Prefill').innerHTML = 
+                '<pre>' + JSON.stringify(prefill.step3 || {}, null, 2) + '</pre>';
+            
+            // Display profile draft
+            document.getElementById('profileDraft').innerHTML = 
+                '<pre>' + JSON.stringify(profileDraft, null, 2) + '</pre>';
+            
+            // Display raw JSON
+            document.getElementById('rawJson').innerHTML = 
+                '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+            
+            // Display metadata
+            const metadata = result.metadata || {};
+            document.getElementById('metadata').innerHTML = `
+                <strong>Parser Used:</strong> ${metadata.parserUsed || 'unknown'}<br>
+                <strong>Processing Time:</strong> ${metadata.processingTime || 0}ms<br>
+                <strong>Trace ID:</strong> ${metadata.traceId || 'N/A'}<br>
+                <strong>Timestamp:</strong> ${metadata.timestamp || new Date().toISOString()}
+            `;
+            
+            // Show results
+            document.getElementById('results').classList.add('show');
+            document.getElementById('success').innerHTML = 
+                '<strong>✅ Success!</strong> Resume parsed successfully. Review the extracted data below.';
+            document.getElementById('success').style.display = 'block';
+        }
+        
+        function displayPersonalInfo(summary) {
+            const container = document.getElementById('personalInfo');
+            container.innerHTML = '';
+            
+            const fields = [
+                { key: 'name', label: 'Full Name' },
+                { key: 'email', label: 'Email' },
+                { key: 'phone', label: 'Phone' },
+                { key: 'location', label: 'Location' }
+            ];
+            
+            fields.forEach(field => {
+                if (summary[field.key]) {
+                    const item = document.createElement('div');
+                    item.className = 'data-item';
+                    item.innerHTML = `
+                        <label>${field.label}</label>
+                        <value>${summary[field.key]}</value>
+                    `;
+                    container.appendChild(item);
+                }
+            });
+        }
+        
+        function displayWorkExperience(work) {
+            const container = document.getElementById('workExperience');
+            container.innerHTML = '';
+            
+            if (work.length === 0) {
+                container.innerHTML = '<p style="color: #6b7280;">No work experience found</p>';
+                return;
+            }
+            
+            work.forEach((job, index) => {
+                const item = document.createElement('div');
+                item.className = 'array-item';
+                item.innerHTML = `
+                    <h4>${job.title || job.jobTitle || `Position ${index + 1}`}</h4>
+                    <div class="data-grid">
+                        ${job.company ? `<div class="data-item"><label>Company</label><value>${job.company || job.companyName}</value></div>` : ''}
+                        ${job.location ? `<div class="data-item"><label>Location</label><value>${job.location}</value></div>` : ''}
+                        ${job.startDate ? `<div class="data-item"><label>Start Date</label><value>${job.startDate}</value></div>` : ''}
+                        ${job.endDate ? `<div class="data-item"><label>End Date</label><value>${job.endDate}</value></div>` : ''}
+                    </div>
+                    ${job.description ? `<p style="margin-top: 10px; color: #4b5563;">${job.description}</p>` : ''}
+                `;
+                container.appendChild(item);
+            });
+        }
+        
+        function displayEducation(education) {
+            const container = document.getElementById('education');
+            container.innerHTML = '';
+            
+            if (education.length === 0) {
+                container.innerHTML = '<p style="color: #6b7280;">No education found</p>';
+                return;
+            }
+            
+            education.forEach((edu, index) => {
+                const item = document.createElement('div');
+                item.className = 'array-item';
+                item.innerHTML = `
+                    <h4>${edu.degree || edu.highestDegree || `Education ${index + 1}`}</h4>
+                    <div class="data-grid">
+                        ${edu.institution ? `<div class="data-item"><label>Institution</label><value>${edu.institution || edu.institutionName}</value></div>` : ''}
+                        ${edu.major ? `<div class="data-item"><label>Major</label><value>${edu.major || edu.majorFieldOfStudy}</value></div>` : ''}
+                        ${edu.startDate ? `<div class="data-item"><label>Start Date</label><value>${edu.startDate || edu.attendanceStartDate}</value></div>` : ''}
+                        ${edu.graduationDate ? `<div class="data-item"><label>Graduation</label><value>${edu.graduationDate}</value></div>` : ''}
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+        
+        function displaySkills(skills) {
+            const container = document.getElementById('skills');
+            container.innerHTML = '';
+            
+            if (skills.length === 0) {
+                container.innerHTML = '<p style="color: #6b7280;">No skills found</p>';
+                return;
+            }
+            
+            const skillsList = skills.map(s => {
+                if (typeof s === 'string') return s;
+                return s.name || s.skill || '';
+            }).filter(Boolean);
+            
+            container.innerHTML = `
+                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                    ${skillsList.map(skill => 
+                        `<span style="background: white; padding: 8px 15px; border-radius: 20px; border: 2px solid #3b82f6; color: #1e3a8a; font-weight: 500;">${skill}</span>`
+                    ).join('')}
+                </div>
+            `;
+        }
+        
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            // Show selected tab
+            event.target.classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        }
+    </script>
+</body>
+</html>
+

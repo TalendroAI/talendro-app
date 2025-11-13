@@ -1,0 +1,12 @@
+{
+  "id": "step-1-upload",
+  "title": "Upload Resume",
+  "route": "/app/onboarding/step-1",
+  "nextRoute": "/app/onboarding/step-2",
+  "sections": []
+}
+
+
+
+
+

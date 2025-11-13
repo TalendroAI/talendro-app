@@ -1,0 +1,65 @@
+Integration
+
+Copy page
+
+Easily integrate Affinda’s Resume Parser.
+
+Parsing resumes and job descriptions using Affinda is easy using Affinda’s simple and flexible REST API. Our API Reference provides all the required information to start processing documents programmatically. The guide below provides information that is specific to Recruitment Technology to make it even easier.
+​
+Uploading documents
+To make your first API call, you’ll need to:
+Generate an API key (Settings → API Keys)
+Retrieve the Workspace identifier (Workspace -> Workflow -> Integrations)
+Retrieve the relevant Document Type identifier (Document Types -> Resume Parser (or other Document Type) -> Settings)
+
+cURL
+
+Python
+
+Node.js
+
+Copy
+
+Ask AI
+import { AffindaAPI, AffindaCredential } from "@affinda/affinda";
+import * as fs from "fs";
+
+const credential = new AffindaCredential("YOUR_API_KEY");
+const client = new AffindaAPI(credential);
+
+const file = fs.createReadStream("resume.pdf");
+
+client
+  .createDocument({
+    file,
+    workspace: "YOUR_WORKSPACE_IDENTIFIER",
+    documentType: "YOUR_DOCUMENT_TYPE_IDENTIFIER"
+  })
+  .then(doc => {
+    console.log("Parsed data:", doc.data);
+  })
+  .catch(err => console.error("Error:", err));
+​
+Optional parameters
+The above sample will allow users to upload a document using our default settings. However, users may wish to consider the use of other parameters when setting up their integrations.
+The below are commonly used parameters for the Resume Parsing use case. For the full list of parameters, see Uploading Documents.
+Synchronous vs. Asynchronous responses
+Customers can set wait to true / false depending if the parsing response needs to be returned synchronously or not.
+True: Response will be returned once parsing has completed and will include extracted data
+False: Response will be returned immediately with _meta _object only (which includes the unique identifier assigned to that document). Extracted data will need to be requested later (either through polling or webhooks). Recommended for customers who are bulk uploading.
+The default is true (synchronous parsing).
+Document Deletion
+For customers who do not wish to store their documents, options are available:
+expiryTime: Document will be automatically deleted at this time
+deleteAfterParse: No data is stored, and the document is deleted as soon as it is parsed
+For more information, see Data Retention.
+Compact
+By default, the Affinda API will return the full JSON response with associated metadata for each field. To reduce the amount of information in the data object, customers can choose to enable compact to return only the parsed value.
+Parsing Time
+For customers where speed of response is a key consideration, additional improvements can be achieved when uploading via API by setting the following parameters:
+wait: True
+enableValidationTool: False
+deleteAfterParse: True
+compact: True
+Search & Match integration
+For information about integrating Affinda’s Search & Match product, see here.

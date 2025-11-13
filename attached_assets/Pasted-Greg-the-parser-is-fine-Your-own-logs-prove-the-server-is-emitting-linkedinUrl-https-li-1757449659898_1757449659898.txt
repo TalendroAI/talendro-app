@@ -1,0 +1,225 @@
+Greg — the parser is fine. Your own logs prove the server is emitting:
+
+* `linkedinUrl`: `https://linkedin.com/in/kgregjackson`
+* `linkedin`: same value
+* `linkedIn`: same value
+* `currentTitle` / `currentJobTitle`: present
+
+So if the Step-3 UI still shows blanks, it’s almost certainly one (or both) of these:
+
+## The 2 most likely culprits
+
+### 1) Something in the Step-3 flow **overwrites** `localStorage.resumeData` after parsing
+
+You have a smoking gun in your logs: `GET /api/profile-draft 404` right after parse. Very common pattern:
+
+* Step-3 mounts → tries to fetch `/api/profile-draft`
+* It 404s → a “fallback init” runs that sets an **empty** draft and writes it to `localStorage`
+* That nukes the fresh `prefill.step3.linkedin*` keys the parser just wrote
+
+### 2) The form isn’t actually **reading** the value it has
+
+Typical variants:
+
+* Input is bound to `form.linkedIn` (capital I) but you set `linkedin` in state.
+* You only set `placeholder` instead of `value` (so the real value stays empty).
+* You call `useForm({ defaultValues })` *before* prefill arrives and never call `reset()`.
+* You read `resumeData.prefill.step3` but your saved shape is `resumeData.data.prefill.step3`.
+
+---
+
+## Quick, decisive fixes you can paste in now
+
+### A) **Stop overwriting** good data on 404 (front-end)
+
+Wherever you handle `/api/profile-draft`:
+
+```js
+try {
+  const resp = await fetch('/api/profile-draft');
+  if (!resp.ok) throw new Error('no server draft');  // <= don’t write blanks here
+  const serverDraft = await resp.json();
+  // merge into existing instead of replacing
+  safeMergeResumeData(serverDraft);
+} catch (e) {
+  console.warn('No server draft; keeping existing local prefill');
+  // DO NOT write an empty object to localStorage here
+}
+```
+
+Add a **safe merge** helper so nothing wipes prefill:
+
+```js
+function safeMergeResumeData(incoming) {
+  const key = 'resumeData';
+  const existing = JSON.parse(localStorage.getItem(key) || 'null') || {};
+  // Deep-ish merge but never erase truthy values with "", null, or undefined
+  const merged = structuredClone(existing);
+
+  function merge(dst, src) {
+    Object.entries(src || {}).forEach(([k, v]) => {
+      if (v && typeof v === 'object' && !Array.isArray(v)) {
+        dst[k] = dst[k] && typeof dst[k] === 'object' ? dst[k] : {};
+        merge(dst[k], v);
+      } else {
+        const keep = dst[k];
+        const incomingEmpty = v === '' || v == null;
+        dst[k] = incomingEmpty ? keep ?? v : v;
+      }
+    });
+  }
+  merge(merged, incoming);
+  localStorage.setItem(key, JSON.stringify(merged));
+}
+```
+
+### B) **Hydrate the form** with tolerant keys (front-end)
+
+If you use plain React state:
+
+```js
+// getStep3Prefill.js
+export function getStep3Prefill() {
+  const raw = JSON.parse(localStorage.getItem('resumeData') || 'null');
+  const bag = raw?.prefill?.step3 || raw?.data?.prefill?.step3 || {};
+  const linkedIn = bag.linkedin || bag.linkedIn || bag.linkedinUrl || '';
+  const currentJobTitle = bag.currentJobTitle || bag.currentTitle || '';
+  return { ...bag, linkedIn, currentJobTitle };
+}
+```
+
+```jsx
+// Onb3.js
+import { useEffect, useMemo, useState } from 'react';
+import { getStep3Prefill } from '../lib/getStep3Prefill';
+
+export default function Onb3() {
+  const pre = useMemo(() => getStep3Prefill(), []);
+  const [form, setForm] = useState({
+    fullLegalName: '',
+    email: '',
+    phone: '',
+    physicalAddress: '',
+    linkedin: '',
+    currentJobTitle: ''
+  });
+
+  useEffect(() => {
+    setForm(f => ({
+      ...f,
+      fullLegalName: pre.fullLegalName || '',
+      email: pre.email || '',
+      phone: pre.phone || '',
+      physicalAddress: pre.physicalAddress || '',
+      linkedin: pre.linkedIn || '',
+      currentJobTitle: pre.currentJobTitle || ''
+    }));
+  }, [pre]);
+
+  return (
+    <>
+      <input name="linkedin"
+             value={form.linkedin}
+             onChange={e => setForm(s => ({...s, linkedin: e.target.value}))}/>
+      <input name="currentJobTitle"
+             value={form.currentJobTitle}
+             onChange={e => setForm(s => ({...s, currentJobTitle: e.target.value}))}/>
+    </>
+  );
+}
+```
+
+If you use React Hook Form, **call `reset()`** after prefill arrives:
+
+```jsx
+const { register, reset } = useForm({ defaultValues: {} });
+
+useEffect(() => {
+  const pre = getStep3Prefill();
+  reset({
+    fullLegalName: pre.fullLegalName || '',
+    email: pre.email || '',
+    phone: pre.phone || '',
+    physicalAddress: pre.physicalAddress || '',
+    linkedin: pre.linkedIn || '',
+    currentJobTitle: pre.currentJobTitle || ''
+  });
+}, [reset]);
+```
+
+> Don’t rely on `defaultValues` alone; they’re only read on first render.
+
+### C) **Add a guard** to catch accidental nukes (temporary, but powerful)
+
+Paste this once in Step-3 (top of component) to see who’s overwriting:
+
+```js
+// TEMP GUARD: log any write that would remove linkedin/currentJobTitle
+(function guardLS(){
+  const _setItem = localStorage.setItem;
+  localStorage.setItem = function(k, v) {
+    if (k === 'resumeData') {
+      const prev = JSON.parse(localStorage.getItem(k) || 'null');
+      const next = (() => { try { return JSON.parse(v); } catch { return null; } })();
+      const prevS3 = prev?.prefill?.step3 || prev?.data?.prefill?.step3 || {};
+      const nextS3 = next?.prefill?.step3 || next?.data?.prefill?.step3 || {};
+      const prevLinked = prevS3.linkedin || prevS3.linkedIn || prevS3.linkedinUrl;
+      const nextLinked = nextS3.linkedin || nextS3.linkedIn || nextS3.linkedinUrl;
+      if (prevLinked && !nextLinked) {
+        console.warn('🚨 Blocking write that would drop LinkedIn!', { prevS3, nextS3, stack: new Error().stack });
+        return; // block destructive write
+      }
+    }
+    return _setItem.apply(this, arguments);
+  };
+})();
+```
+
+This will **prevent** any code path from wiping LinkedIn silently and show you the exact caller in the console stack.
+
+### D) (Optional) Add the missing API so the 404 doesn’t trigger bad fallbacks
+
+On the server:
+
+```js
+// routes/profile.js
+router.get('/profile-draft', (req, res) => {
+  const userId = req.user?.id || 'demo-user';
+  const draft = getDraft(userId); // however you store it after parse
+  if (!draft) return res.status(204).end();  // no content; don’t force clients to create blanks
+  res.json({ draft });
+});
+```
+
+And make sure the client **does not** write empty state when it gets 204/404.
+
+---
+
+## 30-second confirm checklist
+
+1. After parsing, in Step-3 console:
+
+```js
+const raw = JSON.parse(localStorage.getItem('resumeData')||'null');
+raw?.prefill?.step3?.linkedin || raw?.prefill?.step3?.linkedIn || raw?.prefill?.step3?.linkedinUrl
+```
+
+→ should print your LinkedIn URL.
+
+2. Check the actual input value in the DOM:
+
+```js
+document.querySelector('input[name="linkedin"]')?.value
+```
+
+→ should match the URL.
+
+If #1 is truthy but #2 is empty, it’s a **binding** problem. If #1 is empty right after it was present post-parse, something overwrote `localStorage` — the guard will catch it.
+
+---
+
+## My bet (based on your logs)
+
+That `GET /api/profile-draft 404` path is initializing an empty object and writing it to `localStorage`, wiping `prefill.step3.linkedin*`. Patch A + the guard will expose (and stop) that instantly.
+
+If you paste the current `<input>` block for LinkedIn and the fetch/initialization code for Step-3, I’ll rewrite them line-for-line so it hydrates correctly.

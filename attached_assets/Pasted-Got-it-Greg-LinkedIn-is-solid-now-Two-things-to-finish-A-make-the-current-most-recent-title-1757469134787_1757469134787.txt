@@ -1,0 +1,161 @@
+Got it, Greg — LinkedIn is solid now. Two things to finish: **(A) make the current/most-recent title deterministic**, and **(B) fix the Step-3 footer/nav**.
+
+---
+
+## A) Deterministic “Current/Most-Recent” Job Title
+
+**Why it flips:** Affinda’s `workExperience` can arrive in different shapes and orders. If you just take `[0]` or sort by raw strings, you’ll get inconsistent results.
+
+**Drop-in server patch (recommended)**
+*Add this helper where you build `profileDraft`/`prefill.step3` (after you have the Affinda `data`).*
+
+```js
+// ── helpers: normalize, detect "current", and pick title ─────────────────────
+function normYMD(x) {
+  if (!x) return null;
+  if (/present|current/i.test(String(x))) return null;
+  const s = String(x).trim();
+  const m = s.match(/^(\d{4})(?:-(\d{2}))?(?:-(\d{2}))?$/);
+  if (m) return `${m[1]}-${m[2] || '12'}-${m[3] || '31'}`;
+  const d = new Date(s);
+  return isNaN(+d) ? null : d.toISOString().slice(0,10);
+}
+const ts = (ymd, endBias=false) =>
+  !ymd ? (endBias ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY)
+       : +new Date(ymd);
+
+function normalizeWorkArray(d) {
+  const src = d?.workExperience ?? [];
+  const arr = Array.isArray(src)
+    ? src
+    : src?.listItem ?? Object.values(src ?? {});
+  return (arr || []).map(w => {
+    const title = w?.parsed?.workExperienceJobTitle?.value
+               || w?.parsed?.workExperienceJobTitle
+               || w?.jobTitle?.value || w?.jobTitle
+               || w?.position?.value || w?.position || '';
+    const startRaw = w?.parsed?.workExperienceStartDate?.parsed
+                  || w?.startDate?.parsed || w?.startDate || w?.dates?.start;
+    const endRaw   = w?.parsed?.workExperienceEndDate?.parsed
+                  || w?.endDate?.parsed || w?.endDate || w?.dates?.end;
+    const isCur = w?.end?.isCurrent === true || w?.isCurrent === true
+               || /present|current/i.test(String(endRaw || ''));
+    return {
+      title: String(title || '').trim(),
+      start: normYMD(startRaw),
+      end:   isCur ? null : normYMD(endRaw),
+      isCur
+    };
+  }).filter(r => r.title);
+}
+
+function pickCurrentTitle(d) {
+  const rows = normalizeWorkArray(d);
+  if (!rows.length) return '';
+
+  // 1) prefer explicitly current; tiebreak = latest start
+  const cur = rows.filter(r => r.isCur);
+  if (cur.length) {
+    cur.sort((a,b) => ts(b.start) - ts(a.start));
+    return cur[0].title;
+  }
+  // 2) else any open-ended; tiebreak = latest start
+  const open = rows.filter(r => !r.end);
+  if (open.length) {
+    open.sort((a,b) => ts(b.start) - ts(a.start));
+    return open[0].title;
+  }
+  // 3) else latest end; tiebreak = latest start
+  rows.sort((a,b) => (ts(b.end,true) - ts(a.end,true)) || (ts(b.start) - ts(a.start)));
+  return rows[0].title;
+}
+```
+
+Then set **both synonyms** when building prefill (so any UI binding works):
+
+```js
+const currentTitle = pickCurrentTitle(affindaData?.data);
+prefill.step3 = {
+  ...prefill.step3,
+  currentJobTitle: currentTitle || prefill.step3?.currentJobTitle || '',
+  currentTitle:    currentTitle || prefill.step3?.currentTitle || '',
+};
+```
+
+**Client safety-net (only if server patch can’t go in today)**
+*Add this to `Onb3.js` after your first hydration effect:*
+
+```js
+useEffect(() => {
+  if (formData.currentJobTitle) return;   // already filled
+  try {
+    const raw = JSON.parse(localStorage.getItem('resumeData') || 'null');
+    const d   = raw?.data || raw || {};
+    // inline lite picker
+    const src = d?.workExperience ?? [];
+    const arr = Array.isArray(src) ? src : src?.listItem ?? Object.values(src ?? {});
+    const rows = (arr || []).map(w => {
+      const title = w?.parsed?.workExperienceJobTitle?.value
+                 || w?.parsed?.workExperienceJobTitle
+                 || w?.jobTitle?.value || w?.jobTitle
+                 || w?.position?.value || w?.position || '';
+      const start = (w?.parsed?.workExperienceStartDate?.parsed) || w?.startDate || w?.dates?.start;
+      const end   = (w?.parsed?.workExperienceEndDate?.parsed)   || w?.endDate   || w?.dates?.end;
+      const isCur = w?.end?.isCurrent === true || /present|current/i.test(String(end||''));
+      return { title, start, end: isCur ? null : end, isCur };
+    }).filter(r => r.title);
+    if (!rows.length) return;
+    const pick = (() => {
+      const cur = rows.filter(r => r.isCur);
+      if (cur.length) return cur.sort((a,b)=> new Date(b.start)-new Date(a.start))[0].title;
+      const open = rows.filter(r => !r.end);
+      if (open.length) return open.sort((a,b)=> new Date(b.start)-new Date(a.start))[0].title;
+      return rows.sort((a,b)=> new Date(b.end||0)-new Date(a.end||0))[0].title;
+    })();
+    if (pick) setFormData(f => ({ ...f, currentJobTitle: f.currentJobTitle || pick }));
+  } catch (e) {
+    console.warn('Client current-title fallback failed:', e);
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [formData.currentJobTitle]);
+```
+
+---
+
+## B) Step-3 Footer / Nav Fix
+
+From your screenshot, two things:
+
+1. **Disabled “Continue to Step 4”**
+   Your button is grey because required selects are empty (`yearsExperience`, `salaryRange`, `availability`). That’s OK, but ensure the footer **doesn’t look like part of the form** or overlap.
+
+2. **Footer consistency**
+   Keep a single `Footer` component site-wide; avoid page-local tweaks.
+
+**What to ask Replit to do**
+
+* Wrap Step-3 content with bottom padding so the footer never crowds the CTA:
+
+```jsx
+<section className="pb-28 md:pb-36">  {/* add this padding */}
+  {/* …your Step-3 form… */}
+</section>
+```
+
+* Use the shared `Footer` everywhere; don’t duplicate links in Step-3.
+  Canonical footer links (same order across site):
+  `How It Works · Services · Pricing · About · Resources · Contact · Veterans Program · Security · Privacy · Terms`
+  Keep the tagline: `🇺🇸 American-Built • 🎖️ Veteran-Led • ✔ Recruiter-Tested`.
+
+* If you programmatically disable the CTA, also add an inline helper under each required select:
+  “Please select a range” / “Please choose availability” — this avoids the “button looks broken” vibe.
+
+---
+
+## Quick QA checklist for them
+
+1. Upload your résumé → **LinkedIn** shows; **Current Title** shows the same value across reloads (no flips).
+2. Edit Current Title manually → navigate away/back → **your edit persists**.
+3. Step-3 page on a small laptop → no footer overlap; CTA visible; footer looks identical to other pages.
+
+If you want, I can hand you a single updated `Onb3.js` that includes the client fallback + padding + tiny UX helpers, but the server patch above is the real fix for the title wobble.

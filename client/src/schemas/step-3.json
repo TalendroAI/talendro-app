@@ -1,0 +1,194 @@
+{
+  "id": "step-3",
+  "title": "Personal Information",
+  "route": "/app/onboarding/step-3",
+  "nextRoute": "/app/onboarding/step-4",
+  "sections": [
+    {
+      "title": "Contact & Personal",
+      "fields": [
+        { "key": "fullLegalName", "label": "Full Legal Name", "type": "text", "required": true, "prefillKeys": ["prefill.step3.fullLegalName"] },
+        { "key": "preferredFirstName", "label": "Preferred First Name", "type": "text", "required": true, "prefillKeys": ["prefill.step3.preferredFirstName"], "hasNAButton": true },
+        { "key": "maidenName", "label": "Maiden Name", "type": "text", "required": true, "prefillKeys": ["prefill.step3.maidenName"] },
+        { "key": "previouslyUsedNames", "label": "Previously Used Names", "type": "text", "required": true, "prefillKeys": ["prefill.step3.previouslyUsedNames"], "hasNAButton": true },
+        { "key": "email", "label": "Email", "type": "email", "required": true, "prefillKeys": ["prefill.step3.email"] },
+        { "key": "phone", "label": "Phone", "type": "tel", "required": true, "prefillKeys": ["prefill.step3.phone"] },
+        { "key": "linkedinUrl", "label": "LinkedIn URL", "type": "text", "required": true, "prefillKeys": ["prefill.step3.linkedinUrl"], "hasNAButton": true },
+        { "key": "website", "label": "Website", "type": "text", "required": true, "prefillKeys": ["prefill.step3.website"], "hasNAButton": true },
+        { "key": "streetAddress", "label": "Street Address", "type": "text", "required": true, "prefillKeys": ["prefill.step3.streetAddress"] },
+        { "key": "city", "label": "City", "type": "text", "required": true, "prefillKeys": ["prefill.step3.city"] },
+        { "key": "stateRegion", "label": "State/Region", "type": "select", "required": true, "options": [
+          {"value":"","label":"- Select -"},
+          {"value":"AL","label":"Alabama"},{"value":"AK","label":"Alaska"},{"value":"AZ","label":"Arizona"},{"value":"AR","label":"Arkansas"},
+          {"value":"CA","label":"California"},{"value":"CO","label":"Colorado"},{"value":"CT","label":"Connecticut"},{"value":"DE","label":"Delaware"},
+          {"value":"FL","label":"Florida"},{"value":"GA","label":"Georgia"},{"value":"HI","label":"Hawaii"},{"value":"ID","label":"Idaho"},
+          {"value":"IL","label":"Illinois"},{"value":"IN","label":"Indiana"},{"value":"IA","label":"Iowa"},{"value":"KS","label":"Kansas"},
+          {"value":"KY","label":"Kentucky"},{"value":"LA","label":"Louisiana"},{"value":"ME","label":"Maine"},{"value":"MD","label":"Maryland"},
+          {"value":"MA","label":"Massachusetts"},{"value":"MI","label":"Michigan"},{"value":"MN","label":"Minnesota"},{"value":"MS","label":"Mississippi"},
+          {"value":"MO","label":"Missouri"},{"value":"MT","label":"Montana"},{"value":"NE","label":"Nebraska"},{"value":"NV","label":"Nevada"},
+          {"value":"NH","label":"New Hampshire"},{"value":"NJ","label":"New Jersey"},{"value":"NM","label":"New Mexico"},{"value":"NY","label":"New York"},
+          {"value":"NC","label":"North Carolina"},{"value":"ND","label":"North Dakota"},{"value":"OH","label":"Ohio"},{"value":"OK","label":"Oklahoma"},
+          {"value":"OR","label":"Oregon"},{"value":"PA","label":"Pennsylvania"},{"value":"RI","label":"Rhode Island"},{"value":"SC","label":"South Carolina"},
+          {"value":"SD","label":"South Dakota"},{"value":"TN","label":"Tennessee"},{"value":"TX","label":"Texas"},{"value":"UT","label":"Utah"},
+          {"value":"VT","label":"Vermont"},{"value":"VA","label":"Virginia"},{"value":"WA","label":"Washington"},{"value":"WV","label":"West Virginia"},
+          {"value":"WI","label":"Wisconsin"},{"value":"WY","label":"Wyoming"}
+        ], "prefillKeys": ["prefill.step3.stateRegion"] },
+        { "key": "postalCode", "label": "Postal Code", "type": "text", "required": true, "prefillKeys": ["prefill.step3.postalCode"] },
+        { "key": "country", "label": "Country", "type": "text", "required": true, "prefillKeys": ["prefill.step3.country"] },
+        { "key": "ssnLast4", "label": "Social Security Number (last 4)", "type": "text", "required": true, "prefillKeys": ["prefill.step3.ssnLast4"] },
+        { "key": "dateOfBirth", "label": "Date of Birth", "type": "date", "required": true, "prefillKeys": ["prefill.step3.dateOfBirth"] }
+      ]
+    },
+    {
+      "title": "Driver's License",
+      "fields": [
+        { "key": "driversLicenseNumber", "label": "Driver's License Number", "type": "text", "required": true, "prefillKeys": ["prefill.step3.driversLicenseNumber"] },
+        { "key": "driversLicenseState", "label": "Driver's License State", "type": "select", "required": true, "options": [
+          {"value":"","label":"- Select -"},
+          {"value":"AL","label":"Alabama"},{"value":"AK","label":"Alaska"},{"value":"AZ","label":"Arizona"},{"value":"AR","label":"Arkansas"},
+          {"value":"CA","label":"California"},{"value":"CO","label":"Colorado"},{"value":"CT","label":"Connecticut"},{"value":"DE","label":"Delaware"},
+          {"value":"FL","label":"Florida"},{"value":"GA","label":"Georgia"},{"value":"HI","label":"Hawaii"},{"value":"ID","label":"Idaho"},
+          {"value":"IL","label":"Illinois"},{"value":"IN","label":"Indiana"},{"value":"IA","label":"Iowa"},{"value":"KS","label":"Kansas"},
+          {"value":"KY","label":"Kentucky"},{"value":"LA","label":"Louisiana"},{"value":"ME","label":"Maine"},{"value":"MD","label":"Maryland"},
+          {"value":"MA","label":"Massachusetts"},{"value":"MI","label":"Michigan"},{"value":"MN","label":"Minnesota"},{"value":"MS","label":"Mississippi"},
+          {"value":"MO","label":"Missouri"},{"value":"MT","label":"Montana"},{"value":"NE","label":"Nebraska"},{"value":"NV","label":"Nevada"},
+          {"value":"NH","label":"New Hampshire"},{"value":"NJ","label":"New Jersey"},{"value":"NM","label":"New Mexico"},{"value":"NY","label":"New York"},
+          {"value":"NC","label":"North Carolina"},{"value":"ND","label":"North Dakota"},{"value":"OH","label":"Ohio"},{"value":"OK","label":"Oklahoma"},
+          {"value":"OR","label":"Oregon"},{"value":"PA","label":"Pennsylvania"},{"value":"RI","label":"Rhode Island"},{"value":"SC","label":"South Carolina"},
+          {"value":"SD","label":"South Dakota"},{"value":"TN","label":"Tennessee"},{"value":"TX","label":"Texas"},{"value":"UT","label":"Utah"},
+          {"value":"VT","label":"Vermont"},{"value":"VA","label":"Virginia"},{"value":"WA","label":"Washington"},{"value":"WV","label":"West Virginia"},
+          {"value":"WI","label":"Wisconsin"},{"value":"WY","label":"Wyoming"}
+        ], "prefillKeys": ["prefill.step3.driversLicenseState"] }
+      ]
+    },
+    {
+      "title": "Work Snapshot",
+      "fields": [
+        { "key": "currentEmployer", "label": "Current / Most Recent Employer", "type": "text", "required": true, "prefillKeys": ["prefill.step3.currentEmployer"] },
+        { "key": "currentJobTitle", "label": "Current / Most Recent Job Title", "type": "text", "required": true, "prefillKeys": ["prefill.step3.currentJobTitle"] },
+        { "key": "yearsExperience", "label": "Years Experience", "type": "text", "required": true, "prefillKeys": ["prefill.step3.yearsExperience"] },
+        { "key": "workAuthorization", "label": "Work Authorization", "type": "select", "required": true, "options": [
+          {"value":"","label":"- Select -"},
+          {"value":"citizen","label":"U.S. Citizen"},
+          {"value":"permanent-resident","label":"Permanent Resident"},
+          {"value":"visa","label":"Visa Holder"},
+          {"value":"other","label":"Other"}
+        ], "prefillKeys": ["prefill.step3.workAuthorization"] },
+        { "key": "visaStatus", "label": "Visa Status", "type": "select", "required": true, "options": [
+          {"value":"","label":"- Select -"},
+          {"value":"h1b","label":"H-1B"},
+          {"value":"f1","label":"F-1"},
+          {"value":"l1","label":"L-1"},
+          {"value":"other","label":"Other"},
+          {"value":"not-applicable","label":"Not Applicable"}
+        ], "prefillKeys": ["prefill.step3.visaStatus"] },
+        { "key": "securityClearance", "label": "Security Clearance", "type": "select", "required": true, "options": [
+          {"value":"","label":"- Select -"},
+          {"value":"none","label":"None"},
+          {"value":"public-trust","label":"Public Trust"},
+          {"value":"secret","label":"Secret"},
+          {"value":"top-secret","label":"Top Secret"},
+          {"value":"ts-sci","label":"TS/SCI"}
+        ], "prefillKeys": ["prefill.step3.securityClearance"] },
+        { "key": "willingToRelocate", "label": "Willing to Relocate", "type": "select", "required": true, "options": [
+          {"value":"","label":"- Select -"},
+          {"value":"yes","label":"Yes"},
+          {"value":"no","label":"No"},
+          {"value":"maybe","label":"Maybe"}
+        ], "prefillKeys": ["prefill.step3.willingToRelocate"] },
+        { "key": "willingToTravel", "label": "Willing to Travel", "type": "select", "required": true, "options": [
+          {"value":"","label":"- Select -"},
+          {"value":"yes","label":"Yes"},
+          {"value":"no","label":"No"}
+        ], "prefillKeys": ["prefill.step3.willingToTravel"] },
+        { "key": "veteranStatus", "label": "Veteran Status", "type": "select", "required": true, "options": [
+          {"value":"","label":"- Select -"},
+          {"value":"not-veteran","label":"Not a Veteran"},
+          {"value":"veteran","label":"Veteran"},
+          {"value":"disabled-veteran","label":"Disabled Veteran"},
+          {"value":"prefer-not-to-say","label":"Prefer not to say"}
+        ], "prefillKeys": ["prefill.step3.veteranStatus"] }
+      ]
+    },
+    {
+      "title": "Voluntary Self-Identification",
+      "fields": [
+        { "key": "gender", "label": "Gender", "type": "select", "required": true, "options": [
+          {"value":"","label":"- Select -"},
+          {"value":"male","label":"Male"},
+          {"value":"female","label":"Female"},
+          {"value":"non-binary","label":"Non-binary"},
+          {"value":"prefer-not-to-say","label":"Prefer not to say"}
+        ], "prefillKeys": ["prefill.step3.gender"] },
+        { "key": "hispanicLatino", "label": "Are you of Hispanic, Latino, or Spanish origin", "type": "select", "required": true, "options": [
+          {"value":"","label":"- Select -"},
+          {"value":"yes","label":"Yes"},
+          {"value":"no","label":"No"},
+          {"value":"decline","label":"I do not wish/decline to self-identify"}
+        ], "prefillKeys": ["prefill.step3.hispanicLatino"] },
+        { "key": "race", "label": "What is your race (select all that apply)", "type": "multiselect", "required": true, "options": [
+          {"value":"white","label":"White"},
+          {"value":"black-african-american","label":"Black or African American"},
+          {"value":"native-american","label":"Native American or Alaskan Native"},
+          {"value":"asian","label":"Asian"},
+          {"value":"pacific-islander","label":"Native Hawaiian, Samoan, or other Pacific Islander"},
+          {"value":"other","label":"Other"},
+          {"value":"decline","label":"I do not wish/decline to self-identify"}
+        ], "prefillKeys": ["prefill.step3.race"] },
+        { "key": "disabilityDisclosure", "label": "Disability Disclosure", "type": "select", "required": true, "options": [
+          {"value":"","label":"- Select -"},
+          {"value":"yes","label":"Yes, I have a disability"},
+          {"value":"no","label":"No, I do not have a disability"},
+          {"value":"decline","label":"I do not wish to answer"}
+        ], "prefillKeys": ["prefill.step3.disabilityDisclosure"] }
+      ]
+    },
+    {
+      "title": "Education",
+      "fields": [
+        { "key": "highestDegree", "label": "Highest Degree/Diploma/Certificate Completed", "type": "text", "required": true, "prefillKeys": ["prefill.step3.highestDegree"] },
+        { "key": "institutionName", "label": "Name of Educational Institution", "type": "text", "required": true, "prefillKeys": ["prefill.step3.institutionName"] },
+        { "key": "institutionCity", "label": "Institution City", "type": "text", "required": true, "prefillKeys": ["prefill.step3.institutionCity"] },
+        { "key": "institutionState", "label": "Institution State", "type": "select", "required": true, "options": [
+          {"value":"","label":"- Select -"},
+          {"value":"AL","label":"Alabama"},{"value":"AK","label":"Alaska"},{"value":"AZ","label":"Arizona"},{"value":"AR","label":"Arkansas"},
+          {"value":"CA","label":"California"},{"value":"CO","label":"Colorado"},{"value":"CT","label":"Connecticut"},{"value":"DE","label":"Delaware"},
+          {"value":"FL","label":"Florida"},{"value":"GA","label":"Georgia"},{"value":"HI","label":"Hawaii"},{"value":"ID","label":"Idaho"},
+          {"value":"IL","label":"Illinois"},{"value":"IN","label":"Indiana"},{"value":"IA","label":"Iowa"},{"value":"KS","label":"Kansas"},
+          {"value":"KY","label":"Kentucky"},{"value":"LA","label":"Louisiana"},{"value":"ME","label":"Maine"},{"value":"MD","label":"Maryland"},
+          {"value":"MA","label":"Massachusetts"},{"value":"MI","label":"Michigan"},{"value":"MN","label":"Minnesota"},{"value":"MS","label":"Mississippi"},
+          {"value":"MO","label":"Missouri"},{"value":"MT","label":"Montana"},{"value":"NE","label":"Nebraska"},{"value":"NV","label":"Nevada"},
+          {"value":"NH","label":"New Hampshire"},{"value":"NJ","label":"New Jersey"},{"value":"NM","label":"New Mexico"},{"value":"NY","label":"New York"},
+          {"value":"NC","label":"North Carolina"},{"value":"ND","label":"North Dakota"},{"value":"OH","label":"Ohio"},{"value":"OK","label":"Oklahoma"},
+          {"value":"OR","label":"Oregon"},{"value":"PA","label":"Pennsylvania"},{"value":"RI","label":"Rhode Island"},{"value":"SC","label":"South Carolina"},
+          {"value":"SD","label":"South Dakota"},{"value":"TN","label":"Tennessee"},{"value":"TX","label":"Texas"},{"value":"UT","label":"Utah"},
+          {"value":"VT","label":"Vermont"},{"value":"VA","label":"Virginia"},{"value":"WA","label":"Washington"},{"value":"WV","label":"West Virginia"},
+          {"value":"WI","label":"Wisconsin"},{"value":"WY","label":"Wyoming"}
+        ], "prefillKeys": ["prefill.step3.institutionState"] },
+        { "key": "majorFieldOfStudy", "label": "Major/Field of Study", "type": "text", "required": true, "prefillKeys": ["prefill.step3.majorFieldOfStudy"] },
+        { "key": "datesAttendedStart", "label": "Dates Attended (start)", "type": "date", "required": true, "prefillKeys": ["prefill.step3.datesAttendedStart"] },
+        { "key": "datesAttendedEnd", "label": "Dates Attended (end)", "type": "date", "required": true, "prefillKeys": ["prefill.step3.datesAttendedEnd"] },
+        { "key": "graduationDate", "label": "Graduation Date (month)", "type": "date", "required": true, "prefillKeys": ["prefill.step3.graduationDate"] }
+      ]
+    },
+    {
+      "title": "Employment Preferences",
+      "fields": [
+        { "key": "earliestStartDate", "label": "Earliest Start Date", "type": "date", "required": true, "prefillKeys": ["prefill.step3.earliestStartDate"] },
+        { "key": "workArrangement", "label": "Work Arrangement", "type": "select", "required": true, "options": [
+          {"value":"","label":"- Select -"},
+          {"value":"onsite","label":"Onsite"},
+          {"value":"remote","label":"Remote"},
+          {"value":"hybrid","label":"Hybrid"}
+        ], "prefillKeys": ["prefill.step3.workArrangement"] },
+        { "key": "employmentType", "label": "Employment Type", "type": "select", "required": true, "options": [
+          {"value":"","label":"- Select -"},
+          {"value":"full-time","label":"Full-time"},
+          {"value":"part-time","label":"Part-time"},
+          {"value":"contract","label":"Contract"},
+          {"value":"temporary","label":"Temporary"}
+        ], "prefillKeys": ["prefill.step3.employmentType"] }
+      ]
+    }
+  ]
+}

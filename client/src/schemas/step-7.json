@@ -1,0 +1,44 @@
+{
+  "id": "step-7",
+  "title": "Optional Disclosures & Final Review",
+  "route": "/app/onboarding/step-7",
+  "nextRoute": "/checkout",
+  "fields": [
+    {
+      "key": "diversityProvide",
+      "label": "I choose to provide Diversity information",
+      "type": "checkbox",
+      "required": false,
+      "testId": "div-provide"
+    },
+    { "key": "genderIdentity", "label": "Gender Identity (optional)", "type": "select", "required": false, "options": [
+      {"value":"decline","label":"Prefer not to say"},
+      {"value":"female","label":"Female"},
+      {"value":"male","label":"Male"},
+      {"value":"nonbinary","label":"Non-binary"},
+      {"value":"self-describe","label":"Self-describe"}
+    ], "testId": "div-gender" },
+    { "key": "raceEthnicity", "label": "Race/Ethnicity (optional)", "type": "select", "required": false, "options": [
+      {"value":"decline","label":"Prefer not to say"},
+      {"value":"asian","label":"Asian"},
+      {"value":"black","label":"Black or African American"},
+      {"value":"hispanic","label":"Hispanic or Latino"},
+      {"value":"white","label":"White"},
+      {"value":"native","label":"American Indian or Alaska Native"},
+      {"value":"pacific","label":"Native Hawaiian or Other Pacific Islander"},
+      {"value":"two+","label":"Two or More Races"}
+    ], "testId": "div-race" },
+    { "key": "disabilityStatus", "label": "Disability Status (optional)", "type": "select", "required": false, "options": [
+      {"value":"decline","label":"Prefer not to say"},
+      {"value":"yes","label":"Yes"},
+      {"value":"no","label":"No"}
+    ], "testId": "div-disability" },
+    { "key": "veteranStatus", "label": "Protected Veteran Status (optional)", "type": "select", "required": false, "options": [
+      {"value":"decline","label":"Prefer not to say"},
+      {"value":"yes","label":"Yes"},
+      {"value":"no","label":"No"}
+    ], "testId": "div-veteran" },
+
+    { "key": "approveProfile", "label": "I have reviewed and approve my profile for applications", "type": "checkbox", "required": true, "testId": "approve-profile" }
+  ]
+}

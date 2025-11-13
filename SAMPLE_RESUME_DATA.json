@@ -1,0 +1,85 @@
+{
+  "jobId": "3892520c-3421-4dda-a89c-c726c23b7db4",
+  "status": "complete",
+  "confidence": 0.9,
+  "prefill": {
+    "step3": {
+      "fullLegalName": "K. Greg Jackson",
+      "preferredFirstName": "",
+      "maidenName": "",
+      "previouslyUsedNames": "",
+      "email": "kgregjackson@gmail.com",
+      "phone": "571-287-0086",
+      "linkedinUrl": "https://linkedin.com/in/kgregjackson",
+      "website": "",
+      "streetAddress": "",
+      "city": "Orlando",
+      "stateRegion": "FL",
+      "postalCode": "",
+      "county": "",
+      "country": "US",
+      "driversLicenseNumber": "",
+      "driversLicenseState": "",
+      "dateOfBirth": "",
+      "ssnLast4": "",
+      "highestDegree": "Bachelor's Degree",
+      "completedAsOfToday": "Yes",
+      "majorFieldOfStudy": "Computer Science",
+      "gpa": "3.8",
+      "institutionName": "University of Central Florida",
+      "institutionAddress": "",
+      "institutionCity": "Orlando",
+      "institutionState": "FL",
+      "attendanceStartDate": "2016-08-01",
+      "graduationDate": "2020-05-01"
+    }
+  },
+  "profileDraft": {
+    "personalInfo": {
+      "fullName": "K. Greg Jackson",
+      "email": "kgregjackson@gmail.com",
+      "phone": "571-287-0086",
+      "location": "Orlando, FL"
+    },
+    "education": [
+      {
+        "institution": "University of Central Florida",
+        "degree": "Bachelor's Degree",
+        "fieldOfStudy": "Computer Science",
+        "graduationDate": "2020-05-01",
+        "gpa": "3.8"
+      }
+    ],
+    "workExperience": [
+      {
+        "company": "Amazon",
+        "position": "Delivery Executive",
+        "startDate": "2020-06-01",
+        "endDate": "2023-12-31",
+        "description": "Managed delivery operations and customer satisfaction"
+      },
+      {
+        "company": "Tech Solutions Inc",
+        "position": "Software Developer",
+        "startDate": "2018-01-01",
+        "endDate": "2020-05-31",
+        "description": "Developed web applications using React and Node.js"
+      },
+      {
+        "company": "StartupXYZ",
+        "position": "Junior Developer",
+        "startDate": "2017-06-01",
+        "endDate": "2017-12-31",
+        "description": "Assisted in frontend development and testing"
+      }
+    ],
+    "skills": [
+      "JavaScript",
+      "React",
+      "Node.js",
+      "Python",
+      "SQL",
+      "Git"
+    ]
+  }
+}

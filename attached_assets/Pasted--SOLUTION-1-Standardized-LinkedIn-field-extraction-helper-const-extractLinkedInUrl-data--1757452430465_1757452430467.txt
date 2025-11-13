@@ -1,0 +1,190 @@
+// SOLUTION 1: Standardized LinkedIn field extraction helper
+const extractLinkedInUrl = (data) => {
+  const possibleFields = [
+    'linkedin', 'linkedIn', 'linkedinUrl', 'LinkedIn', 'linkedin_url'
+  ];
+  
+  for (const field of possibleFields) {
+    const value = data?.[field];
+    if (value && typeof value === 'string' && value.trim()) {
+      return value.trim();
+    }
+  }
+  return '';
+};
+
+// SOLUTION 2: Enhanced initialization with proper state sync
+const pre = useMemo(() => getStep3Prefill(), []);
+
+const [formData, setFormData] = useState({
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  location: '',
+  linkedin: '',
+  currentJobTitle: '',
+  yearsExperience: '',
+  salaryRange: '',
+  availability: ''
+});
+
+// SOLUTION 3: Consolidated data loading effect
+useEffect(() => {
+  console.log('=== ONBOARDING STEP 3 INITIALIZATION ===');
+  
+  const loadFormData = async () => {
+    // First, load from prefill
+    console.log('Pre-fill data:', pre);
+    
+    // Parse name into first/last
+    const fullName = pre.fullLegalName || '';
+    const [first='', ...rest] = String(fullName).trim().split(/\s+/);
+    const last = rest.join(' ');
+    
+    let initialData = {
+      firstName: first,
+      lastName: last,
+      email: pre.email || '',
+      phone: pre.phone || '',
+      location: pre.physicalAddress || '',
+      linkedin: extractLinkedInUrl(pre), // Use helper function
+      currentJobTitle: pre.currentJobTitle || ''
+    };
+    
+    // Then try to fetch and merge server data
+    try {
+      console.log('Fetching profile draft...');
+      const resp = await fetch('/api/profile/draft');
+      if (resp.ok) {
+        const serverDraft = await resp.json();
+        console.log('Got server draft:', serverDraft);
+        
+        // Safely merge server data, prioritizing server values
+        const mergedData = {
+          ...initialData,
+          firstName: serverDraft.firstName || initialData.firstName,
+          lastName: serverDraft.lastName || initialData.lastName,
+          email: serverDraft.email || initialData.email,
+          phone: serverDraft.phone || initialData.phone,
+          location: serverDraft.location || initialData.location,
+          linkedin: extractLinkedInUrl(serverDraft) || initialData.linkedin,
+          currentJobTitle: serverDraft.currentJobTitle || initialData.currentJobTitle
+        };
+        
+        console.log('Merged data with server draft:', mergedData);
+        
+        // Update both localStorage and form state
+        safeMergeResumeData(serverDraft);
+        setFormData(prev => ({ ...prev, ...mergedData }));
+        
+      } else if (resp.status === 204) {
+        console.log('No server draft available (204), using prefill only');
+        setFormData(prev => ({ ...prev, ...initialData }));
+      } else {
+        console.warn('Profile draft fetch failed:', resp.status);
+        setFormData(prev => ({ ...prev, ...initialData }));
+      }
+    } catch (e) {
+      console.warn('Server fetch failed, using prefill only:', e.message);
+      setFormData(prev => ({ ...prev, ...initialData }));
+    }
+  };
+  
+  loadFormData();
+}, [pre]);
+
+// SOLUTION 4: Add localStorage change listener for external updates
+useEffect(() => {
+  const handleStorageChange = () => {
+    console.log('localStorage changed, checking for LinkedIn updates...');
+    const current = JSON.parse(localStorage.getItem('resumeData') || 'null');
+    if (current?.prefill?.step3) {
+      const newLinkedIn = extractLinkedInUrl(current.prefill.step3);
+      const newJobTitle = current.prefill.step3.currentJobTitle;
+      
+      if (newLinkedIn && newLinkedIn !== formData.linkedin) {
+        console.log('Updating LinkedIn from localStorage:', newLinkedIn);
+        setFormData(prev => ({ ...prev, linkedin: newLinkedIn }));
+      }
+      
+      if (newJobTitle && newJobTitle !== formData.currentJobTitle) {
+        console.log('Updating job title from localStorage:', newJobTitle);
+        setFormData(prev => ({ ...prev, currentJobTitle: newJobTitle }));
+      }
+    }
+  };
+
+  // Listen for storage events (from other tabs/windows)
+  window.addEventListener('storage', handleStorageChange);
+  
+  // Also check periodically for programmatic localStorage changes
+  const interval = setInterval(handleStorageChange, 1000);
+  
+  return () => {
+    window.removeEventListener('storage', handleStorageChange);
+    clearInterval(interval);
+  };
+}, [formData.linkedin, formData.currentJobTitle]);
+
+// SOLUTION 5: Modified localStorage protection (less aggressive)
+useEffect(() => {
+  const _setItem = localStorage.setItem;
+  localStorage.setItem = function(k, v) {
+    if (k === 'resumeData') {
+      try {
+        const prev = JSON.parse(localStorage.getItem(k) || 'null');
+        const next = JSON.parse(v);
+        
+        const prevLinked = extractLinkedInUrl(prev?.prefill?.step3 || {});
+        const nextLinked = extractLinkedInUrl(next?.prefill?.step3 || {});
+        
+        // Only block if we're losing a valid LinkedIn URL and not replacing it
+        if (prevLinked && !nextLinked && !next?.prefill?.step3?.currentJobTitle) {
+          console.warn('🚨 Potentially destructive write blocked', { prevLinked, nextLinked });
+          return;
+        }
+        
+        console.log('✅ Allowing localStorage write', { prevLinked, nextLinked });
+      } catch (e) {
+        console.warn('Error checking localStorage write:', e);
+      }
+    }
+    return _setItem.apply(this, arguments);
+  };
+}, []);
+
+// SOLUTION 6: Enhanced debug section with force reload button
+const debugSection = (
+  <div style={{background: '#ffffcc', padding: '10px', margin: '10px 0', fontSize: '12px', border: '1px solid #ccc'}}>
+    <strong>DEBUG INFO:</strong><br/>
+    LinkedIn Form Value: "{formData.linkedin}"<br/>
+    Job Title Form Value: "{formData.currentJobTitle}"<br/>
+    Prefill LinkedIn: "{extractLinkedInUrl(pre)}"<br/>
+    <button onClick={() => {
+      const raw = JSON.parse(localStorage.getItem('resumeData')||'null');
+      console.log('Current localStorage resumeData:', raw);
+      console.log('All LinkedIn variants:', {
+        linkedin: raw?.prefill?.step3?.linkedin,
+        linkedIn: raw?.prefill?.step3?.linkedIn,
+        linkedinUrl: raw?.prefill?.step3?.linkedinUrl,
+        extracted: extractLinkedInUrl(raw?.prefill?.step3 || {})
+      });
+      console.log('Input DOM value:', document.querySelector('input[name="linkedin"]')?.value);
+    }}>Check All LinkedIn Fields</button>
+    
+    <button onClick={() => {
+      const raw = JSON.parse(localStorage.getItem('resumeData')||'null');
+      if (raw?.prefill?.step3) {
+        const linkedIn = extractLinkedInUrl(raw.prefill.step3);
+        const jobTitle = raw.prefill.step3.currentJobTitle;
+        setFormData(prev => ({
+          ...prev,
+          linkedin: linkedIn || prev.linkedin,
+          currentJobTitle: jobTitle || prev.currentJobTitle
+        }));
+        console.log('Force reloaded from localStorage:', { linkedIn, jobTitle });
+      }
+    }}>Force Reload from Storage</button>
+  </div>
+);

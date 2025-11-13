@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Your Plan - Talendro™</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 40px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            color: #2563eb;
+            font-size: 48px;
+            margin-bottom: 8px;
+            text-align: left;
+        }
+        
+        .tagline {
+            color: #00bcd4;
+            font-size: 20px;
+            font-style: italic;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+        
+        .subtitle {
+            color: #374151;
+            font-size: 16px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            margin-bottom: 20px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, #2563eb, #00bcd4);
+            width: 100%;
+            border-radius: 3px;
+        }
+        
+        .trial-notice {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        .trial-notice h2 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        
+        .trial-notice p {
+            font-size: 16px;
+            opacity: 0.95;
+        }
+        
+        .features-banner {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .features-banner h3 {
+            color: #111827;
+            font-size: 18px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            font-size: 14px;
+            color: #374151;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .feature-item::before {
+            content: '✓';
+            color: #10b981;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .pricing-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        
+        .pricing-card {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 32px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .pricing-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            border-color: #2563eb;
+        }
+        
+        .pricing-card.selected {
+            border-color: #2563eb;
+            border-width: 3px;
+            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.2);
+            transform: translateY(-4px);
+        }
+        
+        .pricing-card.popular {
+            border-color: #2563eb;
+        }
+        
+        .popular-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2563eb;
+            color: white;
+            padding: 6px 20px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        .plan-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+        
+        .plan-price {
+            font-size: 40px;
+            font-weight: 700;
+            color: #2563eb;
+            margin-bottom: 4px;
+        }
+        
+        .plan-price span {
+            font-size: 18px;
+            font-weight: 400;
+            color: #6b7280;
+        }
+        
+        .plan-description {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 24px;
+            min-height: 40px;
+        }
+        
+        .plan-features {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 24px;
+        }
+        
+        .plan-features li {
+            padding: 12px 0;
+            color: #374151;
+            font-size: 14px;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            align-items: start;
+            gap: 8px;
+        }
+        
+        .plan-features li:last-child {
+            border-bottom: none;
+        }
+        
+        .plan-features li::before {
+            content: '●';
+            color: #00bcd4;
+            font-size: 20px;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+        
+        .select-plan-btn {
+            width: 100%;
+            padding: 14px;
+            background: #f3f4f6;
+            color: #374151;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .pricing-card:hover .select-plan-btn {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+        
+        .pricing-card.selected .select-plan-btn {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+        
+        .payment-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 40px;
+            margin-bottom: 30px;
+            display: none;
+        }
+        
+        .payment-section.active {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .section-header {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .selected-plan-summary {
+            background: #f0f9ff;
+            border: 2px solid #bae6fd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+        
+        .summary-row:last-child {
+            margin-bottom: 0;
+            padding-top: 12px;
+            border-top: 1px solid #bae6fd;
+            font-weight: 700;
+            font-size: 18px;
+        }
+        
+        .summary-label {
+            color: #0c4a6e;
+        }
+        
+        .summary-value {
+            color: #0369a1;
+            font-weight: 600;
+        }
+        
+        .trial-info {
+            background: #fffbeb;
+            border: 2px solid #fcd34d;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: start;
+            gap: 12px;
+        }
+        
+        .trial-info-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+        
+        .trial-info-text {
+            color: #78350f;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        #card-element {
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            background: white;
+        }
+        
+        #card-element.StripeElement--focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        #card-errors {
+            color: #dc2626;
+            font-size: 14px;
+            margin-top: 8px;
+            min-height: 20px;
+        }
+        
+        .security-badges {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin: 24px 0;
+            color: #6b7280;
+            font-size: 13px;
+        }
+        
+        .security-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 16px;
+            margin-top: 32px;
+        }
+        
+        .btn-primary, .btn-secondary {
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            flex: 1;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+        
+        .btn-primary:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #6b7280;
+            border: 2px solid #d1d5db;
+        }
+        
+        .btn-secondary:hover {
+            background: #f9fafb;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .success-message {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            padding: 60px 40px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .success-message.active {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .success-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+        
+        .success-message h2 {
+            color: #10b981;
+            font-size: 32px;
+            margin-bottom: 16px;
+        }
+        
+        .success-message p {
+            color: #6b7280;
+            font-size: 16px;
+            margin-bottom: 24px;
+        }
+        
+        @media (max-width: 968px) {
+            .pricing-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Choose Your Plan</h1>
+            <p class="tagline">Select your subscription and complete payment</p>
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+            <p class="subtitle">Choose the plan that matches your job search intensity.</p>
+        </div>
+        
+        <!-- Trial Notice -->
+        <div class="trial-notice">
+            <h2>🎉 Start Your 7-Day Free Trial</h2>
+            <p>Full access to all features. Cancel anytime. No charges until trial ends.</p>
+        </div>
+        
+        <!-- All Plans Include -->
+        <div class="features-banner">
+            <h3>All plans include: Real-time discovery across millions of job postings • AI-tailored resume for every application • Intelligent match scoring • <strong style="color: #2563eb;">Fully autonomous submission for 90% of applications</strong></h3>
+            <p style="text-align: center; color: #6b7280; font-size: 13px; margin-top: 12px;">
+                Our comprehensive onboarding collects 10 years of employment history, education, certifications, and references—enabling fully automated applications with zero ongoing work for 90% of positions. For the remaining 10%, the AI may ask 1-2 clarifying questions, learn from your answers, then auto-submit.
+            </p>
+        </div>
+        
+        <!-- Pricing Cards -->
+        <div class="pricing-cards">
+            <!-- Basic Plan -->
+            <div class="pricing-card" data-plan="basic" data-price="29">
+                <div class="plan-name">Basic</div>
+                <div class="plan-price">$29<span>/month</span></div>
+                <div class="plan-description">Perfect for passive job seekers</div>
+                
+                <ul class="plan-features">
+                    <li>Daily job searches (AI runs once per day)</li>
+                    <li>Up to 50 auto-applications/month</li>
+                    <li>AI-powered matching & scoring</li>
+                    <li>Resume auto-tailored for each job</li>
+                    <li>SMS + Email notifications</li>
+                    <li>Basic analytics dashboard</li>
+                </ul>
+                
+                <button class="select-plan-btn">Select Basic</button>
+            </div>
+            
+            <!-- Pro Plan (Most Popular) -->
+            <div class="pricing-card popular" data-plan="pro" data-price="49">
+                <div class="popular-badge">Most Popular</div>
+                <div class="plan-name">Pro</div>
+                <div class="plan-price">$49<span>/month</span></div>
+                <div class="plan-description">For active job seekers</div>
+                
+                <ul class="plan-features">
+                    <li>Hourly job searches (AI runs 24x per day)</li>
+                    <li><strong>Unlimited auto-applications</strong></li>
+                    <li>Priority auto-apply (first to submit)</li>
+                    <li>Advanced AI matching algorithms</li>
+                    <li>Detailed analytics & insights</li>
+                    <li>Everything in Basic</li>
+                </ul>
+                
+                <button class="select-plan-btn">Select Pro</button>
+            </div>
+            
+            <!-- Premium Plan -->
+            <div class="pricing-card" data-plan="premium" data-price="99">
+                <div class="plan-name">Premium</div>
+                <div class="plan-price">$99<span>/month</span></div>
+                <div class="plan-description">Maximum results & support</div>
+                
+                <ul class="plan-features">
+                    <li>Real-time alerts (AI runs every 30 min)</li>
+                    <li>Dedicated success manager</li>
+                    <li>Interview preparation resources</li>
+                    <li>Salary negotiation support</li>
+                    <li>Priority customer support</li>
+                    <li>Everything in Pro</li>
+                </ul>
+                
+                <button class="select-plan-btn">Select Premium</button>
+            </div>
+        </div>
+        
+        <!-- Payment Section -->
+        <div class="payment-section" id="paymentSection">
+            <h2 class="section-header">Complete Your Registration</h2>
+            
+            <!-- Selected Plan Summary -->
+            <div class="selected-plan-summary">
+                <div class="summary-row">
+                    <span class="summary-label">Selected Plan:</span>
+                    <span class="summary-value" id="selectedPlanName">Pro</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Trial Period:</span>
+                    <span class="summary-value">7 Days Free</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">First Charge Date:</span>
+                    <span class="summary-value" id="chargeDate">—</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">After Trial:</span>
+                    <span class="summary-value" id="monthlyCharge">$49/month</span>
+                </div>
+            </div>
+            
+            <!-- Trial Info -->
+            <div class="trial-info">
+                <div class="trial-info-icon">ℹ️</div>
+                <div class="trial-info-text">
+                    <strong>About Your Trial:</strong><br>
+                    Your card will be authorized but not charged today. You'll have full access to all features for 7 days. 
+                    If you don't cancel before <span id="trialEndDate">—</span>, your subscription will begin and you'll be charged <span id="trialEndCharge">$49</span>.
+                    You can cancel anytime from your dashboard with no questions asked.
+                </div>
+            </div>
+            
+            <form id="paymentForm">
+                <!-- Cardholder Name -->
+                <div class="form-group">
+                    <label for="cardholderName">Cardholder Name</label>
+                    <input type="text" id="cardholderName" placeholder="John Doe" required>
+                </div>
+                
+                <!-- Card Element -->
+                <div class="form-group">
+                    <label for="card-element">Card Information</label>
+                    <div id="card-element"></div>
+                    <div id="card-errors"></div>
+                </div>
+                
+                <!-- Security Badges -->
+                <div class="security-badges">
+                    <div class="security-badge">
+                        <span>🔒</span>
+                        <span>256-bit SSL Encryption</span>
+                    </div>
+                    <div class="security-badge">
+                        <span>💳</span>
+                        <span>Secured by Stripe</span>
+                    </div>
+                    <div class="security-badge">
+                        <span>✓</span>
+                        <span>PCI Compliant</span>
+                    </div>
+                </div>
+                
+                <!-- Buttons -->
+                <div class="btn-group">
+                    <button type="button" class="btn-secondary" onclick="goBack()">← Back to Plans</button>
+                    <button type="submit" class="btn-primary" id="submitBtn">
+                        Start 7-Day Free Trial →
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Success Message -->
+        <div class="success-message" id="successMessage">
+            <div class="success-icon">🎉</div>
+            <h2>Welcome to Talendro!</h2>
+            <p>Your trial has started. We're setting up your account now...</p>
+            <div class="loading"></div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const STRIPE_PUBLISHABLE_KEY = 'pk_test_51SQk2qECvCuCTIlIzi5wkfLJnUSIwEooPJeVfeu6TCBDgfyJ7tSWiBuy1OIH9mU60JGCgbELqZpuu2YC3oOAp6dO00wvUC4SJI'; // Replace with your Stripe key
+        const API_BASE_URL = 'http://localhost:5001/api'; // Your backend URL
+        
+        // Initialize Stripe
+        const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+        const elements = stripe.elements();
+        const cardElement = elements.create('card', {
+            style: {
+                base: {
+                    fontSize: '16px',
+                    color: '#374151',
+                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                    '::placeholder': {
+                        color: '#9ca3af'
+                    }
+                },
+                invalid: {
+                    color: '#dc2626'
+                }
+            }
+        });
+        cardElement.mount('#card-element');
+        
+        // Handle card errors
+        cardElement.on('change', (event) => {
+            const displayError = document.getElementById('card-errors');
+            if (event.error) {
+                displayError.textContent = event.error.message;
+            } else {
+                displayError.textContent = '';
+            }
+        });
+        
+        // State
+        let selectedPlan = null;
+        
+        // Plan selection
+        document.querySelectorAll('.pricing-card').forEach(card => {
+            card.addEventListener('click', function() {
+                // Remove selected from all cards
+                document.querySelectorAll('.pricing-card').forEach(c => c.classList.remove('selected'));
+                
+                // Add selected to clicked card
+                this.classList.add('selected');
+                
+                // Store selected plan
+                selectedPlan = {
+                    name: this.dataset.plan,
+                    price: parseInt(this.dataset.price),
+                    displayName: this.querySelector('.plan-name').textContent
+                };
+                
+                // Update payment section
+                updatePaymentSection();
+                
+                // Show payment section
+                document.getElementById('paymentSection').classList.add('active');
+                
+                // Scroll to payment section
+                setTimeout(() => {
+                    document.getElementById('paymentSection').scrollIntoView({ 
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }, 100);
+            });
+        });
+        
+        // Update payment section with selected plan details
+        function updatePaymentSection() {
+            if (!selectedPlan) return;
+            
+            const chargeDate = new Date();
+            chargeDate.setDate(chargeDate.getDate() + 7);
+            
+            document.getElementById('selectedPlanName').textContent = selectedPlan.displayName;
+            document.getElementById('monthlyCharge').textContent = `$${selectedPlan.price}/month`;
+            document.getElementById('chargeDate').textContent = chargeDate.toLocaleDateString('en-US', { 
+                month: 'long', 
+                day: 'numeric', 
+                year: 'numeric' 
+            });
+            document.getElementById('trialEndDate').textContent = chargeDate.toLocaleDateString('en-US', { 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            document.getElementById('trialEndCharge').textContent = `$${selectedPlan.price}`;
+        }
+        
+        // Go back to plan selection
+        function goBack() {
+            document.getElementById('paymentSection').classList.remove('active');
+            document.querySelector('.header').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Form submission
+        document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!selectedPlan) {
+                alert('Please select a plan first');
+                return;
+            }
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const cardholderName = document.getElementById('cardholderName').value;
+            
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading"></span> Processing...';
+            
+            try {
+                // Get onboarding data from localStorage
+                const step1Data = JSON.parse(localStorage.getItem('step1Data') || '{}');
+                const step2Data = JSON.parse(localStorage.getItem('step2Data') || '{}');
+                const step3Data = JSON.parse(localStorage.getItem('step3Data') || '{}');
+                const step4Data = JSON.parse(localStorage.getItem('step4Data') || '{}');
+                
+                // Create payment method
+                const { error, paymentMethod } = await stripe.createPaymentMethod({
+                    type: 'card',
+                    card: cardElement,
+                    billing_details: {
+                        name: cardholderName,
+                        email: step1Data.email || step2Data.email,
+                    }
+                });
+                
+                if (error) {
+                    throw new Error(error.message);
+                }
+                
+                // Create subscription on backend
+                const response = await fetch(`${API_BASE_URL}/stripe/create-subscription`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        paymentMethodId: paymentMethod.id,
+                        plan: selectedPlan.name,
+                        email: step1Data.email || step2Data.email,
+                        name: step2Data.fullLegalName || `${step1Data.firstName} ${step1Data.lastName}`,
+                        onboardingData: {
+                            step1: step1Data,
+                            step2: step2Data,
+                            step3: step3Data,
+                            step4: step4Data
+                        }
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Payment failed');
+                }
+                
+                const result = await response.json();
+                
+                // Show success message
+                document.getElementById('paymentSection').style.display = 'none';
+                document.getElementById('successMessage').classList.add('active');
+                
+                // Clear localStorage
+                localStorage.removeItem('step1Data');
+                localStorage.removeItem('step2Data');
+                localStorage.removeItem('step3Data');
+                localStorage.removeItem('step4Data');
+                localStorage.removeItem('talendro_resume_data');
+                
+                // Redirect to dashboard after 3 seconds
+                setTimeout(() => {
+                    window.location.href = '/app/dashboard';  // Or wherever your dashboard is
+                }, 3000);
+                
+            } catch (error) {
+                console.error('Payment error:', error);
+                alert(`Payment failed: ${error.message}`);
+                
+                // Re-enable button
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Start 7-Day Free Trial →';
+            }
+        });
+        
+        // Auto-select Pro plan on load (recommended)
+        window.addEventListener('load', () => {
+            // Pre-fill cardholder name if available
+            const step1Data = JSON.parse(localStorage.getItem('step1Data') || '{}');
+            const step2Data = JSON.parse(localStorage.getItem('step2Data') || '{}');
+            
+            if (step2Data.fullLegalName) {
+                document.getElementById('cardholderName').value = step2Data.fullLegalName;
+            } else if (step1Data.firstName && step1Data.lastName) {
+                document.getElementById('cardholderName').value = `${step1Data.firstName} ${step1Data.lastName}`;
+            }
+        });
+    </script>
+</body>
+</html>

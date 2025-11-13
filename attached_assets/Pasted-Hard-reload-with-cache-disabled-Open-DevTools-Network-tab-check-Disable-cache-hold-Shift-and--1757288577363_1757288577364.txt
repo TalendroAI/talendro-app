@@ -1,0 +1,207 @@
+Hard reload with cache disabled
+
+Open DevTools → Network tab → check Disable cache → hold Shift and click the reload button (or Ctrl/Cmd + Shift + R).
+
+Nuke any service worker
+
+In DevTools → Application → Service Workers → click Unregister for all.
+
+Also add this once in your app’s index.js (dev only) to ensure nothing sticks:
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister()));
+}
+
+
+Restart the Replit processes
+
+Stop the web server, stop the dev server, then start them again. Replit sometimes keeps a cached preview.
+
+Prove the new bundle is live
+
+At the top of Onb2.js, add:
+
+console.log('Onb2 BUILD', '2025-09-07T12:00Z'); // change this string every time
+
+
+Reload and verify you see Onb2 BUILD 2025-09-07T12:00Z in the console. If you don’t, you’re still on stale JS.
+
+Ensure there’s only ONE call site
+
+You’ve got evidence an auto-parse is firing before/alongside your button handler.
+
+In Replit’s Search in Files, look for:
+
+parseResume(
+
+handleContinue(
+
+useEffect( that calls parseResume() when selectedFile changes.
+
+If you find an auto-trigger (common pattern):
+
+useEffect(() => {
+  if (selectedFile) parseResume();
+}, [selectedFile]);
+
+
+…either remove it or guard it so it doesn’t double-navigate (see guard below).
+
+One true handler (drop-in patch for Onb2.js)
+
+Replace your current parsing/navigation logic with this shape-agnostic handler. It:
+
+Accepts either { success:true, data:{} } or the flat { status:'complete', prefill,... } shape.
+
+Logs the actual server payload so we can see it live.
+
+Prevents double navigation if something else calls the parser.
+
+Uses React Router’s useNavigate (preferred) but falls back to hard replace.
+
+// At the top of Onb2.js
+import { useRef, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+console.log('Onb2 BUILD', '2025-09-07T12:00Z'); // bump this string to verify fresh bundle
+
+export default function Onb2() {
+  const navigate = useNavigate();
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const hasNavigatedRef = useRef(false);   // prevents doubles
+
+  const doParseAndAdvance = useCallback(async () => {
+    if (!selectedFile || hasNavigatedRef.current) return;
+
+    try {
+      setBusy(true);
+      setError('');
+
+      const fd = new FormData();
+      fd.append('file', selectedFile, selectedFile.name);
+
+      const resp = await fetch('/api/resume/parse', { method: 'POST', body: fd });
+      if (!resp.ok) {
+        const t = await resp.text().catch(()=>'');
+        throw new Error(`Parse request failed: ${resp.status} ${t}`);
+      }
+      const result = await resp.json();
+
+      // *** This log MUST appear if the new code is running ***
+      console.log('Server parse result:', result);
+
+      // Accept both server shapes:
+      const ok =
+        result?.success === true ||
+        result?.status === 'complete' ||
+        (result?.data && (result?.prefill || result?.profileDraft));
+
+      if (!ok) {
+        console.warn('Parse not marked complete/success:', result);
+        setError('We parsed your file but did not receive a complete signal. You can continue manually.');
+        return;
+      }
+
+      const data = result.data || {
+        jobId: result.jobId,
+        status: result.status,
+        prefill: result.prefill,
+        profileDraft: result.profileDraft,
+        confidence: result.confidence
+      };
+
+      localStorage.setItem('resumeData', JSON.stringify(data));
+      console.log('✅ Resume parsed successfully:', data);
+      console.log('🚀 Navigating to Step 3 now…');
+
+      hasNavigatedRef.current = true;
+
+      try {
+        navigate('/app/onboarding/step-3', { replace: true });
+      } catch {
+        window.location.replace('/app/onboarding/step-3');
+      }
+    } catch (e) {
+      console.error(e);
+      setError('We had trouble parsing your résumé. You can continue manually—Talendro will backfill as parsing completes.');
+    } finally {
+      setBusy(false);
+    }
+  }, [selectedFile, navigate]);
+
+  const handleButtonClick = (e) => {
+    e.preventDefault();
+    doParseAndAdvance();
+  };
+
+  // If you *must* keep an auto-parse on file select, guard it:
+  // useEffect(() => { if (selectedFile && !hasNavigatedRef.current) doParseAndAdvance(); }, [selectedFile, doParseAndAdvance]);
+
+  return (
+    <section>
+      <h1 className="h1">Upload Your Résumé</h1>
+      <p className="body mt-2">PDF or DOCX — we’ll parse and prefill the next steps.</p>
+
+      <form className="card mt-6 max-w-xl" onSubmit={handleButtonClick}>
+        <input
+          type="file"
+          accept=".pdf,.docx"
+          onChange={e => setSelectedFile(e.target.files?.[0] || null)}
+        />
+        <div className="mt-4 flex gap-3">
+          <button className="btn btn-primary" disabled={!selectedFile || busy} onClick={handleButtonClick}>
+            {busy ? 'Parsing…' : 'Parse Resume & Continue'}
+          </button>
+          <a href="/app/onboarding/step-3" className="btn btn-tertiary">Continue Manually</a>
+        </div>
+        {error && <div className="mt-3 text-sm text-red-600">{error}</div>}
+      </form>
+    </section>
+  );
+}
+
+
+Why this works
+
+You’ll see Server parse result: every time if the new bundle is active. If you don’t, you’re still cached.
+
+It accepts either server response format, so you won’t get stuck on if (result.success).
+
+hasNavigatedRef prevents double redirects if an auto-parse is firing elsewhere.
+
+If it still loops back to Onb2
+
+Make sure the route exists: in your router, you should have
+<Route path="/app/onboarding/step-3" element={<Onb3 />} />
+
+If you’re using a guard (e.g., “can’t enter Step-3 until parsed”), confirm the guard checks the new storage key (resumeData) or profileDraft in your state. A guard that always returns “false” will bounce you back.
+
+Check for runtime errors on Step-3 that cause a crash and reload to the previous page. Open console on navigation attempt.
+
+Optional — standardize the server shape (nice to have)
+
+Update the success response once so both client and server agree:
+
+// server/routes/parse.js
+return res.json({
+  success: true,
+  data: {
+    jobId,
+    status: 'complete',
+    profileDraft: draft,
+    prefill,
+    confidence
+  }
+});
+
+
+Error path:
+
+return res.status(500).json({ success: false, error: 'Failed to parse resume' });
+
+
+The client patch above already handles both shapes, so you’re unblocked either way.
+
+Run the steps in order. The key indicator is that “Onb2 BUILD …” and “Server parse result:” appear. Once you see those, the redirect will happen unless a route guard is blocking it — and the guard fix is simply to align it with resumeData / profileDraft.

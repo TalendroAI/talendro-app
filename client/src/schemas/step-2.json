@@ -1,0 +1,16 @@
+{
+  "id": "step-2",
+  "title": "Upload Your Résumé",
+  "route": "/app/onboarding/step-2",
+  "nextRoute": "/app/onboarding/step-3",
+  "meta": { "customUploader": true },
+  "fields": [
+    {
+      "key": "ackParse",
+      "label": "I understand parsing runs automatically and I can continue manually if needed.",
+      "type": "checkbox",
+      "required": false,
+      "testId": "checkbox-ack-parse"
+    }
+  ]
+}

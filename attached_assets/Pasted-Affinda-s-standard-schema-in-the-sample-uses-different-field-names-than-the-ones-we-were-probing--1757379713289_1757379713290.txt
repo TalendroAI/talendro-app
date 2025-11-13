@@ -1,0 +1,175 @@
+Affinda’s “standard schema” in the sample uses different field names than the ones we were probing (e.g., email vs emails, phoneNumber vs phoneNumbers, candidateName vs name, workExperienceOrganization vs organization, etc.). That’s why you only got first/last name — the rest of our lookups simply didn’t hit. The sample you sent confirms the exact paths we should target. 
+
+XML Sample
+
+Below is a clean crosswalk you can drop into your mapper (parser → ProfileDraft). I’m listing Talendro target → Affinda path(s) and the minimal transforms.
+
+A) Basics (Step 3 prefill)
+
+Full legal name → data.candidateName.listItem.firstName + data.candidateName.listItem.familyName
+
+Date of birth → data.dateOfBirth
+
+Email → data.email.listItem (take first)
+
+Phone → data.phoneNumber.listItem.formattedNumber (or rawText)
+
+Location.address (single-line) → data.location.formatted
+
+Location.city → data.location.city
+
+Location.region/state → data.location.state or data.location.stateCode
+
+Location.postalCode → data.location.postalCode
+
+Location.countryCode → data.location.countryCode
+(The sample shows these exact nodes under <data>…</data>.) 
+
+XML Sample
+
+B) Employment (Step 6 prefill)
+
+Affinda lists jobs under data.workExperience.listItem with specific child tags:
+
+company → workExperienceOrganization
+
+jobTitle → workExperienceJobTitle
+
+startDate → workExperienceDates.start.date
+
+endDate → workExperienceDates.end.date
+
+isCurrent → workExperienceDates.end.isCurrent (boolean-like string)
+
+location.formatted → workExperienceLocation.formatted
+
+description / highlights → workExperienceDescription (split by newlines / bullets)
+
+employmentType (optional) → workExperienceType.value
+(All present in the sample work blocks.) 
+
+XML Sample
+
+C) Education (Step 5 prefill)
+
+Affinda lists schools under data.education.listItem:
+
+institution → educationOrganization
+
+degree / studyType → educationAccreditation and/or educationLevel.value
+
+major(s) → educationMajor.listItem (array)
+
+startDate → educationDates.start.date
+
+endDate → educationDates.end.date
+
+gpa/score → educationGrade.educationGradeScore
+
+location.formatted → educationLocation.formatted
+(Matches the sample’s education blocks.) 
+
+XML Sample
+
+D) Skills (optional prefill)
+
+skills[] → data.skill.listItem.name (source sections show where they came from) 
+
+XML Sample
+
+Drop-in crosswalk (config-first)
+
+Use this mapping in your adapter (ordered candidates; first hit wins). If your mapper supports array rules like work[] and education[], this is ready to paste.
+
+{
+  "basics.firstName": ["data.candidateName.listItem.firstName"],
+  "basics.lastName": ["data.candidateName.listItem.familyName"],
+  "basics.dob|transform=normDate": ["data.dateOfBirth"],
+  "basics.email": ["data.email.listItem"],
+  "basics.phone": [
+    "data.phoneNumber.listItem.formattedNumber",
+    "data.phoneNumber.listItem.rawText"
+  ],
+  "basics.location.address": ["data.location.formatted"],
+  "basics.location.city": ["data.location.city"],
+  "basics.location.region": ["data.location.state", "data.location.stateCode"],
+  "basics.location.postalCode": ["data.location.postalCode"],
+  "basics.location.countryCode": ["data.location.countryCode"],
+
+  "work[].company": ["workExperienceOrganization"],
+  "work[].position": ["workExperienceJobTitle"],
+  "work[].startDate|transform=normDate": ["workExperienceDates.start.date"],
+  "work[].endDate|transform=normDate": ["workExperienceDates.end.date"],
+  "work[].isCurrent|transform=toBool": ["workExperienceDates.end.isCurrent"],
+  "work[].location": ["workExperienceLocation.formatted"],
+  "work[].highlights|transform=splitLines": ["workExperienceDescription"],
+  "work[].type": ["workExperienceType.value"],
+
+  "education[].institution": ["educationOrganization"],
+  "education[].studyType": ["educationAccreditation", "educationLevel.value"],
+  "education[].area": ["educationMajor.listItem"],
+  "education[].startDate|transform=normDate": ["educationDates.start.date"],
+  "education[].endDate|transform=normDate": ["educationDates.end.date"],
+  "education[].score": ["educationGrade.educationGradeScore"],
+  "education[].location": ["educationLocation.formatted"],
+
+  "skills[].name": ["data.skill.listItem.name"]
+}
+
+
+Transforms to add (tiny):
+
+normDate(s) → return YYYY-MM if possible; else YYYY.
+
+toBool(v) → treat "True"/"False" (and case variants) as booleans.
+
+splitLines(text) → split on \n and bullets like • ; trim empties.
+
+Array targeting:
+For work[] and education[], iterate each listItem under data.workExperience / data.education and apply the leaf rules relative to that item (e.g., workExperienceOrganization, not data.workExperience.listItem.workExperienceOrganization). The sample shows these elements directly inside each <listItem>. 
+
+XML Sample
+
+What to change in your code (concrete)
+
+Stop querying the old keys (emails, phoneNumbers, organization, jobTitle, etc.).
+
+Update your Affinda adapter’s mapper to read exactly the paths above.
+
+In Step-3 prefill, populate from:
+
+fullLegalName = firstName + " " + lastName
+
+email, phone
+
+physicalAddress = location.formatted
+
+In Step-5/6, build rows from the education[] / work[] arrays using those fields. Treat isCurrent=true as “Present”.
+
+Quick validation you can run now
+
+Log the top-level keys under raw.data to verify they match the sample (candidateName, email, phoneNumber, location, education, workExperience, skill). 
+
+XML Sample
+
+Count workExperience.listItem.length and education.listItem.length — you should see >0 in the sample.
+
+After mapping, assert:
+
+basics.email and basics.phone are non-empty
+
+work[0].company + position exist
+
+education[0].institution exists
+
+If any of those are blank, the issue is purely in the selector path, not the parser.
+
+Why this fixes your current symptom
+
+Your current code was looking for keys that aren’t present in your account’s extractor output. Aligning to Affinda’s standard schema shown in the file means we’ll finally pick up email, phone, dates, schools, companies, titles, etc., and your Step-3/5/6 screens will prefill correctly. 
+
+XML Sample
+
+Want me to hand you a ready-to-paste affinda.map.json plus the tiny transform functions for your mapper? I can tailor it exactly to this schema so your dev just drops it in.
+
+Sources

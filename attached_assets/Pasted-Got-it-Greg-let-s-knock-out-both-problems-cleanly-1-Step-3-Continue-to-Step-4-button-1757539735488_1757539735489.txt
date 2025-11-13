@@ -1,0 +1,258 @@
+Got it, Greg — let’s knock out both problems cleanly:
+
+---
+
+## 1) Step-3 “Continue to Step 4” button & duplicate footers (fix now)
+
+### A. Make the app use **one** global footer and correct page spacing
+
+**File:** `client/src/shell/App.js` (or your layout wrapper)
+
+```jsx
+export default function AppShell({ children }) {
+  return (
+    <div className="min-h-screen flex flex-col bg-white">
+      <SiteHeader />
+      <main id="main" className="flex-1">{children}</main>
+      <Footer />  {/* ← only here, once */}
+    </div>
+  );
+}
+```
+
+**Then remove any page-level footer usage.**
+Search and delete extra imports/usages:
+
+```bash
+# from project root
+grep -R "<Footer" client/src -n
+# open each hit (e.g., Onb3.js) and delete the local <Footer/> and its import
+```
+
+**Add bottom padding so content never collides with the footer.**
+Wrap Step-3 page content:
+
+```jsx
+<section className="max-w-3xl mx-auto px-4 pb-24">  {/* pb-24 keeps space above global footer */}
+  ...
+</section>
+```
+
+---
+
+### B. Replace the Step-3 CTA with the branded primary button
+
+**File:** `client/src/app/Onb3.js`
+
+1. Add a completeness check (top of component, under `formData` state):
+
+```jsx
+const required = [
+  'firstName','lastName','email','phone','location',
+  'currentJobTitle','yearsExperience','salaryRange','availability'
+];
+
+const isComplete = required.every(k => String(formData[k] ?? '').trim().length > 0);
+```
+
+2. Replace your existing bottom button with this **single** primary CTA:
+
+```jsx
+<button
+  type="submit"
+  data-testid="cta-next"
+  disabled={!isComplete}
+  className={[
+    "w-full mt-6 rounded-2xl py-3 px-4 font-medium shadow-sm transition",
+    isComplete
+      ? "bg-[#2F6DF6] text-white hover:bg-[#2b61dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#2F6DF6]"
+      : "bg-gray-300 text-white cursor-not-allowed"
+  ].join(" ")}
+>
+  Continue to Step 4
+</button>
+```
+
+3. Ensure the form submits (don’t gate it anywhere else). Your `onSubmit` handler should navigate when valid:
+
+```jsx
+const handleSubmit = (e) => {
+  e.preventDefault();
+  if (!isComplete) return;
+  localStorage.setItem('step3Data', JSON.stringify(formData));
+  window.location.href = '/app/onboarding/step-4';
+};
+```
+
+This yields: one footer, correct spacing, and a proper Talendro™ primary CTA that enables as soon as all required fields are filled.
+
+---
+
+## 2) “You stopped parsing” → populate **every possible** field you’re paying for
+
+Parsing is still solid server-side; the gap is **mapping + hydration**. Drop in the mapper + tolerant prefill so Step-3 (and later steps) auto-fill everything Affinda can give.
+
+### A. Canonical step-3 prefill (server → client)
+
+**File:** `server/mapping/affindaToCanonical.js` (excerpt for Step-3)
+
+```js
+const arrayify = (x) => Array.isArray(x) ? x : (x ? Object.values(x) : []);
+
+export function affindaToStep3Prefill(raw) {
+  const d = raw?.data || raw || {};
+
+  // --- name ---
+  const nameItem = arrayify(d.candidateName)[0];
+  const first = nameItem?.parsed?.firstName?.parsed || nameItem?.parsed?.firstName?.raw || '';
+  const last  = nameItem?.parsed?.familyName?.parsed || nameItem?.parsed?.familyName?.raw || '';
+  const full  = [first, last].filter(Boolean).join(' ').trim();
+
+  // --- email / phone ---
+  const email = d?.email?.listItem?.[0]?.parsed || d?.email?.listItem?.[0]?.value || d?.emails?.[0] || '';
+  const phone = d?.phoneNumber?.listItem?.[0]?.formattedNumber || d?.phoneNumber?.[0]?.rawText || '';
+
+  // --- LinkedIn (any variant Affinda emits) ---
+  const websites = arrayify(d.website) || arrayify(d.websites) || [];
+  const social   = arrayify(d.socialMedia);
+  const liFromWeb = websites
+    .map(w => w?.parsed?.url || w?.url || w?.raw)
+    .find(u => typeof u === 'string' && u.toLowerCase().includes('linkedin.com')) || '';
+
+  const liFromSocial = social
+    .map(s => s?.url || s?.parsed?.url || s?.handle)
+    .find(u => typeof u === 'string' && u.toLowerCase().includes('linkedin.com')) || '';
+
+  const linkedinUrl = liFromWeb || liFromSocial || '';
+
+  // --- location (fill what exists; street often not present on resumes) ---
+  const loc = d?.location?.parsed || d?.address?.parsed || d?.location || {};
+  const physicalAddress = {
+    street:  loc.street || loc.streetNumber ? `${loc.streetNumber ?? ''} ${loc.street ?? ''}`.trim() : '',
+    city:    loc.city || '',
+    state:   loc.stateCode || loc.state || '',
+    postal:  loc.postalCode || '',
+    country: loc.countryCode || loc.country || ''
+  };
+  const physicalAddressText = [
+    physicalAddress.street,
+    [physicalAddress.city, physicalAddress.state].filter(Boolean).join(', '),
+    physicalAddress.postal,
+    physicalAddress.country
+  ].filter(Boolean).join(', ');
+
+  // --- current / most recent job title ---
+  const roles = arrayify(d.workExperience).map((r) => {
+    const p = r?.parsed || {};
+    const start = p?.workExperienceStartDate?.parsed || r?.startDate || null;
+    const end   = p?.workExperienceEndDate?.parsed   || r?.endDate   || null;
+    const isCurrent = !end || String(end).toLowerCase() === 'present';
+    return {
+      title: p?.workExperienceJobTitle || r?.jobTitle || '',
+      org:   p?.workExperienceOrganization || r?.organization || r?.company || '',
+      start, end, isCurrent
+    };
+  });
+
+  // pick current; else latest by end; else latest by start
+  let current = roles.find(x => x.isCurrent);
+  if (!current) current = roles
+    .slice()
+    .sort((a,b) => new Date(b.end||'2100-01-01') - new Date(a.end||'2100-01-01'))[0] || roles[0];
+
+  const currentJobTitle = (current?.title || '').trim();
+
+  return {
+    fullLegalName: full,
+    email,
+    phone,
+    physicalAddress: physicalAddressText,     // Step-3 single-line display
+    physicalAddressParts: physicalAddress,    // keep parts for Step-4 address split
+    linkedin: linkedinUrl,
+    currentJobTitle
+  };
+}
+```
+
+**File:** `server/routes/parse.js` (return prefill in response)
+
+```js
+const { affindaToStep3Prefill } = require('../mapping/affindaToCanonical');
+
+router.post('/resume/parse', async (req, res) => {
+  // ...upload → affinda raw → rawData
+  const step3 = affindaToStep3Prefill(rawData);
+  return res.json({
+    success: true,
+    data: {
+      prefill: { step3 },
+      profileDraft: { basics: { name: step3.fullLegalName, email: step3.email } },
+      confidence: {} // optional
+    }
+  });
+});
+```
+
+### B. Tolerant hydration on the frontend (no fields left behind)
+
+**File:** `client/src/lib/prefill.js` (used by Step-3)
+
+```js
+export function getStep3Prefill() {
+  const raw = JSON.parse(localStorage.getItem('resumeData') || 'null') || {};
+  const s3  = raw?.prefill?.step3 || raw?.data?.prefill?.step3 || {};
+
+  const li = s3.linkedin || s3.linkedIn || s3.linkedinUrl || '';
+
+  return {
+    fullLegalName: s3.fullLegalName || s3.name || '',
+    email: s3.email || '',
+    phone: s3.phone || '',
+    physicalAddress: s3.physicalAddress || '',
+    physicalAddressParts: s3.physicalAddressParts || {},
+    linkedin: li,
+    currentJobTitle: s3.currentJobTitle || s3.currentTitle || ''
+  };
+}
+```
+
+**File:** `client/src/app/Onb3.js` (ensure we actually set all values)
+
+```jsx
+useEffect(() => {
+  const pre = getStep3Prefill();
+
+  const full = pre.fullLegalName || '';
+  const [first = '', ...rest] = full.trim().split(/\s+/);
+  const last = rest.join(' ');
+
+  setFormData(f => ({
+    ...f,
+    firstName: first,
+    lastName: last,
+    email: pre.email || f.email,
+    phone: pre.phone || f.phone,
+    location: pre.physicalAddress || f.location,
+    linkedin: pre.linkedin || f.linkedin,
+    currentJobTitle: pre.currentJobTitle || f.currentJobTitle
+  }));
+}, []);
+```
+
+> Result: Step-3 now **always** consumes every field Affinda can provide (including LinkedIn and current title), and you keep address **parts** for Step-4 where you capture Street/City/State/ZIP explicitly.
+
+---
+
+## Quick verification checklist
+
+1. Upload the resume → in **Network** verify `POST /api/resume/parse` returns `data.prefill.step3` with `linkedin` and `currentJobTitle`.
+2. In **Application → Local Storage**, `resumeData.prefill.step3` exists with those keys.
+3. Step-3 renders with:
+
+   * **single** footer (global) and no overlap,
+   * **blue primary** “Continue to Step 4” button that enables once all required fields are filled,
+   * LinkedIn + Current Job Title populated.
+
+If anything still looks off, send me the current `Onb3.js` after your edits and a screenshot of `resumeData` from localStorage — I’ll pinpoint it immediately.
+
+We’ll keep pushing until this is 100% dialed in.

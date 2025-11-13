@@ -1,0 +1,160 @@
+{
+  "id": "step-3-comprehensive",
+  "title": "Personal Information",
+  "route": "/app/onboarding/step-3",
+  "nextRoute": "/app/onboarding/step-4",
+  "sections": [
+    {
+      "title": "Contact Information",
+      "fields": [
+        { "key": "fullLegalName", "label": "Full Legal Name", "type": "text", "required": true, "prefillKeys": ["prefill.step3.fullLegalName"] },
+        { "key": "preferredFirstName", "label": "Preferred First Name", "type": "text", "required": true, "prefillKeys": ["prefill.step3.preferredFirstName"], "hasNAButton": true },
+        { "key": "maidenName", "label": "Full Legal Maiden Name", "type": "text", "required": true, "prefillKeys": ["prefill.step3.maidenName"], "hasNAButton": true },
+        { "key": "previouslyUsedNames", "label": "Previously Used Names", "type": "text", "required": true, "prefillKeys": ["prefill.step3.previouslyUsedNames"], "hasNAButton": true },
+        { "key": "email", "label": "Email", "type": "email", "required": true, "prefillKeys": ["prefill.step3.email"], "validation": { "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", "message": "Please enter a valid email address" } },
+        { "key": "phone", "label": "Phone", "type": "tel", "required": true, "prefillKeys": ["prefill.step3.phone"], "validation": { "pattern": "^[\\+]?[1-9][\\d]{0,15}$|^[\\(]?[0-9]{3}[\\)]?[\\s\\-]?[0-9]{3}[\\s\\-]?[0-9]{4}$", "message": "Please enter a valid phone number" } },
+        { "key": "linkedinUrl", "label": "LinkedIn URL", "type": "text", "required": true, "prefillKeys": ["prefill.step3.linkedinUrl"], "hasNAButton": true, "validation": { "pattern": "^(https?:\\/\\/)?(www\\.)?linkedin\\.com\\/in\\/[a-zA-Z0-9\\-]+\\/?$", "message": "Please enter a valid LinkedIn profile URL" } },
+        { "key": "website", "label": "Personal Website", "type": "text", "required": true, "prefillKeys": ["prefill.step3.website"], "hasNAButton": true, "validation": { "pattern": "^(https?:\\/\\/)?(www\\.)?[a-zA-Z0-9][a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9]?\\.[a-zA-Z]{2,}(\\/.*)?$", "message": "Please enter a valid website URL" } },
+        { "key": "streetAddress", "label": "Street Address", "type": "text", "required": true, "prefillKeys": ["prefill.step3.streetAddress"] },
+        { "key": "city", "label": "City", "type": "text", "required": true, "prefillKeys": ["prefill.step3.city"] },
+        { "key": "stateRegion", "label": "State", "type": "select", "required": true, "options": [
+          {"value":"","label":"Select"},
+          {"value":"AL","label":"Alabama"},{"value":"AK","label":"Alaska"},{"value":"AZ","label":"Arizona"},{"value":"AR","label":"Arkansas"},
+          {"value":"CA","label":"California"},{"value":"CO","label":"Colorado"},{"value":"CT","label":"Connecticut"},{"value":"DE","label":"Delaware"},
+          {"value":"FL","label":"Florida"},{"value":"GA","label":"Georgia"},{"value":"HI","label":"Hawaii"},{"value":"ID","label":"Idaho"},
+          {"value":"IL","label":"Illinois"},{"value":"IN","label":"Indiana"},{"value":"IA","label":"Iowa"},{"value":"KS","label":"Kansas"},
+          {"value":"KY","label":"Kentucky"},{"value":"LA","label":"Louisiana"},{"value":"ME","label":"Maine"},{"value":"MD","label":"Maryland"},
+          {"value":"MA","label":"Massachusetts"},{"value":"MI","label":"Michigan"},{"value":"MN","label":"Minnesota"},{"value":"MS","label":"Mississippi"},
+          {"value":"MO","label":"Missouri"},{"value":"MT","label":"Montana"},{"value":"NE","label":"Nebraska"},{"value":"NV","label":"Nevada"},
+          {"value":"NH","label":"New Hampshire"},{"value":"NJ","label":"New Jersey"},{"value":"NM","label":"New Mexico"},{"value":"NY","label":"New York"},
+          {"value":"NC","label":"North Carolina"},{"value":"ND","label":"North Dakota"},{"value":"OH","label":"Ohio"},{"value":"OK","label":"Oklahoma"},
+          {"value":"OR","label":"Oregon"},{"value":"PA","label":"Pennsylvania"},{"value":"RI","label":"Rhode Island"},{"value":"SC","label":"South Carolina"},
+          {"value":"SD","label":"South Dakota"},{"value":"TN","label":"Tennessee"},{"value":"TX","label":"Texas"},{"value":"UT","label":"Utah"},
+          {"value":"VT","label":"Vermont"},{"value":"VA","label":"Virginia"},{"value":"WA","label":"Washington"},{"value":"WV","label":"West Virginia"},
+          {"value":"WI","label":"Wisconsin"},{"value":"WY","label":"Wyoming"}
+        ], "prefillKeys": ["prefill.step3.stateRegion"] },
+        { "key": "postalCode", "label": "Postal Code", "type": "text", "required": true, "prefillKeys": ["prefill.step3.postalCode"], "validation": { "pattern": "^\\d{5}(-\\d{4})?$|^[A-Za-z]\\d[A-Za-z]\\s?\\d[A-Za-z]\\d$", "message": "Please enter a valid US ZIP code (12345) or Canadian postal code (A1A 1A1)" } },
+        { "key": "county", "label": "County", "type": "select", "required": true, "options": [
+          {"value":"","label":"Select"},
+          {"value":"Orange","label":"Orange County"},
+          {"value":"Seminole","label":"Seminole County"},
+          {"value":"Osceola","label":"Osceola County"},
+          {"value":"Lake","label":"Lake County"},
+          {"value":"Volusia","label":"Volusia County"},
+          {"value":"Brevard","label":"Brevard County"},
+          {"value":"Polk","label":"Polk County"},
+          {"value":"Marion","label":"Marion County"},
+          {"value":"Sumter","label":"Sumter County"},
+          {"value":"Citrus","label":"Citrus County"},
+          {"value":"Hernando","label":"Hernando County"},
+          {"value":"Pasco","label":"Pasco County"},
+          {"value":"Hillsborough","label":"Hillsborough County"},
+          {"value":"Pinellas","label":"Pinellas County"},
+          {"value":"Other","label":"Other"}
+        ], "prefillKeys": ["prefill.step3.county"] },
+        { "key": "country", "label": "Country", "type": "select", "required": true, "options": [
+          {"value":"","label":"Select"},
+          {"value":"US","label":"United States"},{"value":"CA","label":"Canada"},{"value":"GB","label":"United Kingdom"}
+        ], "prefillKeys": ["prefill.step3.country"] }
+      ]
+    },
+    {
+      "title": "Sensitive Personal Information",
+      "fields": [
+        { "key": "driversLicenseNumber", "label": "Driver's License Number", "type": "text", "required": true, "prefillKeys": ["prefill.step3.driversLicenseNumber"], "validation": { "pattern": "^[A-Za-z0-9\\-\\s]{6,20}$", "message": "Please enter a valid driver's license number (6-20 characters)" } },
+        { "key": "driversLicenseState", "label": "Driver's License State", "type": "select", "required": true, "options": [
+          {"value":"","label":"Select"},
+          {"value":"AL","label":"Alabama"},{"value":"AK","label":"Alaska"},{"value":"AZ","label":"Arizona"},{"value":"AR","label":"Arkansas"},
+          {"value":"CA","label":"California"},{"value":"CO","label":"Colorado"},{"value":"CT","label":"Connecticut"},{"value":"DE","label":"Delaware"},
+          {"value":"FL","label":"Florida"},{"value":"GA","label":"Georgia"},{"value":"HI","label":"Hawaii"},{"value":"ID","label":"Idaho"},
+          {"value":"IL","label":"Illinois"},{"value":"IN","label":"Indiana"},{"value":"IA","label":"Iowa"},{"value":"KS","label":"Kansas"},
+          {"value":"KY","label":"Kentucky"},{"value":"LA","label":"Louisiana"},{"value":"ME","label":"Maine"},{"value":"MD","label":"Maryland"},
+          {"value":"MA","label":"Massachusetts"},{"value":"MI","label":"Michigan"},{"value":"MN","label":"Minnesota"},{"value":"MS","label":"Mississippi"},
+          {"value":"MO","label":"Missouri"},{"value":"MT","label":"Montana"},{"value":"NE","label":"Nebraska"},{"value":"NV","label":"Nevada"},
+          {"value":"NH","label":"New Hampshire"},{"value":"NJ","label":"New Jersey"},{"value":"NM","label":"New Mexico"},{"value":"NY","label":"New York"},
+          {"value":"NC","label":"North Carolina"},{"value":"ND","label":"North Dakota"},{"value":"OH","label":"Ohio"},{"value":"OK","label":"Oklahoma"},
+          {"value":"OR","label":"Oregon"},{"value":"PA","label":"Pennsylvania"},{"value":"RI","label":"Rhode Island"},{"value":"SC","label":"South Carolina"},
+          {"value":"SD","label":"South Dakota"},{"value":"TN","label":"Tennessee"},{"value":"TX","label":"Texas"},{"value":"UT","label":"Utah"},
+          {"value":"VT","label":"Vermont"},{"value":"VA","label":"Virginia"},{"value":"WA","label":"Washington"},{"value":"WV","label":"West Virginia"},
+          {"value":"WI","label":"Wisconsin"},{"value":"WY","label":"Wyoming"}
+        ], "prefillKeys": ["prefill.step3.driversLicenseState"] },
+        { "key": "dateOfBirth", "label": "Date of Birth", "type": "date", "required": true, "prefillKeys": ["prefill.step3.dateOfBirth"] },
+        { "key": "ssnLast4", "label": "SSN Last 4", "type": "text", "required": true, "prefillKeys": ["prefill.step3.ssnLast4"], "validation": { "pattern": "^\\d{4}$", "message": "Please enter exactly 4 digits" } }
+      ]
+    },
+    {
+      "title": "Education",
+      "fields": [
+        { "key": "highestDegree", "label": "Highest Degree/Diploma/Certificate Completed", "type": "text", "required": true, "prefillKeys": ["prefill.step3.highestDegree"] },
+        { "key": "completedAsOfToday", "label": "Completed As of Today's Date", "type": "select", "required": true, "options": [
+          {"value":"","label":"Select"},
+          {"value":"yes","label":"Yes"},
+          {"value":"no","label":"No"}
+        ], "prefillKeys": ["prefill.step3.completedAsOfToday"] },
+        { "key": "majorFieldOfStudy", "label": "Major/Field of Study", "type": "text", "required": true, "prefillKeys": ["prefill.step3.majorFieldOfStudy"] },
+        { "key": "gpa", "label": "GPA/Grade/Rank Upon Completion", "type": "text", "required": true, "prefillKeys": ["prefill.step3.gpa"] },
+        { "key": "institutionName", "label": "Degree/Diploma/Certificate Awarding Institution Name", "type": "text", "required": true, "prefillKeys": ["prefill.step3.institutionName"] },
+        { "key": "institutionAddress", "label": "Institution Street Address", "type": "text", "required": true, "prefillKeys": ["prefill.step3.institutionAddress"] },
+        { "key": "institutionCity", "label": "Institution City", "type": "text", "required": true, "prefillKeys": ["prefill.step3.institutionCity"] },
+        { "key": "institutionState", "label": "Institution State", "type": "select", "required": true, "options": [
+          {"value":"","label":"Select"},
+          {"value":"AL","label":"Alabama"},{"value":"AK","label":"Alaska"},{"value":"AZ","label":"Arizona"},{"value":"AR","label":"Arkansas"},
+          {"value":"CA","label":"California"},{"value":"CO","label":"Colorado"},{"value":"CT","label":"Connecticut"},{"value":"DE","label":"Delaware"},
+          {"value":"FL","label":"Florida"},{"value":"GA","label":"Georgia"},{"value":"HI","label":"Hawaii"},{"value":"ID","label":"Idaho"},
+          {"value":"IL","label":"Illinois"},{"value":"IN","label":"Indiana"},{"value":"IA","label":"Iowa"},{"value":"KS","label":"Kansas"},
+          {"value":"KY","label":"Kentucky"},{"value":"LA","label":"Louisiana"},{"value":"ME","label":"Maine"},{"value":"MD","label":"Maryland"},
+          {"value":"MA","label":"Massachusetts"},{"value":"MI","label":"Michigan"},{"value":"MN","label":"Minnesota"},{"value":"MS","label":"Mississippi"},
+          {"value":"MO","label":"Missouri"},{"value":"MT","label":"Montana"},{"value":"NE","label":"Nebraska"},{"value":"NV","label":"Nevada"},
+          {"value":"NH","label":"New Hampshire"},{"value":"NJ","label":"New Jersey"},{"value":"NM","label":"New Mexico"},{"value":"NY","label":"New York"},
+          {"value":"NC","label":"North Carolina"},{"value":"ND","label":"North Dakota"},{"value":"OH","label":"Ohio"},{"value":"OK","label":"Oklahoma"},
+          {"value":"OR","label":"Oregon"},{"value":"PA","label":"Pennsylvania"},{"value":"RI","label":"Rhode Island"},{"value":"SC","label":"South Carolina"},
+          {"value":"SD","label":"South Dakota"},{"value":"TN","label":"Tennessee"},{"value":"TX","label":"Texas"},{"value":"UT","label":"Utah"},
+          {"value":"VT","label":"Vermont"},{"value":"VA","label":"Virginia"},{"value":"WA","label":"Washington"},{"value":"WV","label":"West Virginia"},
+          {"value":"WI","label":"Wisconsin"},{"value":"WY","label":"Wyoming"}
+        ], "prefillKeys": ["prefill.step3.institutionState"] },
+        { "key": "attendanceStartDate", "label": "Attendance Start Date", "type": "date", "required": true, "prefillKeys": ["prefill.step3.attendanceStartDate"] },
+        { "key": "graduationDate", "label": "Graduation Date", "type": "date", "required": true, "prefillKeys": ["prefill.step3.graduationDate"] }
+      ]
+    }
+  ],
+  "collections": [
+    {
+      "key": "residentialHistory",
+      "title": "Residential History (7 Years required)",
+      "addLabel": "Add Another Address",
+      "minItems": 1,
+      "fields": [
+        { "key": "streetAddress", "label": "Street Address", "type": "text", "required": true },
+        { "key": "city", "label": "City", "type": "text", "required": true },
+        { "key": "state", "label": "State", "type": "select", "required": true, "options": [
+          {"value":"","label":"Select"},
+          {"value":"AL","label":"Alabama"},{"value":"AK","label":"Alaska"},{"value":"AZ","label":"Arizona"},{"value":"AR","label":"Arkansas"},
+          {"value":"CA","label":"California"},{"value":"CO","label":"Colorado"},{"value":"CT","label":"Connecticut"},{"value":"DE","label":"Delaware"},
+          {"value":"FL","label":"Florida"},{"value":"GA","label":"Georgia"},{"value":"HI","label":"Hawaii"},{"value":"ID","label":"Idaho"},
+          {"value":"IL","label":"Illinois"},{"value":"IN","label":"Indiana"},{"value":"IA","label":"Iowa"},{"value":"KS","label":"Kansas"},
+          {"value":"KY","label":"Kentucky"},{"value":"LA","label":"Louisiana"},{"value":"ME","label":"Maine"},{"value":"MD","label":"Maryland"},
+          {"value":"MA","label":"Massachusetts"},{"value":"MI","label":"Michigan"},{"value":"MN","label":"Minnesota"},{"value":"MS","label":"Mississippi"},
+          {"value":"MO","label":"Missouri"},{"value":"MT","label":"Montana"},{"value":"NE","label":"Nebraska"},{"value":"NV","label":"Nevada"},
+          {"value":"NH","label":"New Hampshire"},{"value":"NJ","label":"New Jersey"},{"value":"NM","label":"New Mexico"},{"value":"NY","label":"New York"},
+          {"value":"NC","label":"North Carolina"},{"value":"ND","label":"North Dakota"},{"value":"OH","label":"Ohio"},{"value":"OK","label":"Oklahoma"},
+          {"value":"OR","label":"Oregon"},{"value":"PA","label":"Pennsylvania"},{"value":"RI","label":"Rhode Island"},{"value":"SC","label":"South Carolina"},
+          {"value":"SD","label":"South Dakota"},{"value":"TN","label":"Tennessee"},{"value":"TX","label":"Texas"},{"value":"UT","label":"Utah"},
+          {"value":"VT","label":"Vermont"},{"value":"VA","label":"Virginia"},{"value":"WA","label":"Washington"},{"value":"WV","label":"West Virginia"},
+          {"value":"WI","label":"Wisconsin"},{"value":"WY","label":"Wyoming"}
+        ] },
+        { "key": "postalCode", "label": "Postal Code", "type": "text", "required": true, "validation": { "pattern": "^\\d{5}(-\\d{4})?$|^[A-Za-z]\\d[A-Za-z]\\s?\\d[A-Za-z]\\d$", "message": "Please enter a valid US ZIP code (12345) or Canadian postal code (A1A 1A1)" } },
+        { "key": "county", "label": "County", "type": "select", "required": true, "options": [
+          {"value":"","label":"Select"},
+          {"value":"county1","label":"County 1"},{"value":"county2","label":"County 2"}
+        ] },
+        { "key": "country", "label": "Country", "type": "select", "required": true, "options": [
+          {"value":"","label":"Select"},
+          {"value":"US","label":"United States"},{"value":"CA","label":"Canada"},{"value":"GB","label":"United Kingdom"}
+        ] },
+        { "key": "fromDate", "label": "From Date", "type": "date", "required": true },
+        { "key": "endDate", "label": "End Date", "type": "date", "required": false },
+        { "key": "current", "label": "Current", "type": "checkbox", "required": false }
+      ]
+    }
+  ]
+}

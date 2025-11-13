@@ -1,0 +1,129 @@
+You’re posting to the wrong Affinda endpoint:
+
+https://api.affinda.com/v3/rpa/v1/documents  ← ❌ 404 “not_found”
+
+
+Affinda v3 should be:
+
+https://api.affinda.com/v3/documents        ← ✅
+
+
+That rpa/v1 segment is coming from an env override or an old adapter. Fix = lock the base URL, resolve a workspace, then POST to /v3/documents.
+
+Here’s the minimal, drop-in patch.
+
+1) Replace your adapter (forces the correct URL)
+
+server/vendor/affindaAdapter.js (ESM; if you use CommonJS, I can send that too)
+
+// server/vendor/affindaAdapter.js
+const API_BASE = 'https://api.affinda.com/v3'; // ← hardcode; ignore any AFFINDA_URL
+
+const API_KEY = process.env.AFFINDA_API_KEY || '';
+let ORG_ID = process.env.AFFINDA_ORG || null;
+let WORKSPACE_ID = process.env.AFFINDA_WORKSPACE || null;
+
+function authHeaders(extra = {}) {
+  if (!API_KEY) throw new Error('AFFINDA_API_KEY missing');
+  return { Authorization: `Bearer ${API_KEY}`, Accept: 'application/json', ...extra };
+}
+async function getJson(url) {
+  const res = await fetch(url, { headers: authHeaders() });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(`[Affinda GET ${url}] ${res.status} ${JSON.stringify(body)}`);
+  return body;
+}
+const idOf = (o) => o?.identifier || o?.id || o?.uuid || null;
+const first = (a) => (Array.isArray(a) && a.length ? a[0] : null);
+
+async function resolveOrganizationId() {
+  if (ORG_ID) return ORG_ID;
+  const body = await getJson(`${API_BASE}/organizations`);
+  const org = first(body.results || body.data || body.items || []);
+  if (!org) throw new Error('No organizations on this key');
+  ORG_ID = idOf(org);
+  if (!ORG_ID) throw new Error('Could not resolve organization id');
+  return ORG_ID;
+}
+async function resolveWorkspaceId() {
+  if (WORKSPACE_ID) return WORKSPACE_ID;
+  const orgId = await resolveOrganizationId();
+  const body = await getJson(`${API_BASE}/workspaces?organization=${encodeURIComponent(orgId)}`);
+  const ws = first(body.results || body.data || body.items || []);
+  if (!ws) throw new Error(`No workspaces for organization ${orgId}`);
+  WORKSPACE_ID = idOf(ws);
+  if (!WORKSPACE_ID) throw new Error('Could not resolve workspace id');
+  return WORKSPACE_ID;
+}
+
+export async function parseWithAffinda(buffer, filename, mimetype) {
+  const workspaceId = await resolveWorkspaceId();
+
+  const fd = new FormData(); // Node 18+: global FormData/Blob
+  fd.append('file', new Blob([buffer], { type: mimetype }), filename);
+  fd.append('workspace', workspaceId);
+  fd.append('wait', 'true');
+
+  const url = `${API_BASE}/documents`;
+  const res = await fetch(url, { method: 'POST', headers: authHeaders(), body: fd });
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const msg = body?.errors?.length ? JSON.stringify(body.errors) : JSON.stringify(body);
+    throw new Error(`[Affinda POST ${url}] ${res.status} ${msg}`);
+  }
+  return { raw: body };
+}
+
+export async function affindaStatus() {
+  try {
+    const org = await resolveOrganizationId();
+    const ws = await resolveWorkspaceId();
+    return { hasKey: !!API_KEY, organization: org, workspace: ws, error: null };
+  } catch (e) {
+    return { hasKey: !!API_KEY, organization: ORG_ID, workspace: WORKSPACE_ID, error: String(e.message || e) };
+  }
+}
+
+
+Also remove any env like AFFINDA_URL that might be setting /v3/rpa/v1. We want only AFFINDA_API_KEY, plus optional AFFINDA_ORG / AFFINDA_WORKSPACE.
+
+2) Add/keep this debug route
+// in your server main file
+import { affindaStatus } from './vendor/affindaAdapter.js';
+app.get('/api/debug/affinda', async (_req,res) => res.json(await affindaStatus()));
+
+
+Expect:
+
+{ "hasKey": true, "organization": "org_...", "workspace": "ws_...", "error": null }
+
+
+If error is not null, it tells you exactly which step failed.
+
+3) Restart & verify (quick checklist)
+
+Replit Secrets: keep only
+
+AFFINDA_API_KEY (token, no quotes)
+
+(optional) AFFINDA_ORG, AFFINDA_WORKSPACE
+
+Restart the repl server.
+
+Visit /api/debug/affinda → should show org + workspace.
+
+In DevTools → Network → Disable cache → hard reload.
+
+Upload a résumé. In Network, check your server log if any error remains; it should now POST to:
+
+https://api.affinda.com/v3/documents
+
+
+not /v3/rpa/v1/documents.
+
+4) Why your Step-3 still showed placeholders earlier
+
+The adapter was throwing on a 404 (bad URL), your client caught it and stayed on Step-2 with the “continue manually” message, so no parsed data was ever saved to localStorage. Once the endpoint is correct and returns 200, your Step-3 hydration will pick up real values.
+
+If you want, I can also give you a tiny CLI curl to confirm your key & workspace without touching the app, but the /api/debug/affinda route plus the hardcoded base URL typically resolves this instantly.

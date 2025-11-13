@@ -1,0 +1,152 @@
+Direct to your gateway
+
+curl -v -m 45 -F "file=@/path/to/resume.pdf" https://<your-gateway>/api/parse
+
+
+If this returns JSON → front end issue.
+
+If this hangs → gateway or vendor.
+
+Direct to the vendor (bypass gateway)
+
+curl -v -m 45 -H "Authorization: Bearer <KEY>" \
+     -F "file=@/path/to/resume.pdf" <PARSER_ENDPOINT>
+
+
+If this hangs too → vendor is slow/async; switch your code to upload→poll.
+
+If this succeeds → your gateway needs timeouts/logging tweaks.
+
+2) Patch your gateway now (timeouts + tracing)
+
+Add hard timeouts and a traceId at every hop so you can see exactly where it stalls.
+
+// server.js (replace your handler)
+// npm i uuid
+import { v4 as uuid } from "uuid";
+import http from "http";
+import https from "https";
+
+// keep-alive agents + timeouts
+const httpAgent  = new http.Agent({ keepAlive: true });
+const httpsAgent = new https.Agent({ keepAlive: true });
+
+app.post('/api/parse', upload.single('file'), async (req, res) => {
+  const traceId = uuid();
+  const t0 = Date.now();
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded', traceId });
+
+    console.log(`[${traceId}] Received ${req.file.originalname} (${req.file.mimetype}, ${req.file.size} bytes)`);
+
+    const form = new FormData();
+    form.append('file', req.file.buffer, { filename: req.file.originalname, contentType: req.file.mimetype });
+
+    const axiosOpts = {
+      headers: { ...form.getHeaders(), Authorization: `Bearer ${process.env.PARSER_API_KEY}` },
+      timeout: 30000,                 // 30s hard cap
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity,
+      httpAgent,
+      httpsAgent,
+      validateStatus: () => true
+    };
+
+    console.log(`[${traceId}] Posting to parser…`);
+    const r = await axios.post(process.env.PARSER_ENDPOINT, form, axiosOpts);
+    console.log(`[${traceId}] Parser responded ${r.status} in ${Date.now()-t0}ms`);
+
+    if (r.status >= 400) {
+      return res.status(r.status).json({ error: 'Vendor error', vendorMessage: r.data, traceId });
+    }
+
+    const normalized = normalizeToProfile(r.data);
+    return res.json({ raw: r.data, normalized, traceId });
+  } catch (err) {
+    console.error(`[${traceId}] ERROR:`, err.message);
+    return res.status(504).json({ error: 'Parse timeout or network error', detail: err.message, traceId });
+  }
+});
+
+// Optional: raise Node’s server timeout (Render/Vercel often cut at ~60–90s anyway)
+app.setTimeout?.(65000);
+
+
+Why this helps: you’ll see in logs whether it stalls before the vendor call, during it, or on the way back. And the 30s cap prevents “forever” hangs.
+
+3) If the vendor is slow → switch to async “upload → poll” (rock-solid)
+
+Some parsers (esp. with OCR) need more than 30–60s. Treat them as jobs:
+
+Gateway pattern
+
+// In-memory demo store; swap for Redis/DB in prod
+const jobs = new Map();
+
+// 1) Create job
+app.post('/api/parse/start', upload.single('file'), async (req, res) => {
+  const id = uuid();
+  jobs.set(id, { status: 'processing' });
+  res.status(202).json({ jobId: id });
+
+  try {
+    // Upload to vendor (async endpoint)
+    const uploadForm = new FormData();
+    uploadForm.append('file', req.file.buffer, { filename: req.file.originalname, contentType: req.file.mimetype });
+    const up = await axios.post(process.env.VENDOR_UPLOAD, uploadForm, { headers: { ...uploadForm.getHeaders(), Authorization: `Bearer ${process.env.PARSER_API_KEY}` }});
+    const vendorId = up.data.id;
+
+    // Poll vendor until ready
+    let done = false, tries = 0;
+    while (!done && tries < 40) { // ~40*2s = 80s
+      await new Promise(r => setTimeout(r, 2000));
+      const st = await axios.get(`${process.env.VENDOR_STATUS}/${vendorId}`, { headers: { Authorization: `Bearer ${process.env.PARSER_API_KEY}` }});
+      if (st.data.status === 'ready') {
+        const result = st.data.result;
+        jobs.set(id, { status: 'ready', data: { raw: result, normalized: normalizeToProfile(result) }});
+        done = true;
+      }
+      tries++;
+    }
+    if (!done) jobs.set(id, { status: 'timeout' });
+  } catch (e) {
+    jobs.set(id, { status: 'error', error: e.message });
+  }
+});
+
+// 2) Client polls
+app.get('/api/parse/status/:id', (req, res) => {
+  const j = jobs.get(req.params.id);
+  if (!j) return res.status(404).json({ error: 'Not found' });
+  res.json(j);
+});
+
+
+Front end
+
+// Start
+const fd = new FormData(); fd.append('file', file, file.name);
+const start = await fetch('/api/parse/start', { method:'POST', body: fd }).then(r=>r.json());
+
+// Poll
+let data;
+for (let i=0;i<50;i++){
+  await new Promise(r=>setTimeout(r,2000));
+  const s = await fetch(`/api/parse/status/${start.jobId}`).then(r=>r.json());
+  if (s.status === 'ready'){ data = s.data; break; }
+  if (s.status === 'error' || s.status === 'timeout') throw new Error(s.error||s.status);
+}
+// use data.normalized → fill your form
+
+
+This pattern avoids “stuck” requests entirely and plays nice with hosts that kill long-running HTTP calls.
+
+4) Two more quick wins
+
+Increase upload limit if needed: multer({ limits: { fileSize: 20 * 1024 * 1024 }}).
+
+Add OCR fallback: if vendor says “no text,” run OCR (even a lightweight service) and retry.
+
+5) If you need to keep moving today
+
+Add a “Paste resume text” option + your short intake so onboarding never blocks; backfill parsed structure later.

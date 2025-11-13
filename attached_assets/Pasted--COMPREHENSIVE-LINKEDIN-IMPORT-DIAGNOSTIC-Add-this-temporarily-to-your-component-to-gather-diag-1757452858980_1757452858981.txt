@@ -1,0 +1,133 @@
+// COMPREHENSIVE LINKEDIN IMPORT DIAGNOSTIC
+// Add this temporarily to your component to gather diagnostic data
+
+useEffect(() => {
+  const runDiagnostics = async () => {
+    console.log('🔍 === COMPREHENSIVE LINKEDIN IMPORT DIAGNOSTICS ===');
+    
+    // 1. Check what Affinda actually parsed
+    console.log('📋 STEP 1: Checking Affinda Parse Results');
+    const resumeData = JSON.parse(localStorage.getItem('resumeData') || 'null');
+    console.log('Raw resumeData from localStorage:', JSON.stringify(resumeData, null, 2));
+    
+    if (resumeData) {
+      console.log('Affinda parsed data structure:', {
+        hasData: !!resumeData.data,
+        hasPrefill: !!resumeData.prefill,
+        step3Keys: Object.keys(resumeData?.prefill?.step3 || {}),
+        allLinkedInFields: Object.entries(resumeData?.prefill?.step3 || {})
+          .filter(([key, value]) => key.toLowerCase().includes('linkedin'))
+      });
+    }
+    
+    // 2. Check server API response
+    console.log('🌐 STEP 2: Testing Server API');
+    try {
+      const response = await fetch('/api/profile/draft');
+      console.log('Server response status:', response.status);
+      console.log('Server response headers:', Object.fromEntries(response.headers.entries()));
+      
+      if (response.ok) {
+        const serverData = await response.json();
+        console.log('Server draft data:', JSON.stringify(serverData, null, 2));
+        console.log('Server LinkedIn fields:', Object.entries(serverData || {})
+          .filter(([key, value]) => key.toLowerCase().includes('linkedin')));
+      } else {
+        const errorText = await response.text();
+        console.log('Server error response:', errorText);
+      }
+    } catch (error) {
+      console.error('Server fetch error:', error);
+    }
+    
+    // 3. Check getStep3Prefill function
+    console.log('⚙️ STEP 3: Testing getStep3Prefill Function');
+    try {
+      const prefillData = getStep3Prefill();
+      console.log('getStep3Prefill returned:', JSON.stringify(prefillData, null, 2));
+      console.log('Prefill LinkedIn fields:', Object.entries(prefillData || {})
+        .filter(([key, value]) => key.toLowerCase().includes('linkedin')));
+    } catch (error) {
+      console.error('getStep3Prefill error:', error);
+    }
+    
+    // 4. Check safeMergeResumeData function
+    console.log('🔄 STEP 4: Testing safeMergeResumeData');
+    const testData = { linkedin: 'https://linkedin.com/in/test', currentJobTitle: 'Test Title' };
+    console.log('Testing safeMergeResumeData with:', testData);
+    try {
+      safeMergeResumeData(testData);
+      const afterMerge = JSON.parse(localStorage.getItem('resumeData') || 'null');
+      console.log('localStorage after merge:', JSON.stringify(afterMerge, null, 2));
+    } catch (error) {
+      console.error('safeMergeResumeData error:', error);
+    }
+    
+    // 5. DOM inspection
+    console.log('🎯 STEP 5: DOM Element Check');
+    const linkedinInput = document.querySelector('input[name="linkedin"]');
+    console.log('LinkedIn input element:', {
+      exists: !!linkedinInput,
+      value: linkedinInput?.value,
+      id: linkedinInput?.id,
+      name: linkedinInput?.name
+    });
+    
+    // 6. Network timeline
+    console.log('🕐 STEP 6: Component Load Timeline');
+    console.log('Current formData state:', formData);
+    console.log('Pre variable:', pre);
+    
+    console.log('🔍 === DIAGNOSTICS COMPLETE ===');
+  };
+  
+  // Run diagnostics after a short delay to ensure everything is loaded
+  setTimeout(runDiagnostics, 1000);
+}, []);
+
+// Add this button to your debug section for manual testing
+const manualDiagnosticButton = (
+  <button 
+    onClick={() => {
+      console.log('🔧 MANUAL DIAGNOSTIC TRIGGERED');
+      
+      // Check current state
+      console.log('Current form state:', formData);
+      
+      // Check localStorage
+      const storage = JSON.parse(localStorage.getItem('resumeData') || 'null');
+      console.log('Current localStorage:', storage);
+      
+      // Check all possible LinkedIn locations
+      const linkedInSources = {
+        'formData.linkedin': formData.linkedin,
+        'localStorage.prefill.step3.linkedin': storage?.prefill?.step3?.linkedin,
+        'localStorage.prefill.step3.linkedIn': storage?.prefill?.step3?.linkedIn,
+        'localStorage.prefill.step3.linkedinUrl': storage?.prefill?.step3?.linkedinUrl,
+        'localStorage.data.linkedin': storage?.data?.linkedin,
+        'pre.linkedin': pre?.linkedin,
+        'pre.linkedIn': pre?.linkedIn,
+        'DOM_input_value': document.querySelector('input[name="linkedin"]')?.value
+      };
+      
+      console.log('All LinkedIn data sources:', linkedInSources);
+      
+      // Find non-empty values
+      const nonEmptyLinkedIn = Object.entries(linkedInSources)
+        .filter(([key, value]) => value && value.trim())
+        .map(([key, value]) => ({ source: key, value: value.trim() }));
+      
+      console.log('Non-empty LinkedIn values found:', nonEmptyLinkedIn);
+      
+      if (nonEmptyLinkedIn.length === 0) {
+        console.error('❌ NO LINKEDIN DATA FOUND ANYWHERE');
+        console.log('This suggests the Affinda parsing failed or data is stored differently');
+      } else {
+        console.log('✅ LinkedIn data found in:', nonEmptyLinkedIn.map(x => x.source));
+      }
+    }}
+    style={{marginLeft: '10px', backgroundColor: '#ff6b6b', color: 'white', padding: '5px 10px'}}
+  >
+    Run Full Diagnostic
+  </button>
+);

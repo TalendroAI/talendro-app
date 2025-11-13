@@ -1,0 +1,189 @@
+Greg — I feel your pain. The server is clearly emitting LinkedIn and Current Title, so this is purely a **frontend binding/name/timing** issue. Here’s a **copy-paste fix** that works even if your stored JSON shape or key casing varies.
+
+---
+
+## 0) Confirm the data (one-time, in Step-3 console)
+
+```js
+const raw = JSON.parse(localStorage.getItem('resumeData')||'null');
+const s3 = raw?.prefill?.step3 || raw?.data?.prefill?.step3 || {};
+console.log('STEP3=', s3);
+```
+
+If you see `linkedinUrl` populated (as your logs show), the rest below will make it render.
+
+---
+
+## 1) Add a tiny tolerant getter
+
+**client/src/lib/prefill.js**
+
+```js
+export function getStep3Prefill() {
+  const raw = JSON.parse(localStorage.getItem('resumeData') || 'null');
+  const bag = raw?.prefill?.step3 || raw?.data?.prefill?.step3 || {};
+  const linkedIn =
+    bag.linkedin || bag.linkedIn || bag.linkedinUrl || '';
+  const currentJobTitle =
+    bag.currentJobTitle || bag.currentTitle || '';
+  return { ...bag, linkedIn, currentJobTitle };
+}
+```
+
+---
+
+## 2) If you use plain React state (no RHF)
+
+**client/src/app/Onb3.js** (relevant bits)
+
+```jsx
+import { useEffect, useMemo, useState } from 'react';
+import { getStep3Prefill } from '../lib/prefill';
+
+export default function Onb3() {
+  const pre = useMemo(() => getStep3Prefill(), []);
+  const [form, setForm] = useState({
+    fullLegalName: '',
+    email: '',
+    phone: '',
+    physicalAddress: '',
+    linkedin: '',          // <- canonical in UI
+    currentJobTitle: ''    // <- canonical in UI
+  });
+
+  useEffect(() => {
+    setForm(f => ({
+      ...f,
+      fullLegalName: pre.fullLegalName || '',
+      email: pre.email || '',
+      phone: pre.phone || '',
+      physicalAddress: pre.physicalAddress || '',
+      linkedin: pre.linkedIn || '',              // tolerant fill
+      currentJobTitle: pre.currentJobTitle || ''
+    }));
+    console.log('💧Hydrated Step3 from prefill:', pre);
+  }, [pre]);
+
+  return (
+    <form>
+      {/* …other fields… */}
+      <label>LinkedIn</label>
+      <input
+        name="linkedin"
+        value={form.linkedin}                  // CONTROLLED value (not placeholder)
+        onChange={e => setForm(s => ({ ...s, linkedin: e.target.value }))}
+        autoComplete="url"
+      />
+      <label>Current Job Title</label>
+      <input
+        name="currentJobTitle"
+        value={form.currentJobTitle}
+        onChange={e => setForm(s => ({ ...s, currentJobTitle: e.target.value }))}
+      />
+      {/* … */}
+    </form>
+  );
+}
+```
+
+---
+
+## 3) If you use React Hook Form
+
+**client/src/app/Onb3.js**
+
+```jsx
+import { useEffect, useMemo } from 'react';
+import { useForm } from 'react-hook-form';
+import { getStep3Prefill } from '../lib/prefill';
+
+export default function Onb3() {
+  const pre = useMemo(() => getStep3Prefill(), []);
+  const { register, reset } = useForm({ defaultValues: {} });
+
+  useEffect(() => {
+    reset({
+      fullLegalName: pre.fullLegalName || '',
+      email: pre.email || '',
+      phone: pre.phone || '',
+      physicalAddress: pre.physicalAddress || '',
+      linkedin: pre.linkedIn || '',                // tolerant
+      currentJobTitle: pre.currentJobTitle || ''
+    });
+    console.log('💧RHF reset with prefill:', pre);
+  }, [pre, reset]);
+
+  return (
+    <form>
+      {/* …other fields… */}
+      <label>LinkedIn</label>
+      <input {...register('linkedin')} autoComplete="url" />
+      <label>Current Job Title</label>
+      <input {...register('currentJobTitle')} />
+      {/* … */}
+    </form>
+  );
+}
+```
+
+> **Gotcha:** don’t mix `defaultValue` and `value` on the same input. With RHF, prefer `reset()` to hydrate.
+
+---
+
+## 4) Make the server extra-forgiving (optional but recommended)
+
+Where you build `prefill.step3` on the server, emit **all synonyms** so any client variant works:
+
+```js
+prefill.step3 = {
+  ...prefill.step3,
+  linkedin: linkedInUrl || prefill.step3?.linkedin || '',
+  linkedIn: linkedInUrl || prefill.step3?.linkedIn || '',
+  linkedinUrl: linkedInUrl || prefill.step3?.linkedinUrl || '',
+  currentJobTitle: currentTitle || prefill.step3?.currentJobTitle || '',
+  currentTitle: currentTitle || prefill.step3?.currentTitle || ''
+};
+```
+
+---
+
+## 5) 15-second sanity checks
+
+* In Step-3 console:
+
+```js
+// See what the form actually bound to the input:
+document.querySelector('input[name="linkedin"]')?.value
+document.querySelector('input[name="currentJobTitle"]')?.value
+```
+
+If those are empty but `getStep3Prefill()` returns values, it’s a binding/timing issue—use the code above verbatim.
+
+* Ensure you’re **not** only using `placeholder="https://…"` on those fields. Placeholders never set values.
+
+* If you previously had a prop named `linkedIn` (capital I) anywhere, normalize it to `linkedin` everywhere in the UI. Search your repo for `linkedIn` vs `linkedin` and unify.
+
+---
+
+## 6) If it *still* doesn’t show
+
+Drop this **temporary safety net** above the form to verify the UI sees the value:
+
+```jsx
+<p style={{fontSize:12,opacity:.8}}>
+  Debug LinkedIn: {pre.linkedIn || '(none)'}
+</p>
+```
+
+If that prints the URL, the form binding is the last missing piece—use the controlled input pattern exactly as shown.
+
+---
+
+### Why this will end the loop
+
+* It tolerates **all three server key variants**.
+* It tolerates **both localStorage shapes** (`{prefill…}` or `{data:{prefill…}}`).
+* It uses **controlled inputs or RHF reset**, eliminating placeholder-only or timing bugs.
+* It adds clear logs so you can see hydration actually happened.
+
+If you want, paste your current `<input>` blocks for LinkedIn and Current Job Title and I’ll rewrite them line-for-line so they bind correctly.

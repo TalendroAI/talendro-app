@@ -1,0 +1,161 @@
+1) Quick triage (these cause 90% of parser “failures” on Replit)
+
+Call the parser from your server, not the browser. CORS and secret leakage explode otherwise.
+
+Don’t set Content-Type manually when sending FormData—let the library add the boundary.
+
+Send raw bytes, not base64/JSON. In Node: form.append('file', req.file.buffer, { filename, contentType }).
+
+Check the exact HTTP code & body:
+
+401/403: key or header wrong
+
+413: file too large (compress or reject >5–10MB)
+
+415: wrong content-type (usually you overrode it)
+
+422/400: invalid payload (often you sent text, not a file)
+
+Scanned PDFs need OCR. Add an OCR fallback (Tesseract/cloud OCR) for image-only resumes.
+
+2) Drop-in “parsing gateway” you can paste into Replit (Node/Express)
+
+Use this as a minimal, reliable bridge between your site and any parser API. It handles upload → forwards bytes to your parser → normalizes to your “Application Profile” shape.
+
+// server.js
+// Run: npm i express multer axios form-data
+// ENV: PARSER_ENDPOINT, PARSER_API_KEY
+
+const express = require('express');
+const multer = require('multer');
+const axios = require('axios');
+const FormData = require('form-data');
+
+const app = express();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB
+
+// ---- Your target schema (lean) ----
+function normalizeToProfile(vendorJson = {}) {
+  // Defensive reads across common vendor shapes
+  const r = vendorJson.resume || vendorJson.data || vendorJson || {};
+
+  const identity = r.identity || r.personal || r.personal_info || {};
+  const name = identity.name || [identity.first_name, identity.last_name].filter(Boolean).join(' ') || '';
+  const contact = identity.contact || r.contact || r.contacts || {};
+
+  const jobs = r.experience || r.employment_history || r.positions || [];
+  const edu  = r.education || r.education_history || [];
+
+  return {
+    identity: {
+      legalName: name,
+      email: (contact.email || (Array.isArray(contact.emails) && contact.emails[0]) || ''),
+      phone: (contact.phone || (Array.isArray(contact.phones) && contact.phones[0]) || ''),
+      address: contact.address || '',
+      links: {
+        linkedin: (contact.linkedin || (contact.profiles?.linkedin) || ''),
+        portfolio: (contact.website || (Array.isArray(contact.websites) && contact.websites[0]) || '')
+      }
+    },
+    experience: (Array.isArray(jobs) ? jobs : []).map(j => ({
+      employer: j.employer || j.company || '',
+      title: j.title || '',
+      city: j.city || '',
+      state: j.state || '',
+      start: j.start_date || j.start || '',
+      end: j.end_date || j.end || '',
+      achievements: j.highlights || j.responsibilities || []
+    })),
+    education: (Array.isArray(edu) ? edu : []).map(e => ({
+      institution: e.institution || e.school || '',
+      degree: e.accreditation?.input_str || e.degree || '',
+      field: e.major || e.field_of_study || '',
+      gradDate: e.graduation_date || e.end_date || ''
+    })),
+    skills: {
+      hard: (r.skills || []).map(s => s.name || s).filter(Boolean),
+      soft: []
+    },
+    // Placeholders you’ll complete via intake:
+    workAuth: { citizenship: "", requiresSponsorship: false, clearances: [] },
+    preferences: { roles: [], locations: [], remote: "flexible", salaryMin: null, startDate: "", travelPct: 0, relocate: false, shifts: ["day"] },
+    eeo: { gender: "decline", race: "decline", veteran: "decline", disability: "decline" },
+    references: [],
+    consent: { applyOnBehalf: false, signatureId: "", timestamp: "" }
+  };
+}
+
+// ---- Upload endpoint ----
+app.post('/api/parse', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+
+    // Forward bytes to your parser vendor
+    const form = new FormData();
+    form.append('file', req.file.buffer, {
+      filename: req.file.originalname,
+      contentType: req.file.mimetype
+    });
+
+    const response = await axios.post(process.env.PARSER_ENDPOINT, form, {
+      headers: {
+        ...form.getHeaders(),
+        Authorization: `Bearer ${process.env.PARSER_API_KEY}`
+      },
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity,
+      timeout: 30000
+    });
+
+    const normalized = normalizeToProfile(response.data);
+    res.json({ raw: response.data, normalized });
+  } catch (err) {
+    const status = err.response?.status || 500;
+    const data = err.response?.data;
+    res.status(status).json({
+      error: 'Parse failed',
+      status,
+      vendorMessage: typeof data === 'string' ? data : data || err.message
+    });
+  }
+});
+
+app.get('/', (_, res) => res.send('Parser gateway is alive.'));
+app.listen(process.env.PORT || 3000, () => console.log('Listening on 3000'));
+
+
+How to test quickly
+
+# Upload a local file to your Replit backend:
+curl -F "file=@/path/to/resume.pdf" https://<your-repl-url>/api/parse
+
+
+If cURL works but the site doesn’t, the bug is in your front-end upload. If cURL fails, it’s keys/endpoint/payload.
+
+3) Bulletproof the front-end upload
+
+Use <input type="file"> → new FormData() → form.append('file', file, file.name)
+
+Send to your own /api/parse.
+
+Do not set Content-Type; fetch will.
+
+Show progress & accept only pdf, doc, docx.
+
+4) Add an OCR fallback for scanned resumes
+
+If the vendor returns “no text found” (common on image-only PDFs), route to OCR before retrying. Even a lightweight service will unblock most scans.
+
+5) Keep shipping while parsing is flaky
+
+Unblock the flow today by adding a “Paste resume text” path and a short intake (work auth, supervisor contact, OK-to-contact, reasons for leaving, etc.). You can backfill parsed structure later; don’t let parsing freeze the rest of the product.
+
+6) Minimal “golden set” for confidence
+
+Assemble 20 varied resumes (PDF/DOCX, short/long, non-US, with certs, one scanned). Make your CI call /api/parse on all 20 and assert:
+
+≥95% capture of employer/title/dates
+
+No 4xx/5xx
+
+Non-empty skills

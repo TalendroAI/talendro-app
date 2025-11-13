@@ -1,0 +1,253 @@
+Your diagnostics are spot-on: Affinda v3 requires a workspace, and your adapter wasn’t supplying one. Below is a drop-in fix that implements the proper 3-step flow (organizations → workspaces → document upload) with caching, strong error handling, and zero UI changes.
+
+What you’ll change (summary)
+
+Replace your server/vendor/affindaAdapter.js with the code below (ESM).
+
+Reads AFFINDA_API_KEY.
+
+Optionally uses AFFINDA_WORKSPACE (and/or AFFINDA_ORG) if provided.
+
+Otherwise: GET /organizations → pick first → GET /workspaces?organization=... → pick first → POST /documents with workspace + wait=true.
+
+Add a tiny debug endpoint so you can confirm the server sees the API key & resolved workspace.
+
+(No client changes required.)
+
+If your server uses CommonJS, I’ve included a CJS version at the end. Use one or the other.
+
+1) Drop-in replacement — server/vendor/affindaAdapter.js (ESM)
+// server/vendor/affindaAdapter.js  (ESM: "type": "module" in package.json)
+// Requires Node 18+ (global fetch, FormData, Blob). If not, install undici.
+
+const API_BASE = 'https://api.affinda.com/v3';
+
+const API_KEY = process.env.AFFINDA_API_KEY || '';
+let ORG_ID = process.env.AFFINDA_ORG || null;          // optional shortcut
+let WORKSPACE_ID = process.env.AFFINDA_WORKSPACE || null; // optional shortcut
+
+function authHeaders(extra = {}) {
+  if (!API_KEY) throw new Error('AFFINDA_API_KEY missing');
+  return {
+    'Authorization': `Bearer ${API_KEY}`,
+    'Accept': 'application/json',
+    ...extra
+  };
+}
+
+async function getJson(url) {
+  const res = await fetch(url, { headers: authHeaders() });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const detail = JSON.stringify(body);
+    throw new Error(`[Affinda GET ${url}] ${res.status} ${detail}`);
+  }
+  return body;
+}
+
+function pickId(obj) {
+  // Affinda returns "identifier" in many list payloads; be defensive.
+  return obj?.identifier || obj?.id || obj?.uuid || null;
+}
+
+function first(list) {
+  return Array.isArray(list) && list.length ? list[0] : null;
+}
+
+async function resolveOrganizationId() {
+  if (ORG_ID) return ORG_ID;
+
+  const body = await getJson(`${API_BASE}/organizations`);
+  const items = body.results || body.data || body.items || [];
+  const org = first(items);
+  if (!org) throw new Error('No organizations found on Affinda account');
+  ORG_ID = pickId(org);
+  if (!ORG_ID) throw new Error('Could not resolve organization identifier');
+  return ORG_ID;
+}
+
+async function resolveWorkspaceId() {
+  if (WORKSPACE_ID) return WORKSPACE_ID;
+
+  const orgId = await resolveOrganizationId();
+  const body = await getJson(`${API_BASE}/workspaces?organization=${encodeURIComponent(orgId)}`);
+  const items = body.results || body.data || body.items || [];
+  const ws = first(items);
+  if (!ws) throw new Error(`No workspaces found for organization ${orgId}`);
+  WORKSPACE_ID = pickId(ws);
+  if (!WORKSPACE_ID) throw new Error('Could not resolve workspace identifier');
+  return WORKSPACE_ID;
+}
+
+export async function parseWithAffinda(buffer, filename, mimetype) {
+  // If you want to keep a safe stub when no key: uncomment below.
+  // if (!API_KEY) return { raw: { data: { name: { raw: 'Sample Candidate' } } } };
+
+  const workspaceId = await resolveWorkspaceId();
+
+  const fd = new FormData();
+  // Node 18+: FormData accepts Blob with filename
+  fd.append('file', new Blob([buffer], { type: mimetype }), filename);
+  fd.append('workspace', workspaceId);
+  fd.append('wait', 'true'); // synchronous parse; API returns populated document
+
+  const res = await fetch(`${API_BASE}/documents`, {
+    method: 'POST',
+    headers: authHeaders(), // Do NOT set Content-Type; fetch sets multipart boundary
+    body: fd
+  });
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const msg = body?.errors?.length ? JSON.stringify(body.errors) : JSON.stringify(body);
+    throw new Error(`[Affinda POST /documents] ${res.status} ${msg}`);
+  }
+
+  // Body contains document + extracted data (depends on account settings)
+  return { raw: body };
+}
+
+export async function affindaStatus() {
+  let org = null, ws = null, ok = !!API_KEY, error = null;
+  try {
+    if (ok) {
+      org = await resolveOrganizationId();
+      ws = await resolveWorkspaceId();
+    }
+  } catch (e) {
+    error = String(e.message || e);
+  }
+  return { hasKey: ok, organization: org, workspace: ws, error };
+}
+
+Add a tiny debug route (optional but recommended)
+// server/index.js (or your main server file)
+import { affindaStatus } from './vendor/affindaAdapter.js';
+
+app.get('/api/debug/affinda', async (_req, res) => {
+  try {
+    const s = await affindaStatus();
+    res.json(s);
+  } catch (e) {
+    res.status(500).json({ error: String(e.message || e) });
+  }
+});
+
+
+You should see something like:
+
+{ "hasKey": true, "organization": "org_xxx", "workspace": "ws_yyy", "error": null }
+
+2) No server route changes needed elsewhere
+
+Your existing /api/resume/parse can stay as-is if it calls parseWithAffinda(...) and then maps to profileDraft/prefill. The adapter now guarantees the required workspace is included.
+
+(If you standardized on { success:true, data:{...} }, keep that response shape—your client code already accepts both.)
+
+3) Environment variables (Replit Secrets)
+
+Set these in Replit → Secrets and restart the repl:
+
+AFFINDA_API_KEY → your token (no quotes).
+
+Optional (skips discovery calls):
+
+AFFINDA_ORG → your organization identifier.
+
+AFFINDA_WORKSPACE → your workspace identifier.
+
+If you set AFFINDA_WORKSPACE, the adapter won’t call the org/workspace endpoints at all.
+
+4) Quick verification checklist
+
+Hit /api/debug/affinda → should show { hasKey:true, organization: "...", workspace: "..." }.
+
+If workspace is null or an error appears, the adapter will tell you exactly which step failed.
+
+Upload a résumé on Step-2 → Network shows POST /api/resume/parse → 200.
+
+Step-3 fields hydrate from resumeData.prefill.step3 (or /api/profile/draft if you added that endpoint).
+
+5) (Optional) CommonJS version of the adapter
+
+If your server uses require(...), use this file instead:
+
+// server/vendor/affindaAdapter.cjs  (CommonJS)
+
+const API_BASE = 'https://api.affinda.com/v3';
+const API_KEY = process.env.AFFINDA_API_KEY || '';
+let ORG_ID = process.env.AFFINDA_ORG || null;
+let WORKSPACE_ID = process.env.AFFINDA_WORKSPACE || null;
+
+function authHeaders(extra = {}) {
+  if (!API_KEY) throw new Error('AFFINDA_API_KEY missing');
+  return { 'Authorization': `Bearer ${API_KEY}`, 'Accept': 'application/json', ...extra };
+}
+
+async function getJson(url) {
+  const res = await fetch(url, { headers: authHeaders() });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(`[Affinda GET ${url}] ${res.status} ${JSON.stringify(body)}`);
+  return body;
+}
+const pickId = (o) => o?.identifier || o?.id || o?.uuid || null;
+const first = (a) => Array.isArray(a) && a.length ? a[0] : null;
+
+async function resolveOrganizationId() {
+  if (ORG_ID) return ORG_ID;
+  const body = await getJson(`${API_BASE}/organizations`);
+  const items = body.results || body.data || body.items || [];
+  const org = first(items);
+  if (!org) throw new Error('No organizations found');
+  ORG_ID = pickId(org);
+  if (!ORG_ID) throw new Error('Could not resolve organization id');
+  return ORG_ID;
+}
+
+async function resolveWorkspaceId() {
+  if (WORKSPACE_ID) return WORKSPACE_ID;
+  const orgId = await resolveOrganizationId();
+  const body = await getJson(`${API_BASE}/workspaces?organization=${encodeURIComponent(orgId)}`);
+  const items = body.results || body.data || body.items || [];
+  const ws = first(items);
+  if (!ws) throw new Error(`No workspaces for organization ${orgId}`);
+  WORKSPACE_ID = pickId(ws);
+  if (!WORKSPACE_ID) throw new Error('Could not resolve workspace id');
+  return WORKSPACE_ID;
+}
+
+async function parseWithAffinda(buffer, filename, mimetype) {
+  const workspaceId = await resolveWorkspaceId();
+  const fd = new FormData();
+  fd.append('file', new Blob([buffer], { type: mimetype }), filename);
+  fd.append('workspace', workspaceId);
+  fd.append('wait', 'true');
+
+  const res = await fetch(`${API_BASE}/documents`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: fd
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(`[Affinda POST /documents] ${res.status} ${JSON.stringify(body)}`);
+  return { raw: body };
+}
+
+async function affindaStatus() {
+  let org = null, ws = null, ok = !!API_KEY, error = null;
+  try { if (ok) { org = await resolveOrganizationId(); ws = await resolveWorkspaceId(); } }
+  catch (e) { error = String(e.message || e); }
+  return { hasKey: ok, organization: org, workspace: ws, error };
+}
+
+module.exports = { parseWithAffinda, affindaStatus };
+
+6) Why this fixes your errors
+
+400 “organization required” on /workspaces → we now supply ?organization=... (or skip the call if you set AFFINDA_WORKSPACE).
+
+400 “Workspace is required” on /documents → we now always send a workspace form field (resolved + cached).
+
+All steps log clear, actionable errors if Affinda responds with a validation error.
+
+If you want me to also add a tiny bake-off CLI to exercise the adapter against a folder of sample résumés and report field coverage, I can drop that in too. But this adapter fix alone will get parsing flowing end-to-end in Replit.

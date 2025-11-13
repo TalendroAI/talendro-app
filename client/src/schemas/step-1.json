@@ -1,0 +1,15 @@
+{
+  "id": "step-1",
+  "title": "Create Your Profile",
+  "route": "/app/onboarding/step-1",
+  "nextRoute": "/app/onboarding/step-2",
+  "fields": [
+    { "key": "firstName", "label": "First Name", "type": "text", "required": true, "testId": "input-firstname" },
+    { "key": "lastName", "label": "Last Name", "type": "text", "required": true, "testId": "input-lastname" },
+    { "key": "email", "label": "Email Address", "type": "email", "required": true, "testId": "input-email", "validation": { "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", "message": "Please enter a valid email address" } },
+    { "key": "phone", "label": "Phone Number", "type": "tel", "required": true, "testId": "input-phone", "validation": { "pattern": "^[\\+]?[1-9][\\d]{0,15}$|^[\\(]?[0-9]{3}[\\)]?[\\s\\-]?[0-9]{3}[\\s\\-]?[0-9]{4}$", "message": "Please enter a valid phone number" } },
+    { "key": "password", "label": "Password", "type": "password", "required": true, "testId": "input-password", "validation": { "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?])[A-Za-z\\d@$!%*?&()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]{12,128}$", "message": "Password must be 12-128 characters with uppercase, lowercase, number, and special character" } },
+    { "key": "confirmPassword", "label": "Confirm Password", "type": "password", "required": true, "testId": "input-password-confirm" },
+    { "key": "agreeToTerms", "label": "I agree to the Terms and Privacy Policy", "type": "checkbox", "required": true, "testId": "checkbox-terms" }
+  ]
+}

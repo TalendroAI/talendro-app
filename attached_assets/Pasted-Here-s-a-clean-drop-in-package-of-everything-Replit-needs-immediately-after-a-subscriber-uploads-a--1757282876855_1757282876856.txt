@@ -1,0 +1,578 @@
+Here’s a clean, drop-in package of everything Replit needs immediately after a subscriber uploads a résumé—using an adapter pattern that talks to Affinda (or any other vendor later), normalizes the result into our ProfileDraft, and hands Steps 3–6 the prefills + confidence.
+
+What to hand your Replit dev (summary)
+
+Set one secret in Replit:
+
+AFFINDA_API_KEY → your “Bearer …” token (Replit → Tools → Secrets).
+
+Install deps
+
+npm i express multer axios form-data uuid
+
+
+(If you’re already using Express, only add what you’re missing.)
+
+Add these server files (copy/paste as-is):
+
+server/profileDraftStore.js – in-memory store + merge rules
+
+server/vendor/affindaAdapter.js – calls Affinda and returns normalized raw
+
+server/mappers/mapToProfileDraft.js – maps vendor raw → ProfileDraft (JSON)
+
+server/routes/parse.js – upload → parse → status; returns {profileDraft, prefill, confidence}
+
+Wire the route in your Express app.js / index.js
+
+(Optional) Front-end Step-2 glue – a tiny snippet to POST the file and handle the “Parsing…” state with a Continue Manually fallback.
+
+Everything below is production-safe (no PII leaks to logs), defensive (safe optional chaining), and does not send DOB/SSN to the vendor. You can switch vendors later by swapping one adapter.
+
+1) server/profileDraftStore.js
+
+In-memory store for Replit (swap for DB later) + field-level merge rules and confidence helpers.
+
+// server/profileDraftStore.js (CommonJS)
+
+const { v4: uuid } = require('uuid');
+
+const _jobs = new Map();         // jobId -> { status, error, userId, fileMeta, createdAt, completedAt }
+const _drafts = new Map();       // userId -> profileDraft (canonical JSON for Steps 3–6)
+
+/**
+ * ProfileDraft shape (example):
+ * {
+ *   basics: { name:{value,source,confidence}, email:{...}, phone:{...},
+ *             location:{ address, city, region, postalCode, countryCode } },
+ *   work: [{ company:{...}, position:{...}, startDate:{...}, endDate:{...}, highlights:[...] }],
+ *   education: [{ institution, area, studyType, startDate, endDate, score }],
+ *   skills: [{ name, level, keywords:[] }],
+ *   meta: { last_update, last_source }
+ * }
+ */
+
+const confidence = {
+  high: v => Math.min(1, Math.max(0.8, v ?? 0.9)),
+  med:  v => Math.min(0.79, Math.max(0.5, v ?? 0.65)),
+  low:  v => Math.min(0.49, Math.max(0.1, v ?? 0.3))
+};
+
+// Merge policy: only overwrite user-entered values if we’re filling blanks
+// or the existing confidence is lower than the incoming confidence.
+function mergeField(dst, incoming) {
+  if (!incoming) return dst;
+  if (!dst || dst.value == null || dst.value === '') return incoming;
+  if ((dst.source === 'user') && incoming.source !== 'user') return dst;
+  if ((dst.confidence ?? 0) >= (incoming.confidence ?? 0)) return dst;
+  return incoming;
+}
+
+function mergeArrays(dstArr = [], incArr = [], mergeItem) {
+  if (!incArr.length) return dstArr;
+  const result = [...dstArr];
+  incArr.forEach((inc, idx) => {
+    if (!result[idx]) result[idx] = inc;
+    else result[idx] = mergeItem(result[idx], inc);
+  });
+  return result;
+}
+
+function emptyDraft() {
+  return {
+    basics: {
+      name: null, email: null, phone: null,
+      location: { address: null, city: null, region: null, postalCode: null, countryCode: null }
+    },
+    work: [],
+    education: [],
+    skills: [],
+    meta: { last_update: new Date().toISOString(), last_source: 'init' }
+  };
+}
+
+function createJob({ userId, fileMeta }) {
+  const jobId = uuid();
+  _jobs.set(jobId, { status: 'queued', error: null, userId, fileMeta, createdAt: Date.now() });
+  return jobId;
+}
+
+function setJobStatus(jobId, patch) {
+  const cur = _jobs.get(jobId);
+  if (!cur) return;
+  _jobs.set(jobId, { ...cur, ...patch, completedAt: patch.status === 'complete' || patch.status === 'failed' ? Date.now() : cur.completedAt });
+}
+
+function getJob(jobId) { return _jobs.get(jobId); }
+
+function getDraft(userId) {
+  if (!_drafts.has(userId)) _drafts.set(userId, emptyDraft());
+  return _drafts.get(userId);
+}
+
+function saveDraft(userId, draft) {
+  _drafts.set(userId, { ...draft, meta: { last_update: new Date().toISOString(), last_source: draft.meta?.last_source || 'parser' } });
+  return _drafts.get(userId);
+}
+
+module.exports = {
+  confidence,
+  mergeField,
+  mergeArrays,
+  emptyDraft,
+  createJob,
+  setJobStatus,
+  getJob,
+  getDraft,
+  saveDraft
+};
+
+2) server/vendor/affindaAdapter.js
+
+Server-to-server call to Affinda. If no API key is present, it returns a stub so you can demo today.
+
+// server/vendor/affindaAdapter.js (CommonJS)
+
+const axios = require('axios');
+const FormData = require('form-data');
+
+const AFFINDA_URL = process.env.AFFINDA_URL || 'https://api.affinda.com/v3/resumes';
+
+async function parseWithAffinda(buffer, filename, mimetype) {
+  const key = process.env.AFFINDA_API_KEY;
+
+  // Stub mode if no key provided (always succeeds with sample fields)
+  if (!key) {
+    return {
+      raw: {
+        basics: {
+          name: 'Sample Candidate',
+          emails: ['candidate@example.com'],
+          phones: ['+1 555-555-1212'],
+          location: { address: '123 Main St', city: 'Orlando', region: 'FL', postalCode: '32801', countryCode: 'US' }
+        },
+        work: [
+          { organization: 'Acme Corp', jobTitle: 'Project Manager', dates: { start: '2022-03', end: '2025-05' }, highlights: ['Led team of 6', 'Delivered 12 projects'] }
+        ],
+        education: [
+          { organization: 'UNC', degree: 'BS', area: 'Business', dates: { start: '2018-08', end: '2022-05' }, score: '3.7' }
+        ],
+        skills: ['Agile', 'PMP', 'SQL']
+      }
+    };
+  }
+
+  const fd = new FormData();
+  fd.append('file', buffer, { filename, contentType: mimetype });
+
+  const resp = await axios.post(AFFINDA_URL, fd, {
+    headers: {
+      Authorization: `Bearer ${key}`,
+      ...fd.getHeaders()
+    },
+    // Affinda sometimes needs longer on scanned PDFs
+    timeout: 60000
+  });
+
+  // Return “raw” vendor object; keep mapping separate
+  return { raw: resp.data };
+}
+
+module.exports = { parseWithAffinda };
+
+3) server/mappers/mapToProfileDraft.js
+
+Maps Affinda’s response (or the stub) to our ProfileDraft with {value, source, confidence} fields, plus prefill blocks for Steps 3–6.
+
+// server/mappers/mapToProfileDraft.js (CommonJS)
+
+const { confidence, mergeField, mergeArrays } = require('../profileDraftStore');
+
+// Helpers
+const val = (value, conf = confidence.med(0.6), source = 'parser') =>
+  value == null || value === ''
+    ? null
+    : { value, confidence: conf, source };
+
+function safeGet(obj, path, fallback = undefined) {
+  return path.split('.').reduce((acc, key) => (acc && acc[key] !== undefined ? acc[key] : undefined), obj) ?? fallback;
+}
+
+// Affinda variants helper — handle both marketing JSON and v3 API fields gracefully
+function coalesce(...candidates) {
+  for (const c of candidates) {
+    if (c === 0 || (Array.isArray(c) && c.length) || (typeof c === 'string' && c.trim()) || (c && typeof c === 'object')) {
+      return c;
+    }
+  }
+  return undefined;
+}
+
+function mapBasics(vendor) {
+  // Try several common places Affinda uses
+  const name = coalesce(
+    safeGet(vendor, 'data.name.raw'),
+    safeGet(vendor, 'data.name'),
+    safeGet(vendor, 'basics.name'),
+    safeGet(vendor, 'name')
+  );
+
+  const emails = coalesce(
+    safeGet(vendor, 'data.emails'),
+    safeGet(vendor, 'basics.emails'),
+    safeGet(vendor, 'emails')
+  ) || [];
+
+  const phones = coalesce(
+    safeGet(vendor, 'data.phoneNumbers'),
+    safeGet(vendor, 'basics.phones'),
+    safeGet(vendor, 'phones')
+  ) || [];
+
+  const loc = coalesce(
+    safeGet(vendor, 'data.location'),
+    safeGet(vendor, 'basics.location'),
+    safeGet(vendor, 'location')
+  ) || {};
+
+  return {
+    name: val(name, confidence.high(0.95)),
+    email: val((emails[0] || '').trim(), confidence.high(0.9)),
+    phone: val((phones[0] || '').trim(), confidence.med(0.7)),
+    location: {
+      address: val(loc.address || loc.street || loc.line1 || null, confidence.med(0.6)),
+      city: val(loc.city || null, confidence.med(0.6)),
+      region: val(loc.region || loc.state || null, confidence.med(0.6)),
+      postalCode: val(loc.postalCode || loc.zip || null, confidence.med(0.6)),
+      countryCode: val(loc.countryCode || loc.country || null, confidence.med(0.6))
+    }
+  };
+}
+
+function normDate(s) {
+  if (!s) return null;
+  // Attempt YYYY-MM from common patterns
+  const m = String(s).match(/(\d{4})[-/\.](\d{1,2})/);
+  if (m) return `${m[1]}-${String(m[2]).padStart(2, '0')}`;
+  const y = String(s).match(/(20\d{2}|19\d{2})/);
+  return y ? `${y[1]}-01` : null;
+}
+
+function mapWork(vendor) {
+  const work = coalesce(
+    safeGet(vendor, 'data.workExperience'),
+    safeGet(vendor, 'work'),
+    safeGet(vendor, 'experience'),
+    []
+  ) || [];
+
+  return work.map(w => {
+    const company = coalesce(w.organization, w.company, w.employer, safeGet(w, 'details.employer'));
+    const position = coalesce(w.jobTitle, w.position, safeGet(w, 'details.jobTitle'));
+    const start = normDate(coalesce(safeGet(w, 'dates.start'), w.startDate, w.start));
+    const end = normDate(coalesce(safeGet(w, 'dates.end'), w.endDate, w.end));
+    const highlights = coalesce(w.highlights, w.bullets, safeGet(w, 'details.highlights')) || [];
+    return {
+      company: val(company, confidence.high(0.9)),
+      position: val(position, confidence.high(0.85)),
+      startDate: val(start, start ? confidence.med(0.7) : confidence.low(0.3)),
+      endDate: val(end, end ? confidence.med(0.7) : confidence.low(0.3)),
+      highlights: Array.isArray(highlights) ? highlights.slice(0, 6) : []
+    };
+  });
+}
+
+function mapEducation(vendor) {
+  const edu = coalesce(
+    safeGet(vendor, 'data.education'),
+    safeGet(vendor, 'education'),
+    []
+  ) || [];
+
+  return edu.map(e => {
+    const institution = coalesce(e.organization, e.institution, e.school);
+    const degree = coalesce(e.degree, safeGet(e, 'accreditation.education.level'), e.qualification, e.studyType);
+    const area = coalesce(e.area, e.fieldOfStudy, safeGet(e, 'accreditation.inputStr'));
+    const start = normDate(coalesce(safeGet(e, 'dates.start'), e.startDate, e.start));
+    const end = normDate(coalesce(safeGet(e, 'dates.end'), e.endDate, e.end));
+    const score = coalesce(e.score, e.grade, e.gpa);
+    return {
+      institution: val(institution, confidence.high(0.85)),
+      studyType: val(degree, confidence.med(0.65)),
+      area: val(area, confidence.med(0.65)),
+      startDate: val(start, start ? confidence.med(0.6) : confidence.low(0.3)),
+      endDate: val(end, end ? confidence.med(0.6) : confidence.low(0.3)),
+      score: score ? String(score) : null
+    };
+  });
+}
+
+function mapSkills(vendor) {
+  const s1 = safeGet(vendor, 'data.skills') || [];
+  const s2 = safeGet(vendor, 'skills') || [];
+  const flat = (Array.isArray(s1) ? s1.map(x => x.name || x.raw || x) : [])
+            .concat(Array.isArray(s2) ? s2.map(x => (x.name || x)) : []);
+  const seen = new Set();
+  const uniq = flat.filter(x => {
+    const k = String(x || '').trim().toLowerCase();
+    if (!k || seen.has(k)) return false;
+    seen.add(k); return true;
+  });
+  return uniq.slice(0, 25).map(name => ({ name, level: null, keywords: [] }));
+}
+
+function computePrefill(draft) {
+  // Map to the sections our Steps 3–6 expect (we do not include DOB/SSN here)
+  const step3 = {
+    fullLegalName: draft.basics.name?.value || '',
+    email: draft.basics.email?.value || '',
+    phone: draft.basics.phone?.value || '',
+    physicalAddress: [
+      draft.basics.location?.address?.value,
+      draft.basics.location?.city?.value,
+      draft.basics.location?.region?.value,
+      draft.basics.location?.postalCode?.value,
+      draft.basics.location?.countryCode?.value
+    ].filter(Boolean).join(', ')
+  };
+
+  const step5 = draft.education.map(e => ({
+    institution: e.institution?.value || '',
+    location: '', // often not reliably parsed; user can fill
+    dates: `${e.startDate?.value || ''} - ${e.endDate?.value || ''}`.trim(),
+    degree: e.studyType?.value || '',
+    major: e.area?.value || '',
+    gpa: e.score || ''
+  }));
+
+  const step6 = draft.work.map(w => ({
+    companyName: w.company?.value || '',
+    companyAddress: '',
+    jobTitle: w.position?.value || '',
+    datesEmployed: `${w.startDate?.value || ''} - ${w.endDate?.value || 'Present'}`.trim(),
+    supervisorName: '',
+    supervisorTitle: '',
+    okToContact: '',
+    startingSalary: '',
+    endingSalary: '',
+    reasonForLeaving: '',
+    highlights: w.highlights || []
+  }));
+
+  return { step3, step5, step6 };
+}
+
+function mapToProfileDraft(existingDraft, vendorRaw) {
+  const basics = mapBasics(vendorRaw);
+  const work = mapWork(vendorRaw);
+  const education = mapEducation(vendorRaw);
+  const skills = mapSkills(vendorRaw);
+
+  const next = existingDraft ?? {
+    basics: { name: null, email: null, phone: null, location: { address: null, city: null, region: null, postalCode: null, countryCode: null } },
+    work: [], education: [], skills: [], meta: { last_update: new Date().toISOString(), last_source: 'parser' }
+  };
+
+  // Merge basics
+  next.basics.name  = mergeField(next.basics.name,  basics.name);
+  next.basics.email = mergeField(next.basics.email, basics.email);
+  next.basics.phone = mergeField(next.basics.phone, basics.phone);
+  next.basics.location.address     = mergeField(next.basics.location.address,     basics.location.address);
+  next.basics.location.city        = mergeField(next.basics.location.city,        basics.location.city);
+  next.basics.location.region      = mergeField(next.basics.location.region,      basics.location.region);
+  next.basics.location.postalCode  = mergeField(next.basics.location.postalCode,  basics.location.postalCode);
+  next.basics.location.countryCode = mergeField(next.basics.location.countryCode, basics.location.countryCode);
+
+  // Merge arrays (position by index for now)
+  next.work = mergeArrays(next.work, work, (dst, inc) => ({
+    company:     mergeField(dst?.company, inc.company),
+    position:    mergeField(dst?.position, inc.position),
+    startDate:   mergeField(dst?.startDate, inc.startDate),
+    endDate:     mergeField(dst?.endDate, inc.endDate),
+    highlights:  inc.highlights?.length ? inc.highlights : (dst?.highlights || [])
+  }));
+
+  next.education = mergeArrays(next.education, education, (dst, inc) => ({
+    institution: mergeField(dst?.institution, inc.institution),
+    studyType:   mergeField(dst?.studyType,   inc.studyType),
+    area:        mergeField(dst?.area,        inc.area),
+    startDate:   mergeField(dst?.startDate,   inc.startDate),
+    endDate:     mergeField(dst?.endDate,     inc.endDate),
+    score:       inc.score || dst?.score || null
+  }));
+
+  next.skills = skills.length ? skills : next.skills;
+  next.meta = { last_update: new Date().toISOString(), last_source: 'parser' };
+
+  const prefill = computePrefill(next);
+
+  // Simple confidence export for UI (flatten a few)
+  const confidenceSummary = {
+    basics: {
+      name: next.basics.name?.confidence ?? 0,
+      email: next.basics.email?.confidence ?? 0,
+      phone: next.basics.phone?.confidence ?? 0
+    },
+    counts: { work: next.work.length, education: next.education.length, skills: next.skills.length }
+  };
+
+  return { draft: next, prefill, confidence: confidenceSummary };
+}
+
+module.exports = { mapToProfileDraft };
+
+4) server/routes/parse.js
+
+Upload → call adapter → map → store ProfileDraft → return to the client. Also exposes /api/resume/status/:jobId.
+
+// server/routes/parse.js (CommonJS)
+
+const express = require('express');
+const multer = require('multer');
+const { parseWithAffinda } = require('../vendor/affindaAdapter');
+const { mapToProfileDraft } = require('../mappers/mapToProfileDraft');
+const {
+  createJob, setJobStatus, getJob,
+  getDraft, saveDraft
+} = require('../profileDraftStore');
+
+const router = express.Router();
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  fileFilter: (req, file, cb) => {
+    const ok = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(file.mimetype);
+    if (!ok) return cb(new Error('Unsupported file type (PDF/DOCX only).'));
+    cb(null, true);
+  }
+});
+
+// POST /api/resume/parse  (expects multipart/form-data with "file")
+// For Replit, we do it synchronously; later you can move to a job + webhook if needed.
+router.post('/resume/parse', upload.single('file'), async (req, res) => {
+  try {
+    const userId = String(req.user?.id || 'demo-user'); // replace with your auth user
+    if (!req.file) return res.status(400).json({ error: 'Missing file' });
+
+    const fileMeta = { filename: req.file.originalname, mimetype: req.file.mimetype, size: req.file.size };
+    const jobId = createJob({ userId, fileMeta });
+    setJobStatus(jobId, { status: 'processing' });
+
+    // 1) Vendor parse (Affinda or stub)
+    const { raw } = await parseWithAffinda(req.file.buffer, req.file.originalname, req.file.mimetype);
+
+    // 2) Map to our ProfileDraft & Prefill
+    const existing = getDraft(userId);
+    const { draft, prefill, confidence } = mapToProfileDraft(existing, raw);
+    saveDraft(userId, draft);
+
+    setJobStatus(jobId, { status: 'complete' });
+
+    // 3) Return result to client
+    return res.json({
+      jobId,
+      status: 'complete',
+      profileDraft: draft,
+      prefill,
+      confidence
+    });
+  } catch (err) {
+    console.error('[resume/parse] error:', err?.message || err);
+    return res.status(500).json({ error: 'Failed to parse resume' });
+  }
+});
+
+// GET /api/resume/status/:jobId
+router.get('/resume/status/:jobId', (req, res) => {
+  const job = getJob(req.params.jobId);
+  if (!job) return res.status(404).json({ error: 'Job not found' });
+  return res.json({ status: job.status, error: job.error || null });
+});
+
+module.exports = router;
+
+
+Wire it in your Express app (e.g., server/index.js or app.js):
+
+// ... your existing imports & app setup
+const parseRoutes = require('./routes/parse');
+app.use('/api', parseRoutes);
+
+5) (Optional) Front-end Step-2 snippet (CRA)
+
+Use this in your Step-2 “Upload Resume” component to hit /api/resume/parse, show a progress state, and allow Continue Manually if needed.
+
+// src/app/Step2Upload.js (snippet)
+import { useState } from 'react';
+
+export default function Step2Upload({ onParsed }) {
+  const [file, setFile] = useState(null);
+  const [status, setStatus] = useState('idle'); // idle|uploading|parsing|complete|error
+  const [error, setError] = useState('');
+
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!file) return;
+    setStatus('parsing'); setError('');
+
+    const fd = new FormData();
+    fd.append('file', file);
+
+    try {
+      const resp = await fetch('/api/resume/parse', { method: 'POST', body: fd });
+      if (!resp.ok) throw new Error('Upload/parse failed');
+      const data = await resp.json();
+      setStatus('complete');
+      // `data.prefill` has step3/5/6 fields. `data.profileDraft` is the canonical JSON.
+      onParsed?.(data);
+    } catch (err) {
+      console.error(err);
+      setError('We had trouble parsing your file. You can continue manually — we’ll fill any blanks as we recover.');
+      setStatus('error');
+    }
+  };
+
+  return (
+    <section>
+      <h1 className="h1">Upload Your Résumé</h1>
+      <p className="body mt-2">PDF or DOCX — we’ll parse and prefill the next steps.</p>
+
+      <form onSubmit={submit} className="card mt-6 max-w-xl">
+        <input type="file" accept=".pdf,.docx" onChange={e => setFile(e.target.files?.[0] || null)} />
+        <div className="mt-4 flex gap-3">
+          <button className="btn btn-primary" disabled={!file || status === 'parsing'}>
+            {status === 'parsing' ? 'Parsing…' : 'Upload & Parse'}
+          </button>
+          <a href="/app/onboarding/step-3" className="btn btn-tertiary">Continue Manually</a>
+        </div>
+        {error && <div className="mt-3 text-sm text-red-600">{error}</div>}
+      </form>
+    </section>
+  );
+}
+
+Notes & guardrails (important)
+
+Privacy & PII: The adapter only sends the résumé file to the vendor. DOB and SSN (Step 3) are never sent.
+
+Logging: The route logs only an error message on failure; it never logs file contents or parsed PII.
+
+Timeouts: Affinda calls set timeout: 60000. Scanned PDFs may take longer; if you hit limits, you can move to a job + webhook pattern later.
+
+Stub mode: If AFFINDA_API_KEY isn’t set, the adapter returns a realistic stub so QA can continue.
+
+Future vendors: To switch, drop in vendor/<otherAdapter>.js with the same parse(buffer, filename, mimetype) signature and update the import.
+
+Ready-to-go checklist for Replit
+
+ Add AFFINDA_API_KEY as a Secret
+
+ npm i express multer axios form-data uuid
+
+ Create the four files exactly as above
+
+ app.use('/api', require('./routes/parse')) in your server
+
+ Test with a couple of PDFs and one DOCX
+
+ Confirm Steps 3–6 receive data.prefill and your “Final Review” shows the parsed summary

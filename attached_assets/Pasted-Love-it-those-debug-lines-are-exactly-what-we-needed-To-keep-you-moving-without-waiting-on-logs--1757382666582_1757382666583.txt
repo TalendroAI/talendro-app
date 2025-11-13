@@ -1,0 +1,223 @@
+Love it—those debug lines are exactly what we needed. To keep you moving **without waiting on logs**, here’s a **tolerant mapper patch** that handles both Affinda “standard schema” (with `listItem`) **and** common variants (flat objects, different key names). It will pull name, email, phone, address, work, education, and skills even if the structure differs slightly.
+
+Drop this in **`server/mappers/mapToProfileDraft.js`** replacing only the **`normalizeAffindaStandard`** function (everything else in your file can stay as-is).
+
+---
+
+### 🔧 Patch: robust `normalizeAffindaStandard`
+
+```js
+// --- helpers (keep near the top of the file or inside the function) ---
+const isArr = (x) => Array.isArray(x);
+const arrify = (x) => (Array.isArray(x) ? x : (x == null ? [] : [x]));
+const first = (xs) => (Array.isArray(xs) && xs.length ? xs[0] : null);
+const has = (o, k) => o && Object.prototype.hasOwnProperty.call(o, k);
+
+// very small “coalesce path” helper (dot paths, no bracket syntax)
+function pick(o, paths) {
+  for (const p of paths) {
+    try {
+      const v = p.split('.').reduce((a, k) => (a ? a[k] : undefined), o);
+      if (v != null && v !== '') return v;
+    } catch { /* ignore */ }
+  }
+  return null;
+}
+
+// relaxed text scanners as last-resort
+function collectStrings(node, out = []) {
+  if (node == null) return out;
+  if (typeof node === 'string') { out.push(node); return out; }
+  if (Array.isArray(node)) { node.forEach(n => collectStrings(n, out)); return out; }
+  if (typeof node === 'object') { Object.values(node).forEach(v => collectStrings(v, out)); }
+  return out;
+}
+function fallbackEmail(o) {
+  const rx = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/ig;
+  return (collectStrings(o).join(' ').match(rx) || [])[0] || '';
+}
+function fallbackPhone(o) {
+  const rx = /(\+?\d[\d\s().-]{7,}\d)/g;
+  return (collectStrings(o).join(' ').match(rx) || [])[0] || '';
+}
+
+// keep your existing normDate, toBool, splitLines, wrapVal, confidence utils
+
+function normalizeAffindaStandard(raw) {
+  const d = raw?.data || raw || {};
+
+  // === BASICS ===
+  // Name can be under candidateName.listItem[], or a single object, or split fields.
+  let firstName = '';
+  let lastName  = '';
+
+  const nameList = isArr(d?.candidateName?.listItem)
+    ? d.candidateName.listItem
+    : arrify(d?.candidateName);
+
+  const nameObj = first(nameList) || {};
+  firstName = nameObj.firstName || nameObj.givenName || d?.firstName || '';
+  lastName  = nameObj.familyName || nameObj.surname   || d?.lastName  || '';
+
+  // If still blank and there is a single full-name field
+  if (!firstName && !lastName) {
+    const full = d?.name || d?.fullName || null;
+    if (full && typeof full === 'string') {
+      const parts = full.trim().split(/\s+/);
+      firstName = parts[0] || '';
+      lastName  = parts.slice(1).join(' ');
+    }
+  }
+  const fullName = [firstName, lastName].filter(Boolean).join(' ').trim() || null;
+
+  // Email
+  const emails = isArr(d?.email?.listItem) ? d.email.listItem
+               : isArr(d?.emails)          ? d.emails
+               : isArr(d?.contactInfo?.emails) ? d.contactInfo.emails
+               : [];
+  const email = (first(emails)?.value || first(emails) || '').toString().trim() || fallbackEmail(d);
+
+  // Phone
+  const phones = isArr(d?.phoneNumber?.listItem) ? d.phoneNumber.listItem
+               : isArr(d?.phoneNumbers)          ? d.phoneNumbers
+               : isArr(d?.contactInfo?.phones)   ? d.contactInfo.phones
+               : [];
+  const phoneFirst = first(phones);
+  const phone = (phoneFirst?.formattedNumber || phoneFirst?.rawText || phoneFirst || '').toString().trim() || fallbackPhone(d);
+
+  // Location
+  const loc = d?.location || d?.address || d?.contactInfo?.address || {};
+  const addressLine = loc?.formatted || pick(loc, ['address','line1','street']) || null;
+  const city        = loc?.city || null;
+  const region      = loc?.state || loc?.stateCode || null;
+  const postalCode  = loc?.postalCode || loc?.zip || null;
+  const countryCode = loc?.countryCode || loc?.country || null;
+
+  const dob = d?.dateOfBirth || null;
+
+  // === WORK EXPERIENCE ===
+  // Prefer standard: data.workExperience.listItem[]
+  let workItems = [];
+  if (isArr(d?.workExperience?.listItem)) workItems = d.workExperience.listItem;
+  else if (isArr(d?.workExperience))      workItems = d.workExperience;
+  else if (isArr(d?.experience))          workItems = d.experience;
+  else if (isArr(d?.positions))           workItems = d.positions;
+
+  const work = workItems.map(w => {
+    const company   = w?.workExperienceOrganization || w?.organization || w?.company || w?.employer || null;
+    const position  = w?.workExperienceJobTitle     || w?.jobTitle    || w?.position || null;
+
+    const startRaw  = pick(w, ['workExperienceDates.start.date','dates.start','startDate','start']);
+    const endRaw    = pick(w, ['workExperienceDates.end.date','dates.end','endDate','end']);
+    const isCurrent = toBool(pick(w, ['workExperienceDates.end.isCurrent','isCurrent','current']));
+
+    const startDate = normDate(startRaw);
+    const endDate   = isCurrent ? null : normDate(endRaw);
+
+    const wloc      = w?.workExperienceLocation?.formatted || w?.location?.formatted || w?.location || null;
+    const desc      = w?.workExperienceDescription || w?.description || '';
+    const type      = w?.workExperienceType?.value || w?.employmentType || null;
+
+    return {
+      company:  wrapVal(company,  confidence.high(0.9)),
+      position: wrapVal(position, confidence.high(0.85)),
+      startDate: wrapVal(startDate, startDate ? confidence.med(0.7) : confidence.low(0.3)),
+      endDate:   wrapVal(endDate,   endDate   ? confidence.med(0.7) : confidence.low(0.3)),
+      location:  wloc,
+      type,
+      highlights: splitLines(desc).slice(0, 8)
+    };
+  }).filter(x => x.company || x.position);
+
+  // === EDUCATION ===
+  let eduItems = [];
+  if (isArr(d?.education?.listItem)) eduItems = d.education.listItem;
+  else if (isArr(d?.education))       eduItems = d.education;
+  else if (isArr(d?.educationHistory)) eduItems = d.educationHistory;
+
+  const education = eduItems.map(e => {
+    const institution = e?.educationOrganization || e?.organization || e?.institution || e?.school || null;
+    const studyType   = e?.educationAccreditation || e?.educationLevel?.value || e?.degree || e?.qualification || e?.studyType || null;
+
+    const majorsArr   = isArr(e?.educationMajor?.listItem) ? e.educationMajor.listItem
+                        : isArr(e?.majors) ? e.majors : [];
+    const area        = first(majorsArr) || e?.area || e?.fieldOfStudy || null;
+
+    const startRaw = pick(e, ['educationDates.start.date','dates.start','startDate','start']);
+    const endRaw   = pick(e, ['educationDates.end.date','dates.end','endDate','end']);
+    const startDate = normDate(startRaw);
+    const endDate   = normDate(endRaw);
+
+    const score     = e?.educationGrade?.educationGradeScore || e?.score || e?.grade || e?.gpa || null;
+    const eloc      = e?.educationLocation?.formatted || e?.location?.formatted || e?.location || null;
+
+    return {
+      institution: wrapVal(institution, confidence.high(0.85)),
+      studyType:   wrapVal(studyType,   confidence.med(0.65)),
+      area:        wrapVal(area,        confidence.med(0.65)),
+      startDate:   wrapVal(startDate,   startDate ? confidence.med(0.6) : confidence.low(0.3)),
+      endDate:     wrapVal(endDate,     endDate   ? confidence.med(0.6) : confidence.low(0.3)),
+      score,
+      location: eloc
+    };
+  }).filter(x => x.institution || x.studyType || x.area);
+
+  // === SKILLS ===
+  let skillItems = [];
+  if (isArr(d?.skill?.listItem)) skillItems = d.skill.listItem;
+  else if (isArr(d?.skills))      skillItems = d.skills;
+
+  const skills = skillItems
+    .map(s => (s?.name || s?.value || s || '').toString().trim())
+    .filter(Boolean)
+    .filter((v, i, a) => a.indexOf(v) === i)
+    .slice(0, 30)
+    .map(name => ({ name, level: null, keywords: [] }));
+
+  // wrap basics with your wrapVal
+  return {
+    basics: {
+      name:  wrapVal(fullName || null, confidence.high(0.95)),
+      email: wrapVal(email || null, confidence.high(0.9)),
+      phone: wrapVal(phone || null, confidence.med(0.7)),
+      dob:   dob ? wrapVal(normDate(dob), confidence.low(0.4)) : null,
+      location: {
+        address:     wrapVal(addressLine, confidence.med(0.6)),
+        city:        wrapVal(city,        confidence.med(0.6)),
+        region:      wrapVal(region,      confidence.med(0.6)),
+        postalCode:  wrapVal(postalCode,  confidence.med(0.6)),
+        countryCode: wrapVal(countryCode, confidence.med(0.6))
+      }
+    },
+    work,
+    education,
+    skills
+  };
+}
+```
+
+---
+
+### ✅ What this fixes immediately
+
+* Works if `candidateName` is a **list**, a **single object**, or if you only get `name/fullName`.
+* Pulls **email** from `data.email.listItem`, `data.emails`, `contactInfo.emails`, or **regex fallback**.
+* Pulls **phone** from `data.phoneNumber.listItem` (formatted/raw), `phoneNumbers`, `contactInfo.phones`, or **regex fallback**.
+* Handles `workExperience` whether it’s `data.workExperience.listItem` or a flat `workExperience/experience/positions` array; tolerates `organization/company/employer`, `jobTitle/position`, and date variants.
+* Same idea for **education** and **skills**.
+
+---
+
+### 🔎 Keep the debug lines you added
+
+They’re helpful. With this patch, even if the structure differs, we’ll still map; the logs will confirm which paths exist so we can tighten the config later (purely optional).
+
+---
+
+### Quick test checklist
+
+1. Restart the server, upload a résumé.
+2. Confirm `POST /api/resume/parse` returns `success:true` and `data.prefill.step3.email/phone/physicalAddress` are populated.
+3. Step-3 should now prefill real values; Step-5/6 should show rows.
+
+If anything still comes back empty, paste the **console output from the debug lines** you added (Raw data keys + candidateName structure). I’ll hand you a micro-adjusted selector for your exact payload.

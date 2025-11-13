@@ -1,0 +1,212 @@
+I compared Replit’s current mapping table to the Affinda “standard schema” sample you sent me and to the mapper I gave you. Here are the concrete gaps and how to fix them so everything lines up and we stop dropping fields.
+
+What’s off right now (and why)
+
+Missing data. root
+
+Replit’s paths start at candidateName, email, etc. The Affinda doc you sent is rooted at data.*.
+
+Fix: All selectors should address raw.data first. If your adapter already does const d = raw?.data || raw, you’re fine; if not, add it or prepend data. to every path.
+
+Heavy reliance on .parsed nodes
+
+Replit expects candidateName.parsed.firstName.parsed, workExperience[n].parsed.*, education[n].parsed.*.
+
+The standard sample shows values directly on the element (e.g., workExperienceOrganization, educationAccreditation) and not under .parsed.
+
+Fix: Try .parsed first, then fall back to the direct field (no .parsed), then legacy names.
+
+Arrays vs. object-with-numeric-keys
+
+Replit notes work/education/skills may be objects like {'0': {...}, '1': {...}}.
+
+The sample uses listItem[] arrays.
+
+Fix: Always normalize collections with const arr = Array.isArray(x) ? x : Object.values(x || {}).
+
+Email/phone “shape”
+
+Replit uses email.listItem[0].value and phoneNumber.listItem[0].formattedNumber.
+
+The sample often has listItem strings (no .value) and phone may expose .rawText.
+
+Fix: For email: try .listItem[0].value → .listItem[0]. For phone: try .formattedNumber → .rawText → raw string. Keep regex fallback as last resort.
+
+Location fields
+
+Replit favors location.parsed.*; the sample is location.formatted, location.city, location.state/stateCode, location.postalCode, location.countryCode.
+
+Fix: Try location.parsed.* first, then the non-parsed keys. Prefer countryCode (ISO) over country for consistency.
+
+Work experience keys
+
+Replit: workExperience[n].parsed.workExperienceOrganization, .workExperienceJobTitle, .workExperienceStartDate.parsed, .workExperienceEndDate.parsed, .workExperienceLocation.parsed, .workExperienceType.value.
+
+Sample: the same field names but inside each list item (no .parsed) and dates under workExperienceDates.start.date / end.date (+ end.isCurrent).
+
+Fix: Selector order per field should be parsed → Dates.start.date/Dates.end.date → startDate/endDate → dates.start/dates.end.
+
+Education keys
+
+Replit: education[n].parsed.educationOrganization, .educationAccreditation, .educationMajor.listItem[0], .educationStartDate.parsed, .educationEndDate.parsed, .educationLocation.formatted.
+
+Sample: same names as above but dates under educationDates.start.date/end.date; major array under educationMajor.listItem.
+
+Fix: Use parsed first, then educationDates.*.date, then startDate/endDate, then dates.start/dates.end.
+
+Skills / keywords
+
+Replit: skill[n].parsed.skillName with fallback to skill.listItem[n].name; keywords from keywordSet.listItem[n].
+
+Sample: data.skill.listItem[].name.
+
+Fix: Keep both; if keywordSet exists, map to your optional “keywords” field, otherwise ignore.
+
+LinkedIn
+
+Replit: socialMedia.listItem[].url (LinkedIn) with fallbacks.
+
+You’ll want to filter by provider and then pick the URL.
+
+Fix: Select the list item where platform/name contains “LinkedIn”, then take .url.
+
+Current job
+
+Replit: currentJobTitle.parsed fallback workExperience[0].position.
+
+Solid; just ensure you pick the current work item based on end.isCurrent=true rather than assuming index 0.
+
+Unified mapping (adheres to both sets)
+
+Here’s a compact crosswalk you can drop into your mapper. It honors Replit’s .parsed first, then the Affinda standard fields from your sample, then legacy/heuristics. (Assume d = raw.data || raw and arrays normalized via Object.values when needed.)
+
+Basics
+
+firstName:
+candidateName.parsed.firstName.parsed → candidateName.listItem[0].firstName → candidateName.firstName → firstName
+
+lastName:
+candidateName.parsed.familyName.parsed → candidateName.listItem[0].familyName → candidateName.familyName → lastName
+
+middleName:
+candidateName.parsed.middleName.parsed → candidateName.listItem[0].middleName → candidateName.middleName
+
+email:
+email.listItem[0].value → email.listItem[0] → email[0] → emails[0] → contactInfo.emails[0] → regex fallback
+
+phone:
+phoneNumber.listItem[0].formattedNumber → phoneNumber.listItem[0].rawText → phoneNumber[0].rawText → phoneNumbers[0] → regex fallback
+
+location.full:
+location.parsed.formatted → location.formatted → address.formatted
+
+city:
+location.parsed.city → location.city → address.city
+
+state/region:
+location.parsed.state → location.parsed.stateCode → location.state → location.stateCode
+
+postalCode:
+location.parsed.postalCode → location.postalCode → location.zip
+
+country/countryCode:
+location.parsed.country → location.parsed.countryCode → location.country → location.countryCode
+(prefer storing countryCode if both are present)
+
+dateOfBirth:
+dateOfBirth → dob → birthDate
+
+linkedin:
+(socialMedia.listItem | socialProfiles | social).filter(name includes 'linkedin').[0].url
+
+Work (iterate normalized workExperience collection)
+
+company:
+parsed.workExperienceOrganization → workExperienceOrganization → organization → company
+
+position:
+parsed.workExperienceJobTitle → workExperienceJobTitle → jobTitle → position
+
+startDate:
+parsed.workExperienceStartDate.parsed → workExperienceDates.start.date → startDate → dates.start → start
+
+endDate:
+parsed.workExperienceEndDate.parsed → workExperienceDates.end.date → endDate → dates.end → end
+
+isCurrent:
+workExperienceDates.end.isCurrent → parsed.isCurrent → isCurrent → current
+
+location:
+parsed.workExperienceLocation.parsed → workExperienceLocation.formatted → location.formatted → location
+
+description/highlights:
+parsed.workExperienceDescription.parsed → workExperienceDescription → description (then split into bullets)
+
+type:
+parsed.workExperienceType.value → workExperienceType.value → employmentType
+
+Education (iterate normalized education collection)
+
+institution:
+parsed.educationOrganization → educationOrganization → organization → school
+
+degree/studyType:
+parsed.educationAccreditation → educationAccreditation → educationLevel.value → degree → qualification → studyType
+
+major/area:
+parsed.educationMajor.listItem[0] → educationMajor.listItem[0] → area → fieldOfStudy
+
+startDate:
+parsed.educationStartDate.parsed → educationDates.start.date → startDate → dates.start → start
+
+endDate:
+parsed.educationEndDate.parsed → educationDates.end.date → endDate → dates.end → end
+
+gpa/score:
+educationGrade.educationGradeScore → score → grade → gpa
+
+location:
+educationLocation.formatted → location.formatted → location
+
+Skills / Keywords
+
+skillName:
+skill[n].parsed.skillName → skill.listItem[n].name → skills[n].value → skills[n]
+
+keywords (optional):
+keywordSet.listItem[n] → skill[n].keywords
+(use only if you’re actually storing keywords)
+
+Code-level adjustments (so the table actually works)
+
+Normalize collections everywhere:
+
+const norm = (x) => Array.isArray(x) ? x : Object.values(x || {});
+const work = norm(d.workExperience?.listItem ?? d.workExperience ?? d.experience ?? d.positions);
+const edu  = norm(d.education?.listItem ?? d.education ?? d.educationHistory);
+const skl  = norm(d.skill?.listItem ?? d.skill ?? d.skills);
+
+
+Try .parsed → direct → legacy: always in that order.
+
+Date normalization: run normDate(YYYY-MM-DD|YYYY-MM|YYYY) to YYYY-MM; set endDate = null if isCurrent=true.
+
+Regex fallbacks for email/phone if structured paths are empty.
+
+ISO country: if both country and countryCode present, store the code and keep country as display-only if you want.
+
+Prefer the “current job” using isCurrent instead of index order.
+
+Quick validation steps
+
+After one upload, log:
+
+Object.keys(d) (should include candidateName, email, phoneNumber, location, workExperience, education, skill).
+
+Lengths of normalized work, edu, skl.
+
+Assert basics not empty: first/last/email/phone.
+
+Assert work[0].company and work[0].position exist; same for education[0].institution.
+
+Confirm Step-3 prefill shows your real values; Step-5/6 list rows.

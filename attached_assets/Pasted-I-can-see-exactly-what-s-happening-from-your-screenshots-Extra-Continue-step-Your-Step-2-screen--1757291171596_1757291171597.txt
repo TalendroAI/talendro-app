@@ -1,0 +1,187 @@
+I can see exactly what’s happening from your screenshots:
+
+Extra “Continue” step
+Your Step-2 screen is showing a “success” state instead of auto-advancing. That’s purely client logic: after the 200 OK, you set success UI and change the button label to “Continue” rather than navigating.
+
+Placeholder data in Step-3
+“Sample Candidate / candidate@example.com
+ / +1 555-555-1212 / 123 Main St …” is the stub payload I wired to run when the Affinda API key isn’t present. That means your server is in stub mode (no AFFINDA_API_KEY visible to the process) or you’re still loading an older bundle.
+
+Here’s the fix, end-to-end, with drop-in patches.
+
+A) Remove the extra “Continue” and auto-advance after parse
+
+Replace the parsing/navigation code in Onb2.js with this (shape-agnostic and double-call proof):
+
+// imports up top
+import { useRef, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+export default function Onb2() {
+  const navigate = useNavigate();
+  const [file, setFile] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const hoppedRef = useRef(false);
+
+  const parseAndGo = useCallback(async () => {
+    if (!file || hoppedRef.current) return;
+    try {
+      setBusy(true); setError('');
+      const fd = new FormData();
+      fd.append('file', file, file.name);
+
+      const resp = await fetch('/api/resume/parse', { method: 'POST', body: fd });
+      if (!resp.ok) throw new Error(`Parse failed: ${resp.status}`);
+      const result = await resp.json();
+
+      // accept either {success:true, data:{...}} or the flat shape
+      const ok = result?.success === true || result?.status === 'complete';
+      const data = result?.data || {
+        jobId: result.jobId,
+        status: result.status,
+        prefill: result.prefill,
+        profileDraft: result.profileDraft,
+        confidence: result.confidence
+      };
+
+      if (!ok || !data) throw new Error('Parser did not return complete data');
+      localStorage.setItem('resumeData', JSON.stringify(data));
+
+      hoppedRef.current = true;
+      // Immediately move to Step 3 (no “Continue”)
+      try { navigate('/app/onboarding/step-3', { replace: true }); }
+      catch { window.location.replace('/app/onboarding/step-3'); }
+    } catch (e) {
+      console.error(e);
+      setError('We had trouble parsing your résumé. You can continue manually—Talendro will backfill as parsing completes.');
+    } finally {
+      setBusy(false);
+    }
+  }, [file, navigate]);
+
+  return (
+    <section>
+      {/* … your header/CTA … */}
+      <form className="card mt-6 max-w-xl" onSubmit={(e) => { e.preventDefault(); parseAndGo(); }}>
+        <input type="file" accept=".pdf,.docx" onChange={e => setFile(e.target.files?.[0] || null)} />
+        <div className="mt-4 flex gap-3">
+          <button className="btn btn-primary" disabled={!file || busy} onClick={(e)=>{e.preventDefault(); parseAndGo();}}>
+            {busy ? 'Parsing…' : 'Parse Resume & Continue'}
+          </button>
+          <a href="/app/onboarding/step-3" className="btn btn-tertiary">Continue Manually</a>
+        </div>
+        {error && <div className="mt-3 text-sm text-red-600">{error}</div>}
+      </form>
+    </section>
+  );
+}
+
+
+Result: after a successful parse, you go straight to Step-3. No extra click.
+
+B) Make Step-3 actually use the parsed data
+
+Your Step-3 is currently rendering “sample” values. Hydrate from the payload we stored in localStorage.resumeData:
+
+// src/app/Onb3.js (top)
+import { useEffect, useState } from 'react';
+
+export default function Onb3(){
+  const [form, setForm] = useState({
+    firstName:'', lastName:'', email:'', phone:'', location:'', linkedIn:''
+  });
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('resumeData');
+      if (!raw) return;
+      const d = JSON.parse(raw);                 // d.prefill.step3, d.profileDraft, etc.
+      const s3 = d?.prefill?.step3 || {};
+      // naive split for name; adjust if you store first/last separately
+      const [firstName='', ...rest] = String(s3.fullLegalName || '').trim().split(' ');
+      const lastName = rest.join(' ').trim();
+
+      setForm({
+        firstName: firstName || form.firstName,
+        lastName: lastName || form.lastName,
+        email: s3.email || form.email,
+        phone: s3.phone || form.phone,
+        location: s3.physicalAddress || form.location,
+        linkedIn: ''
+      });
+    } catch { /* ignore */ }
+  }, []);
+
+// …render with form values as defaultValue or value/ onChange…
+
+
+If you prefer server-source of truth: add /api/profile/draft to return the same ProfileDraft and hydrate from there instead of localStorage.
+
+C) Turn off stub mode (that “Sample Candidate”)
+
+Right now your server is almost certainly returning the stub because it doesn’t see AFFINDA_API_KEY.
+
+In Replit → Secrets, add:
+
+Key: AFFINDA_API_KEY
+
+Value: your “Bearer …” token without quotes
+
+Restart the server.
+
+Add a tiny safe debug route (doesn’t leak the key):
+
+// server/index.js or wherever you configure routes
+app.get('/api/debug/config', (req,res)=>{
+  res.json({ affindaConfigured: !!process.env.AFFINDA_API_KEY });
+});
+
+
+Hit /api/debug/config. It must return:
+
+{ "affindaConfigured": true }
+
+
+If it’s false, the process can’t see your secret (common on Replit until you fully restart the repl).
+
+Note: my adapter returns stub data when there’s no key. That’s exactly the “Sample Candidate” you’re seeing.
+
+D) (Optional) Normalize the server response shape so the client doesn’t care
+
+Update success in server/routes/parse.js to:
+
+return res.json({
+  success: true,
+  data: {
+    jobId,
+    status: 'complete',
+    profileDraft: draft,
+    prefill,
+    confidence
+  }
+});
+
+
+Error:
+
+return res.status(500).json({ success: false, error: 'Failed to parse resume' });
+
+
+The client patch above already handles either shape, but standardizing prevents future regressions.
+
+Quick checklist to verify
+
+In Network, after clicking Parse Resume & Continue, you should see:
+
+POST /api/resume/parse → 200 OK
+
+The page navigates immediately to /app/onboarding/step-3 (no “Continue” screen).
+
+In Step-3, fields show your resume values, not “Sample Candidate…”.
+
+/api/debug/config returns { affindaConfigured: true }.
+
+If anything still sticks, flip DevTools → Network → Disable cache, hard reload, and make sure you see a current console log you place at the top of Onb2.js (e.g., console.log('Onb2 BUILD 2025-09-07T15:42Z')) to guarantee you’re not on a stale bundle.
+
+Want me to also wire Step-4/5/6 hydration from prefill.step5/step6 so those screens immediately reflect parsed education and work? I can drop that snippet too.

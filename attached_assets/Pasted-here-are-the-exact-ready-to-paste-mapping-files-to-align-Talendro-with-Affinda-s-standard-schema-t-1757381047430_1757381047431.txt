@@ -1,0 +1,370 @@
+here are the exact, ready-to-paste mapping files to align Talendro with Affinda’s standard schema (the XML sample you received). These will pull email, phone, address, work, education, skills reliably and feed your ProfileDraft + Step-3/5/6 prefills.
+
+I’m giving you a drop-in mapper (no extra deps), tiny transforms, and an optional JSON crosswalk (for reference/future tweaks). You only need to replace your current mapToProfileDraft.js with the one below and add the small transforms.js. That’s it.
+
+1) server/mappers/transforms.js
+// server/mappers/transforms.js (ESM or CJS friendly)
+
+export function normDate(s) {
+  if (!s) return null;
+  const str = String(s).trim();
+  // Affinda standard often returns YYYY-MM-DD or YYYY-MM
+  const ymd = str.match(/^(\d{4})[-/\.](\d{1,2})[-/\.](\d{1,2})$/);
+  if (ymd) return `${ymd[1]}-${String(ymd[2]).padStart(2,'0')}`;
+  const ym = str.match(/^(\d{4})[-/\.](\d{1,2})$/);
+  if (ym) return `${ym[1]}-${String(ym[2]).padStart(2,'0')}`;
+  const y = str.match(/^(19|20)\d{2}$/);
+  if (y) return `${str}-01`;
+  return null;
+}
+
+export function toBool(v) {
+  if (typeof v === 'boolean') return v;
+  const s = String(v || '').trim().toLowerCase();
+  return s === 'true' || s === 'yes' || s === '1';
+}
+
+export function splitLines(text) {
+  if (!text) return [];
+  return String(text)
+    .split(/\r?\n|•\s+/)
+    .map(t => t.trim())
+    .filter(Boolean);
+}
+
+2) server/mappers/mapToProfileDraft.js (drop-in replacement)
+// server/mappers/mapToProfileDraft.js (ESM)
+// If you use CommonJS, change "export" to "module.exports = { mapToProfileDraft }" at bottom
+import { normDate, toBool, splitLines } from './transforms.js';
+
+// ---------- Confidence + merge policy ----------
+const confidence = {
+  high: (v) => Math.min(1, Math.max(0.8, v ?? 0.9)),
+  med:  (v) => Math.min(0.79, Math.max(0.5, v ?? 0.65)),
+  low:  (v) => Math.min(0.49, Math.max(0.1, v ?? 0.3)),
+};
+
+function wrapVal(value, conf = confidence.med(0.6), source = 'parser') {
+  if (value == null || value === '') return null;
+  return { value, confidence: conf, source };
+}
+
+function mergeField(dst, incoming) {
+  if (!incoming) return dst;
+  if (!dst || dst.value == null || dst.value === '') return incoming;
+  if ((dst.source === 'user') && incoming.source !== 'user') return dst;
+  if ((dst.confidence ?? 0) >= (incoming.confidence ?? 0)) return dst;
+  return incoming;
+}
+
+function mergeArrays(dstArr = [], incArr = [], mergeItem) {
+  const out = [...dstArr];
+  incArr.forEach((inc, i) => {
+    out[i] = out[i] ? mergeItem(out[i], inc) : inc;
+  });
+  return out;
+}
+
+function emptyDraft() {
+  return {
+    basics: {
+      name: null,
+      email: null,
+      phone: null,
+      location: { address: null, city: null, region: null, postalCode: null, countryCode: null }
+    },
+    work: [],
+    education: [],
+    skills: [],
+    meta: { last_update: new Date().toISOString(), last_source: 'init' }
+  };
+}
+
+// ---------- Affinda STANDARD schema → normalized vendor object ----------
+/**
+ * Expects an Affinda v3 "standard schema" payload (your XML sample mirrors these keys in JSON):
+ * data.candidateName.listItem[].firstName / familyName
+ * data.dateOfBirth
+ * data.email.listItem[] (strings)
+ * data.phoneNumber.listItem[].formattedNumber | rawText
+ * data.location.{ formatted, city, state|stateCode, postalCode, countryCode }
+ * data.workExperience.listItem[] with:
+ *   workExperienceOrganization, workExperienceJobTitle,
+ *   workExperienceDates.start.date, workExperienceDates.end.date, workExperienceDates.end.isCurrent,
+ *   workExperienceLocation.formatted, workExperienceDescription, workExperienceType.value
+ * data.education.listItem[] with:
+ *   educationOrganization, educationAccreditation, educationLevel.value, educationMajor.listItem[],
+ *   educationDates.start.date, educationDates.end.date, educationGrade.educationGradeScore,
+ *   educationLocation.formatted
+ * data.skill.listItem[].name
+ */
+function normalizeAffindaStandard(raw) {
+  const d = raw?.data || raw || {};
+
+  // --- Basics ---
+  const nameItems = d?.candidateName?.listItem;
+  const nameObj = Array.isArray(nameItems) && nameItems.length ? nameItems[0] : {};
+  const firstName = nameObj?.firstName || '';
+  const lastName  = nameObj?.familyName || '';
+  const fullName  = [firstName, lastName].filter(Boolean).join(' ').trim();
+
+  const emailList = Array.isArray(d?.email?.listItem) ? d.email.listItem : [];
+  const email = (emailList[0] || '').trim();
+
+  const phoneList = Array.isArray(d?.phoneNumber?.listItem) ? d.phoneNumber.listItem : [];
+  const phone = (phoneList[0]?.formattedNumber || phoneList[0]?.rawText || '').trim();
+
+  const loc = d?.location || {};
+  const addressLine = loc?.formatted || null;
+  const city  = loc?.city || null;
+  const region = loc?.state || loc?.stateCode || null;
+  const postalCode = loc?.postalCode || null;
+  const countryCode = loc?.countryCode || null;
+
+  const dob = d?.dateOfBirth || null;
+
+  // --- Work experience ---
+  const workItems = Array.isArray(d?.workExperience?.listItem) ? d.workExperience.listItem : [];
+  const work = workItems.map(w => {
+    const company   = w?.workExperienceOrganization || null;
+    const position  = w?.workExperienceJobTitle || null;
+    const startRaw  = w?.workExperienceDates?.start?.date || null;
+    const endRaw    = w?.workExperienceDates?.end?.date || null;
+    const isCurrent = toBool(w?.workExperienceDates?.end?.isCurrent);
+    const startDate = normDate(startRaw);
+    const endDate   = isCurrent ? null : normDate(endRaw);
+    const wloc      = w?.workExperienceLocation?.formatted || null;
+    const desc      = w?.workExperienceDescription || '';
+    const type      = w?.workExperienceType?.value || null;
+
+    return {
+      company:  wrapVal(company,  confidence.high(0.9)),
+      position: wrapVal(position, confidence.high(0.85)),
+      startDate: wrapVal(startDate, startDate ? confidence.med(0.7) : confidence.low(0.3)),
+      endDate:   wrapVal(endDate,   endDate   ? confidence.med(0.7) : confidence.low(0.3)),
+      location:  wloc,
+      type,
+      highlights: splitLines(desc).slice(0, 8)
+    };
+  }).filter(x => x.company || x.position);
+
+  // --- Education ---
+  const eduItems = Array.isArray(d?.education?.listItem) ? d.education.listItem : [];
+  const education = eduItems.map(e => {
+    const institution = e?.educationOrganization || null;
+    const studyType   = e?.educationAccreditation || e?.educationLevel?.value || null;
+    // educationMajor.listItem may be an array; join for display, keep first for field
+    const majorsArr   = Array.isArray(e?.educationMajor?.listItem) ? e.educationMajor.listItem : [];
+    const area        = majorsArr[0] || null;
+
+    const startRaw = e?.educationDates?.start?.date || null;
+    const endRaw   = e?.educationDates?.end?.date || null;
+    const startDate = normDate(startRaw);
+    const endDate   = normDate(endRaw);
+    const score     = e?.educationGrade?.educationGradeScore || null;
+    const eloc      = e?.educationLocation?.formatted || null;
+
+    return {
+      institution: wrapVal(institution, confidence.high(0.85)),
+      studyType:   wrapVal(studyType,   confidence.med(0.65)),
+      area:        wrapVal(area,        confidence.med(0.65)),
+      startDate:   wrapVal(startDate,   startDate ? confidence.med(0.6) : confidence.low(0.3)),
+      endDate:     wrapVal(endDate,     endDate   ? confidence.med(0.6) : confidence.low(0.3)),
+      score,
+      location: eloc
+    };
+  }).filter(x => x.institution || x.studyType || x.area);
+
+  // --- Skills ---
+  const skillsItems = Array.isArray(d?.skill?.listItem) ? d.skill.listItem : [];
+  const skills = skillsItems
+    .map(s => (s?.name || '').trim())
+    .filter(Boolean)
+    .filter((v, i, a) => a.indexOf(v) === i)
+    .slice(0, 30)
+    .map(name => ({ name, level: null, keywords: [] }));
+
+  return {
+    basics: {
+      name: wrapVal(fullName, confidence.high(0.95)),
+      email: wrapVal(email, confidence.high(0.9)),
+      phone: wrapVal(phone, confidence.med(0.7)),
+      dob: dob ? wrapVal(normDate(dob), confidence.low(0.4)) : null,
+      location: {
+        address: wrapVal(addressLine, confidence.med(0.6)),
+        city: wrapVal(city, confidence.med(0.6)),
+        region: wrapVal(region, confidence.med(0.6)),
+        postalCode: wrapVal(postalCode, confidence.med(0.6)),
+        countryCode: wrapVal(countryCode, confidence.med(0.6))
+      }
+    },
+    work,
+    education,
+    skills
+  };
+}
+
+// ---------- Prefill generator for Steps 3 / 5 / 6 ----------
+function derivePrefill(draft) {
+  const step3 = {
+    fullLegalName: draft.basics.name?.value || '',
+    email:         draft.basics.email?.value || '',
+    phone:         draft.basics.phone?.value || '',
+    physicalAddress: [
+      draft.basics.location?.address?.value,
+      draft.basics.location?.city?.value,
+      draft.basics.location?.region?.value,
+      draft.basics.location?.postalCode?.value,
+      draft.basics.location?.countryCode?.value
+    ].filter(Boolean).join(', ')
+  };
+
+  const step5 = draft.education.map(e => ({
+    institution:   e.institution?.value || '',
+    location:      e.location || '',
+    dates:         `${e.startDate?.value || ''} - ${e.endDate?.value || ''}`.replace(/-\s*$/, '').trim(),
+    degree:        e.studyType?.value || '',
+    major:         e.area?.value || '',
+    gpa:           e.score || ''
+  }));
+
+  const step6 = draft.work.map(w => ({
+    companyName:   w.company?.value || '',
+    companyAddress:'',
+    jobTitle:      w.position?.value || '',
+    datesEmployed: `${w.startDate?.value || ''} - ${w.endDate?.value || 'Present'}`.replace(/-\s*$/, '').trim(),
+    supervisorName:'',
+    supervisorTitle:'',
+    okToContact:   '',
+    startingSalary:'',
+    endingSalary:  '',
+    reasonForLeaving:'',
+    highlights:    w.highlights || []
+  }));
+
+  return { step3, step5, step6 };
+}
+
+// ---------- Public: mapToProfileDraft ----------
+export function mapToProfileDraft(existingDraft, vendorRaw) {
+  const inc = normalizeAffindaStandard(vendorRaw);
+  const next = existingDraft ?? emptyDraft();
+
+  // Basics
+  next.basics.name  = mergeField(next.basics.name,  inc.basics.name);
+  next.basics.email = mergeField(next.basics.email, inc.basics.email);
+  next.basics.phone = mergeField(next.basics.phone, inc.basics.phone);
+  if (!next.basics.location) next.basics.location = { address:null, city:null, region:null, postalCode:null, countryCode:null };
+  next.basics.location.address     = mergeField(next.basics.location.address,     inc.basics.location.address);
+  next.basics.location.city        = mergeField(next.basics.location.city,        inc.basics.location.city);
+  next.basics.location.region      = mergeField(next.basics.location.region,      inc.basics.location.region);
+  next.basics.location.postalCode  = mergeField(next.basics.location.postalCode,  inc.basics.location.postalCode);
+  next.basics.location.countryCode = mergeField(next.basics.location.countryCode, inc.basics.location.countryCode);
+
+  // Arrays
+  next.work = mergeArrays(next.work, inc.work, (dst, i) => ({
+    company:     mergeField(dst?.company, i.company),
+    position:    mergeField(dst?.position, i.position),
+    startDate:   mergeField(dst?.startDate, i.startDate),
+    endDate:     mergeField(dst?.endDate, i.endDate),
+    location:    i.location || dst?.location || null,
+    type:        i.type || dst?.type || null,
+    highlights:  i.highlights?.length ? i.highlights : (dst?.highlights || [])
+  }));
+
+  next.education = mergeArrays(next.education, inc.education, (dst, i) => ({
+    institution: mergeField(dst?.institution, i.institution),
+    studyType:   mergeField(dst?.studyType,   i.studyType),
+    area:        mergeField(dst?.area,        i.area),
+    startDate:   mergeField(dst?.startDate,   i.startDate),
+    endDate:     mergeField(dst?.endDate,     i.endDate),
+    score:       i.score || dst?.score || null,
+    location:    i.location || dst?.location || null
+  }));
+
+  next.skills = inc.skills.length ? inc.skills : next.skills;
+  next.meta = { last_update: new Date().toISOString(), last_source: 'parser' };
+
+  const prefill = derivePrefill(next);
+  const confidenceSummary = {
+    basics: {
+      name: next.basics.name?.confidence ?? 0,
+      email: next.basics.email?.confidence ?? 0,
+      phone: next.basics.phone?.confidence ?? 0
+    },
+    counts: { work: next.work.length, education: next.education.length, skills: next.skills.length }
+  };
+
+  return { draft: next, prefill, confidence: confidenceSummary };
+}
+
+3) (Optional) server/mappers/affinda.map.json (reference crosswalk)
+
+You don’t need to load this file in code right now—it documents the mapping you’re now using. If you later want to make the mapper fully config-driven, this is the starting point.
+
+{
+  "basics.firstName": ["data.candidateName.listItem.firstName"],
+  "basics.lastName": ["data.candidateName.listItem.familyName"],
+  "basics.dob": ["data.dateOfBirth"],
+  "basics.email": ["data.email.listItem"],
+  "basics.phone": [
+    "data.phoneNumber.listItem.formattedNumber",
+    "data.phoneNumber.listItem.rawText"
+  ],
+  "basics.location.address": ["data.location.formatted"],
+  "basics.location.city": ["data.location.city"],
+  "basics.location.region": ["data.location.state", "data.location.stateCode"],
+  "basics.location.postalCode": ["data.location.postalCode"],
+  "basics.location.countryCode": ["data.location.countryCode"],
+
+  "work[].company": ["workExperienceOrganization"],
+  "work[].position": ["workExperienceJobTitle"],
+  "work[].startDate": ["workExperienceDates.start.date"],
+  "work[].endDate": ["workExperienceDates.end.date"],
+  "work[].isCurrent": ["workExperienceDates.end.isCurrent"],
+  "work[].location": ["workExperienceLocation.formatted"],
+  "work[].highlights": ["workExperienceDescription"],
+  "work[].type": ["workExperienceType.value"],
+
+  "education[].institution": ["educationOrganization"],
+  "education[].studyType": ["educationAccreditation", "educationLevel.value"],
+  "education[].area": ["educationMajor.listItem"],
+  "education[].startDate": ["educationDates.start.date"],
+  "education[].endDate": ["educationDates.end.date"],
+  "education[].score": ["educationGrade.educationGradeScore"],
+  "education[].location": ["educationLocation.formatted"],
+
+  "skills[].name": ["data.skill.listItem.name"]
+}
+
+How to wire it (2 small steps)
+
+Replace your mapper import in your parse route:
+
+// server/routes/parse.js
+// OLD: import { mapToProfileDraft } from '../mappers/mapToProfileDraft.js'  (keep path the same)
+// Ensure it points to this new file (same name) so no other code changes:
+import { mapToProfileDraft } from '../mappers/mapToProfileDraft.js';
+
+const { raw } = await parseWithAffinda(req.file.buffer, req.file.originalname, req.file.mimetype);
+const existing = getDraft(userId);
+const { draft, prefill, confidence } = mapToProfileDraft(existing, raw); // ← now uses standard schema
+saveDraft(userId, draft);
+return res.json({ success: true, data: { jobId, status: 'complete', profileDraft: draft, prefill, confidence } });
+
+
+Restart the server and test one résumé:
+
+Confirm POST /api/resume/parse → 200
+
+In the response JSON, check data.prefill.step3.email/phone/physicalAddress are populated
+
+Step-3 should now show your real values (not placeholders)
+
+Step-5/6 should have education & work rows populated
+
+If anything is still blank
+
+Dump raw.data top-level keys once (server log) to verify they match the sample (candidateName, email, phoneNumber, location, workExperience, education, skill). If your account emits slightly different names, tell me and I’ll tweak the mapper in-line.
+
+Make sure you’re not still in stub mode (i.e., /api/debug/affinda shows workspace resolved and the request hits /v3/documents).

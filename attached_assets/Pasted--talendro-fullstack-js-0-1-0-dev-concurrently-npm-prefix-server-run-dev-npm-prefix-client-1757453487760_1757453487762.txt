@@ -1,0 +1,696 @@
+
+> talendro-fullstack-js@0.1.0 dev
+> concurrently "npm --prefix server run dev" "npm --prefix client start"
+
+[0] 
+[0] > talendro-server@0.1.0 dev
+[0] > nodemon index.js
+[0] 
+[1] 
+[1] > talendro-client@0.1.0 start
+[1] > PORT=3000 react-scripts start
+[1] 
+[0] [nodemon] 3.1.10
+[0] [nodemon] to restart at any time, enter `rs`
+[0] [nodemon] watching path(s): *.*
+[0] [nodemon] watching extensions: js,mjs,cjs,json
+[0] [nodemon] starting `node index.js`
+[0] [dotenv@17.2.2] injecting env (0) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+[0] Server listening on http://0.0.0.0:5000
+[0] GET / 304 3.191 ms - -
+[0] GET /static/css/main.e107ff3d.css 304 1.452 ms - -
+[0] GET /static/js/main.ddafa7bc.js 304 1.072 ms - -
+[0] GET / 200 4.217 ms - 922
+[1] (node:3844) [DEP_WEBPACK_DEV_SERVER_ON_AFTER_SETUP_MIDDLEWARE] DeprecationWarning: 'onAfterSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+[1] (Use `node --trace-deprecation ...` to show where the warning was created)
+[1] (node:3844) [DEP_WEBPACK_DEV_SERVER_ON_BEFORE_SETUP_MIDDLEWARE] DeprecationWarning: 'onBeforeSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+[1] Starting the development server...
+[1] 
+[1] Compiled successfully!
+[1] 
+[1] You can now view talendro-client in the browser.
+[1] 
+[1]   Local:            http://localhost:3000
+[1]   On Your Network:  http://172.31.80.194:3000
+[1] 
+[1] Note that the development build is not optimized.
+[1] To create a production build, use npm run build.
+[1] 
+[1] webpack compiled successfully
+[0] GET /static/css/main.e107ff3d.css 200 5.029 ms - -
+[0] GET /static/js/main.ddafa7bc.js 200 10.085 ms - -
+[0] GET /favicon.ico 200 6.875 ms - 922
+[1] Compiling...
+[1] Compiled successfully!
+[1] webpack compiled successfully
+[1] Compiling...
+[1] Compiled successfully!
+[1] webpack compiled successfully
+[0] GET /app/onboarding/step-1 304 0.772 ms - -
+[0] GET /static/css/main.e107ff3d.css 304 0.563 ms - -
+[0] GET /static/js/main.ddafa7bc.js 304 0.562 ms - -
+[0] GET /app/onboarding/step-2 304 0.826 ms - -
+[0] GET /static/css/main.e107ff3d.css 304 0.703 ms - -
+[0] GET /static/js/main.ddafa7bc.js 304 0.527 ms - -
+[0] [parse] start 2025-09-09T21:17:29.315Z
+[0] [31ed4df55cdde506] AFFINDA PARSER: Starting resume parsing...
+[0] [31ed4df55cdde506] Received upload: 74412 bytes, Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryZcCP30yHqBYaGuHB
+[0] [31ed4df55cdde506] Processing multipart data with boundary: ----WebKitFormBounda...
+[0] [31ed4df55cdde506] ✅ Extracted file: 3.10 Resume - K. Greg Jackson.docx (application/vnd.openxmlformats-officedocument.wordprocessingml.document, 74143 bytes)
+[0] [31ed4df55cdde506] Processing with Affinda parser...
+[0] [AFFINDA] Using known workspace ID: pbsCNCJQ
+[0] [31ed4df55cdde506] Affinda status: {
+[0]   hasKey: true,
+[0]   organization: '29913',
+[0]   workspace: 'pbsCNCJQ',
+[0]   error: null
+[0] }
+[0] [AFFINDA] Starting parse - checking workspace and document types...
+[0] [AFFINDA] Using known workspace ID: pbsCNCJQ
+[0] [AFFINDA] Resolved workspace ID: pbsCNCJQ
+[0] [AFFINDA] Using known workspace ID: pbsCNCJQ
+[0] [AFFINDA] Fetching document types from: https://api.affinda.com/v3/document_types?workspace=pbsCNCJQ
+[0] [AFFINDA] Document types response: [
+[0]   {
+[0]     "identifier": "qaVCtnBf",
+[0]     "name": "Job Description",
+[0]     "description": "A formal document outlining the responsibilities, qualifications, and requirements for a specific job position.",
+[0]     "ingestEmail": "job-description-askvvguk@uw1.affinda.com",
+[0]     "organization": "GhjHNjjk"
+[0]   },
+[0]   {
+[0]     "identifier": "RPTgsFfY",
+[0]     "name": "Resume Parser",
+[0]     "description": "A document that outlines a person's work experience, education, skills and achievements.",
+[0]     "ingestEmail": "resume-parser-jhqdnmfl@uw1.affinda.com",
+[0]     "organization": "GhjHNjjk"
+[0]   },
+[0]   {
+[0]     "identifier": "ksTlmDEy",
+[0]     "name": "Resume Redactor",
+[0]     "description": "A document that outlines a person's work experience, education, skills and achievements.",
+[0]     "ingestEmail": "resume-redactor-llwaqiyw@uw1.affinda.com",
+[0]     "organization": "GhjHNjjk"
+[0]   },
+[0]   {
+[0]     "identifier": "cfVLdGDI",
+[0]     "name": "Resume Summary",
+[0]     "description": "A document that outlines a person's work experience, education, skills and achievements.",
+[0]     "ingestEmail": "resume-summary-emmgryab@uw1.affinda.com",
+[0]     "organization": "GhjHNjjk"
+[0]   }
+[0] ]
+[0] [AFFINDA] Response is direct array with 4 items
+[0] [AFFINDA] Got 4 document types for selection
+[0] [AFFINDA] Searching through 4 document types...
+[0] [AFFINDA] Checking document type: "Job Description" (qaVCtnBf)
+[0] [AFFINDA] Checking document type: "Resume Parser" (RPTgsFfY)
+[0] [AFFINDA] ✅ FOUND Resume Parser!
+[0] [AFFINDA] Selected document type: Resume Parser ID: RPTgsFfY
+[0] [AFFINDA] Using document type ID: RPTgsFfY
+[0] [AFFINDA] Document processed: ELFzMqMO, fetching extracted data...
+[0] [AFFINDA] Second API call status: 200
+[0] [AFFINDA] Extracted data keys: [ 'data', 'meta', 'error', 'warnings', 'extractor' ]
+[0] [AFFINDA] Has data section: true
+[0] [AFFINDA] Data section keys: [
+[0]   'achievement',           'association',
+[0]   'availability',          'candidateName',
+[0]   'dateOfBirth',           'education',
+[0]   'email',                 'expectedSalary',
+[0]   'headshot',              'hobby',
+[0]   'language',              'location',
+[0]   'nationality',           'objective',
+[0]   'patent',                'phoneNumber',
+[0]   'preferredWorkLocation', 'project',
+[0]   'publication',           'referee',
+[0]   'rightToWork',           'skill',
+[0]   'summary',               'totalYearsExperience',
+[0]   'website',               'willingToRelocate',
+[0]   'workExperience',        'rawText'
+[0] ]
+[0] [AFFINDA] Document ready: true
+[0] [AFFINDA] Document failed: false
+[0] [AFFINDA] Processing complete: true
+[0] [31ed4df55cdde506] EXTRACTED DATA KEYS: [
+[0]   'achievement',           'association',
+[0]   'availability',          'candidateName',
+[0]   'dateOfBirth',           'education',
+[0]   'email',                 'expectedSalary',
+[0]   'headshot',              'hobby',
+[0]   'language',              'location',
+[0]   'nationality',           'objective',
+[0]   'patent',                'phoneNumber',
+[0]   'preferredWorkLocation', 'project',
+[0]   'publication',           'referee',
+[0]   'rightToWork',           'skill',
+[0]   'summary',               'totalYearsExperience',
+[0]   'website',               'willingToRelocate',
+[0]   'workExperience',        'rawText'
+[0] ]
+[0] [31ed4df55cdde506] SUCCESS - Found resume data!
+[0] [31ed4df55cdde506] NAME: [
+[0]   {
+[0]     id: 1406403898,
+[0]     rectangle: {
+[0]       x0: 247.39,
+[0]       y0: 34.839966,
+[0]       x1: 365.12598,
+[0]       y1: 47.76001,
+[0]       pageIndex: 0
+[0]     },
+[0]     rectangles: [ [Object] ],
+[0]     document: 'ELFzMqMO',
+[0]     pageIndex: 0,
+[0]     raw: 'K. GREG JACKSON',
+[0]     parsed: { middleName: [Object], firstName: [Object], familyName: [Object] },
+[0]     confidence: 1,
+[0]     classificationConfidence: 1,
+[0]     textExtractionConfidence: 1,
+[0]     isVerified: false,
+[0]     isClientVerified: false,
+[0]     isAutoVerified: false,
+[0]     verifiedBy: null,
+[0]     dataPoint: 'VnzxoCXe',
+[0]     field: 'uxeLxDsc',
+[0]     contentType: 'group',
+[0]     parent: null
+[0]   },
+[0]   {
+[0]     id: 1406403902,
+[0]     rectangle: {
+[0]       x0: 239.89,
+[0]       y0: 735.575,
+[0]       x1: 376.43997,
+[0]       y1: 751.175,
+[0]       pageIndex: 0
+[0]     },
+[0]     rectangles: [ [Object] ],
+[0]     document: 'ELFzMqMO',
+[0]     pageIndex: 0,
+[0]     raw: 'K. GREG JACKSON, 2',
+[0]     parsed: { middleName: [Object], firstName: [Object], familyName: [Object] },
+[0]     confidence: 0.882,
+[0]     classificationConfidence: 0.882,
+[0]     textExtractionConfidence: 1,
+[0]     isVerified: false,
+[0]     isClientVerified: false,
+[0]     isAutoVerified: false,
+[0]     verifiedBy: null,
+[0]     dataPoint: 'VnzxoCXe',
+[0]     field: 'uxeLxDsc',
+[0]     contentType: 'group',
+[0]     parent: null
+[0]   },
+[0]   {
+[0]     id: 1406403906,
+[0]     rectangle: { x0: 239.89, y0: 681.82, x1: 362.54, y1: 697.4, pageIndex: 1 },
+[0]     rectangles: [ [Object] ],
+[0]     document: 'ELFzMqMO',
+[0]     pageIndex: 1,
+[0]     raw: 'K. GREG JACKSON,',
+[0]     parsed: { middleName: [Object], firstName: [Object], familyName: [Object] },
+[0]     confidence: 0.999,
+[0]     classificationConfidence: 0.999,
+[0]     textExtractionConfidence: 1,
+[0]     isVerified: false,
+[0]     isClientVerified: false,
+[0]     isAutoVerified: false,
+[0]     verifiedBy: null,
+[0]     dataPoint: 'VnzxoCXe',
+[0]     field: 'uxeLxDsc',
+[0]     contentType: 'group',
+[0]     parent: null
+[0]   }
+[0] ]
+[0] [31ed4df55cdde506] EMAIL: [
+[0]   {
+[0]     id: 1406403783,
+[0]     rectangle: {
+[0]       x0: 261.19897,
+[0]       y0: 58.650513,
+[0]       x1: 357.2855,
+[0]       y1: 66.80151,
+[0]       pageIndex: 0
+[0]     },
+[0]     rectangles: [ [Object] ],
+[0]     document: 'ELFzMqMO',
+[0]     pageIndex: 0,
+[0]     raw: 'kgregjackson@gmail.com',
+[0]     parsed: 'kgregjackson@gmail.com',
+[0]     confidence: 0.982,
+[0]     classificationConfidence: 0.982,
+[0]     textExtractionConfidence: 1,
+[0]     isVerified: false,
+[0]     isClientVerified: false,
+[0]     isAutoVerified: false,
+[0]     verifiedBy: null,
+[0]     dataPoint: 'dOXvRAeJ',
+[0]     field: 'PPxvqKBD',
+[0]     contentType: 'text',
+[0]     parent: null
+[0]   },
+[0]   {
+[0]     id: 1406403784,
+[0]     rectangle: {
+[0]       x0: 263.19897,
+[0]       y0: 758.2805,
+[0]       x1: 359.19647,
+[0]       y1: 766.4315,
+[0]       pageIndex: 0
+[0]     },
+[0]     rectangles: [ [Object] ],
+[0]     document: 'ELFzMqMO',
+[0]     pageIndex: 0,
+[0]     raw: 'kgregjackson@gmail.com',
+[0]     parsed: 'kgregjackson@gmail.com',
+[0]     confidence: 0.973,
+[0]     classificationConfidence: 0.973,
+[0]     textExtractionConfidence: 1,
+[0]     isVerified: false,
+[0]     isClientVerified: false,
+[0]     isAutoVerified: false,
+[0]     verifiedBy: null,
+[0]     dataPoint: 'dOXvRAeJ',
+[0]     field: 'PPxvqKBD',
+[0]     contentType: 'text',
+[0]     parent: null
+[0]   },
+[0]   {
+[0]     id: 1406403785,
+[0]     rectangle: {
+[0]       x0: 263.07898,
+[0]       y0: 705.0055,
+[0]       x1: 359.07648,
+[0]       y1: 713.1565,
+[0]       pageIndex: 1
+[0]     },
+[0]     rectangles: [ [Object] ],
+[0]     document: 'ELFzMqMO',
+[0]     pageIndex: 1,
+[0]     raw: 'kgregjackson@gmail.com',
+[0]     parsed: 'kgregjackson@gmail.com',
+[0]     confidence: 0.981,
+[0]     classificationConfidence: 0.981,
+[0]     textExtractionConfidence: 1,
+[0]     isVerified: false,
+[0]     isClientVerified: false,
+[0]     isAutoVerified: false,
+[0]     verifiedBy: null,
+[0]     dataPoint: 'dOXvRAeJ',
+[0]     field: 'PPxvqKBD',
+[0]     contentType: 'text',
+[0]     parent: null
+[0]   },
+[0]   {
+[0]     id: 1406403786,
+[0]     rectangle: {
+[0]       x0: 262.95898,
+[0]       y0: 705.6305,
+[0]       x1: 359.02548,
+[0]       y1: 713.7815,
+[0]       pageIndex: 1
+[0]     },
+[0]     rectangles: [ [Object] ],
+[0]     document: 'ELFzMqMO',
+[0]     pageIndex: 1,
+[0]     raw: 'kgregjackson@gmail.com',
+[0]     parsed: 'kgregjackson@gmail.com',
+[0]     confidence: 0.975,
+[0]     classificationConfidence: 0.975,
+[0]     textExtractionConfidence: 1,
+[0]     isVerified: false,
+[0]     isClientVerified: false,
+[0]     isAutoVerified: false,
+[0]     verifiedBy: null,
+[0]     dataPoint: 'dOXvRAeJ',
+[0]     field: 'PPxvqKBD',
+[0]     contentType: 'text',
+[0]     parent: null
+[0]   }
+[0] ]
+[0] [31ed4df55cdde506] LOCATION: {"id":1406403787,"rectangle":{"x0":126.783,"y0":58.650513,"x1":169.894,"y1":66.45001,"pageIndex":0},"rectangles":[{"x0":126.783,"y0":58.650513,"x1":169.894,"y1":66.45001,"pageIndex":0}],"document":"ELFzMqMO","pageIndex":0,"raw":"Orlando, FL","parsed":{"formatted":"Orlando, FL, USA","streetNumber":null,"street":null,"apartmentNumber":null,"city":"Orlando","postalCode":null,"state":"Florida","stateCode":"FL","country":"United States","rawInput":"Orlando, FL","countryCode":"US","latitude":28.5383832,"longitude":-81.3789269,"poBox":null},"confidence":0.982,"classificationConfidence":0.982,"textExtractionConfidence":1,"isVerified":false,"isClientVerified":false,"isAutoVerified":false,"verifiedBy":null,"dataPoint":"WTtoImKj","field":"jNpQJAKq","contentType":"location","parent":null}
+[0] [31ed4df55cdde506] WEBSITES: [{"id":1406403893,"rectangle":{"x0":437.77298285714284,"y0":58.346497,"x1":485.24347,"y1":66.80151,"pageIndex":0},"rectangles":[{"x0":437.77298285714284,"y0":58.346497,"x1":485.24347,"y1":66.80151,"pageIndex":0}],"document":"ELFzMqMO","pageIndex":0,"raw":"kgregjackson","parsed":null,"confidence":0.978,"classificationConfidence":0.978,"textExtractionConfidence":1,"isVerified":false,"isClientVerified":false,"isAutoVerified":false,"verifiedBy":null,"dataPoint":"GYIADckm","field":"pFmVDHZW","contentType":"url","parent":null},{"id":1406403894,"rectangle":{"x0":376.479,"y0":757.9765,"x1":423.90707142857144,"y1":766.4315,"pageIndex":0},"rectangles":[{"x0":376.479,"y0":757.9765,"x1":423.90707142857144,"y1":766.4315,"pageIndex":0}],"document":"ELFzMqMO","pageIndex":0,"raw":"linkedin.com","parsed":{"url":"https://linkedin.com","domain":"linkedin.com"},"confidence":0.977,"classificationConfidence":0.977,"textExtractionConfidence":1,"isVerified":false,"isClientVerified":false,"isAutoVerified":false,"verifiedBy":null,"dataPoint":"GYIADckm","field":"pFmVDHZW","contentType":"url","parent":null},{"id":1406403895,"rectangle":{"x0":439.7164285714286,"y0":757.9765,"x1":487.1445,"y1":766.4315,"pageIndex":0},"rectangles":[{"x0":439.7164285714286,"y0":757.9765,"x1":487.1445,"y1":766.4315,"pageIndex":0}],"document":"ELFzMqMO","pageIndex":0,"raw":"kgregjackson","parsed":null,"confidence":0.921,"classificationConfidence":0.921,"textExtractionConfidence":1,"isVerified":false,"isClientVerified":false,"isAutoVerified":false,"verifiedBy":null,"dataPoint":"GYIADckm","field":"pFmVDHZW","contentType":"url","parent":null},{"id":1406403896,"rectangle":{"x0":376.35898655653,"y0":704.7015061378479,"x1":423.78705634389604,"y1":713.156506061554,"pageIndex":1},"rectangles":[{"x0":376.35898655653,"y0":704.7015061378479,"x1":423.78705634389604,"y1":713.156506061554,"pageIndex":1}],"document":"ELFzMqMO","pageIndex":1,"raw":"linkedin.com","parsed":{"url":"https://linkedin.com","domain":"linkedin.com"},"confidence":0.647,"classificationConfidence":0.647,"textExtractionConfidence":1,"isVerified":false,"isClientVerified":false,"isAutoVerified":false,"verifiedBy":null,"dataPoint":"GYIADckm","field":"pFmVDHZW","contentType":"url","parent":null},{"id":1406403897,"rectangle":{"x0":376.22897,"y0":705.3265,"x1":423.65704142857146,"y1":713.7815,"pageIndex":1},"rectangles":[{"x0":376.22897,"y0":705.3265,"x1":423.65704142857146,"y1":713.7815,"pageIndex":1}],"document":"ELFzMqMO","pageIndex":1,"raw":"linkedin.com","parsed":{"url":"https://linkedin.com","domain":"linkedin.com"},"confidence":0.631,"classificationConfidence":0.631,"textExtractionConfidence":1,"isVerified":false,"isClientVerified":false,"isAutoVerified":false,"verifiedBy":null,"dataPoint":"GYIADckm","field":"pFmVDHZW","contentType":"url","parent":null},{"id":1406403892,"rectangle":{"x0":374.479,"y0":58.346497,"x1":421.94948714285715,"y1":66.80151,"pageIndex":0},"rectangles":[{"x0":374.479,"y0":58.346497,"x1":421.94948714285715,"y1":66.80151,"pageIndex":0}],"document":"ELFzMqMO","pageIndex":0,"raw":"linkedin.com","parsed":{"url":"https://linkedin.com","domain":"linkedin.com"},"confidence":0.982,"classificationConfidence":0.982,"textExtractionConfidence":1,"isVerified":false,"isClientVerified":false,"isAutoVerified":false,"verifiedBy":null,"dataPoint":"GYIADckm","field":"pFmVDHZW","contentType":"url","parent":null}]
+[0] [31ed4df55cdde506] RAW DATA KEYS: [
+[0]   'achievement',           'association',
+[0]   'availability',          'candidateName',
+[0]   'dateOfBirth',           'education',
+[0]   'email',                 'expectedSalary',
+[0]   'headshot',              'hobby',
+[0]   'language',              'location',
+[0]   'nationality',           'objective',
+[0]   'patent',                'phoneNumber',
+[0]   'preferredWorkLocation', 'project',
+[0]   'publication',           'referee',
+[0]   'rightToWork',           'skill',
+[0]   'summary',               'totalYearsExperience',
+[0]   'website',               'willingToRelocate',
+[0]   'workExperience',        'rawText'
+[0] ]
+[0] [31ed4df55cdde506] WORK EXP: 9 entries
+[0] [31ed4df55cdde506] ✅ Affinda parser completed in 11997ms
+[0] [31ed4df55cdde506] Successfully parsed resume for user demo-user: {
+[0]   basics: { name: 'K. JACKSON', email: 'kgregjackson@gmail.com' },
+[0]   workCount: 9,
+[0]   educationCount: 4,
+[0]   skillsCount: 1
+[0] }
+[0] [parse] resp.shape { hasData: true, hasPrefill: true, hasProfile: true }
+[0] [31ed4df55cdde506] PREFILL STEP3: {
+[0]   "fullLegalName": "K. JACKSON",
+[0]   "email": "kgregjackson@gmail.com",
+[0]   "phone": "+1 571-287-0086",
+[0]   "physicalAddress": "Orlando, Florida, US",
+[0]   "linkedIn": "https://linkedin.com/in/kgregjackson",
+[0]   "linkedin": "https://linkedin.com/in/kgregjackson",
+[0]   "linkedinUrl": "https://linkedin.com/in/kgregjackson",
+[0]   "currentJobTitle": "Vice President, Talent Acquisition,",
+[0]   "currentTitle": "Vice President, Talent Acquisition,"
+[0] }
+[0] POST /api/resume/parse 200 12000.373 ms - -
+[1] Compiling...
+[1] Compiled successfully!
+[1] webpack compiled successfully
+[1] Compiling...
+[1] Compiled successfully!
+[1] webpack compiled successfully
+[0] GET /app/onboarding/step-1 304 0.733 ms - -
+[0] GET /static/css/main.e107ff3d.css 304 0.486 ms - -
+[0] GET /static/js/main.ddafa7bc.js 304 0.432 ms - -
+[0] GET /app/onboarding/step-2 304 0.928 ms - -
+[0] GET /static/css/main.e107ff3d.css 304 0.500 ms - -
+[0] GET /static/js/main.ddafa7bc.js 304 0.360 ms - -
+[0] [parse] start 2025-09-09T21:27:54.191Z
+[0] [fa1924db14eb7fb7] AFFINDA PARSER: Starting resume parsing...
+[0] [fa1924db14eb7fb7] Received upload: 74412 bytes, Content-Type: multipart/form-data; boundary=----WebKitFormBoundarykRWvFOoXO0Ba95LQ
+[0] [fa1924db14eb7fb7] Processing multipart data with boundary: ----WebKitFormBounda...
+[0] [fa1924db14eb7fb7] ✅ Extracted file: 3.10 Resume - K. Greg Jackson.docx (application/vnd.openxmlformats-officedocument.wordprocessingml.document, 74143 bytes)
+[0] [fa1924db14eb7fb7] Processing with Affinda parser...
+[0] [AFFINDA] Using known workspace ID: pbsCNCJQ
+[0] [fa1924db14eb7fb7] Affinda status: {
+[0]   hasKey: true,
+[0]   organization: '29913',
+[0]   workspace: 'pbsCNCJQ',
+[0]   error: null
+[0] }
+[0] [AFFINDA] Starting parse - checking workspace and document types...
+[0] [AFFINDA] Using known workspace ID: pbsCNCJQ
+[0] [AFFINDA] Resolved workspace ID: pbsCNCJQ
+[0] [AFFINDA] Using known workspace ID: pbsCNCJQ
+[0] [AFFINDA] Fetching document types from: https://api.affinda.com/v3/document_types?workspace=pbsCNCJQ
+[0] [AFFINDA] Document types response: [
+[0]   {
+[0]     "identifier": "qaVCtnBf",
+[0]     "name": "Job Description",
+[0]     "description": "A formal document outlining the responsibilities, qualifications, and requirements for a specific job position.",
+[0]     "ingestEmail": "job-description-askvvguk@uw1.affinda.com",
+[0]     "organization": "GhjHNjjk"
+[0]   },
+[0]   {
+[0]     "identifier": "RPTgsFfY",
+[0]     "name": "Resume Parser",
+[0]     "description": "A document that outlines a person's work experience, education, skills and achievements.",
+[0]     "ingestEmail": "resume-parser-jhqdnmfl@uw1.affinda.com",
+[0]     "organization": "GhjHNjjk"
+[0]   },
+[0]   {
+[0]     "identifier": "ksTlmDEy",
+[0]     "name": "Resume Redactor",
+[0]     "description": "A document that outlines a person's work experience, education, skills and achievements.",
+[0]     "ingestEmail": "resume-redactor-llwaqiyw@uw1.affinda.com",
+[0]     "organization": "GhjHNjjk"
+[0]   },
+[0]   {
+[0]     "identifier": "cfVLdGDI",
+[0]     "name": "Resume Summary",
+[0]     "description": "A document that outlines a person's work experience, education, skills and achievements.",
+[0]     "ingestEmail": "resume-summary-emmgryab@uw1.affinda.com",
+[0]     "organization": "GhjHNjjk"
+[0]   }
+[0] ]
+[0] [AFFINDA] Response is direct array with 4 items
+[0] [AFFINDA] Got 4 document types for selection
+[0] [AFFINDA] Searching through 4 document types...
+[0] [AFFINDA] Checking document type: "Job Description" (qaVCtnBf)
+[0] [AFFINDA] Checking document type: "Resume Parser" (RPTgsFfY)
+[0] [AFFINDA] ✅ FOUND Resume Parser!
+[0] [AFFINDA] Selected document type: Resume Parser ID: RPTgsFfY
+[0] [AFFINDA] Using document type ID: RPTgsFfY
+[0] [AFFINDA] Document processed: dzcwMgOP, fetching extracted data...
+[0] [AFFINDA] Second API call status: 200
+[0] [AFFINDA] Extracted data keys: [ 'data', 'meta', 'error', 'warnings', 'extractor' ]
+[0] [AFFINDA] Has data section: true
+[0] [AFFINDA] Data section keys: [
+[0]   'achievement',           'association',
+[0]   'availability',          'candidateName',
+[0]   'dateOfBirth',           'education',
+[0]   'email',                 'expectedSalary',
+[0]   'headshot',              'hobby',
+[0]   'language',              'location',
+[0]   'nationality',           'objective',
+[0]   'patent',                'phoneNumber',
+[0]   'preferredWorkLocation', 'project',
+[0]   'publication',           'referee',
+[0]   'rightToWork',           'skill',
+[0]   'summary',               'totalYearsExperience',
+[0]   'website',               'willingToRelocate',
+[0]   'workExperience',        'rawText'
+[0] ]
+[0] [AFFINDA] Document ready: true
+[0] [AFFINDA] Document failed: false
+[0] [AFFINDA] Processing complete: true
+[0] [fa1924db14eb7fb7] EXTRACTED DATA KEYS: [
+[0]   'achievement',           'association',
+[0]   'availability',          'candidateName',
+[0]   'dateOfBirth',           'education',
+[0]   'email',                 'expectedSalary',
+[0]   'headshot',              'hobby',
+[0]   'language',              'location',
+[0]   'nationality',           'objective',
+[0]   'patent',                'phoneNumber',
+[0]   'preferredWorkLocation', 'project',
+[0]   'publication',           'referee',
+[0]   'rightToWork',           'skill',
+[0]   'summary',               'totalYearsExperience',
+[0]   'website',               'willingToRelocate',
+[0]   'workExperience',        'rawText'
+[0] ]
+[0] [fa1924db14eb7fb7] SUCCESS - Found resume data!
+[0] [fa1924db14eb7fb7] NAME: [
+[0]   {
+[0]     id: 1406428125,
+[0]     rectangle: {
+[0]       x0: 239.89,
+[0]       y0: 735.575,
+[0]       x1: 376.43997,
+[0]       y1: 751.175,
+[0]       pageIndex: 0
+[0]     },
+[0]     rectangles: [ [Object] ],
+[0]     document: 'dzcwMgOP',
+[0]     pageIndex: 0,
+[0]     raw: 'K. GREG JACKSON, 2',
+[0]     parsed: { middleName: [Object], firstName: [Object], familyName: [Object] },
+[0]     confidence: 0.882,
+[0]     classificationConfidence: 0.882,
+[0]     textExtractionConfidence: 1,
+[0]     isVerified: false,
+[0]     isClientVerified: false,
+[0]     isAutoVerified: false,
+[0]     verifiedBy: null,
+[0]     dataPoint: 'VnzxoCXe',
+[0]     field: 'uxeLxDsc',
+[0]     contentType: 'group',
+[0]     parent: null
+[0]   },
+[0]   {
+[0]     id: 1406428129,
+[0]     rectangle: { x0: 239.89, y0: 681.82, x1: 362.54, y1: 697.4, pageIndex: 1 },
+[0]     rectangles: [ [Object] ],
+[0]     document: 'dzcwMgOP',
+[0]     pageIndex: 1,
+[0]     raw: 'K. GREG JACKSON,',
+[0]     parsed: { middleName: [Object], firstName: [Object], familyName: [Object] },
+[0]     confidence: 0.999,
+[0]     classificationConfidence: 0.999,
+[0]     textExtractionConfidence: 1,
+[0]     isVerified: false,
+[0]     isClientVerified: false,
+[0]     isAutoVerified: false,
+[0]     verifiedBy: null,
+[0]     dataPoint: 'VnzxoCXe',
+[0]     field: 'uxeLxDsc',
+[0]     contentType: 'group',
+[0]     parent: null
+[0]   },
+[0]   {
+[0]     id: 1406428121,
+[0]     rectangle: {
+[0]       x0: 247.39,
+[0]       y0: 34.839966,
+[0]       x1: 365.12598,
+[0]       y1: 47.76001,
+[0]       pageIndex: 0
+[0]     },
+[0]     rectangles: [ [Object] ],
+[0]     document: 'dzcwMgOP',
+[0]     pageIndex: 0,
+[0]     raw: 'K. GREG JACKSON',
+[0]     parsed: { middleName: [Object], firstName: [Object], familyName: [Object] },
+[0]     confidence: 1,
+[0]     classificationConfidence: 1,
+[0]     textExtractionConfidence: 1,
+[0]     isVerified: false,
+[0]     isClientVerified: false,
+[0]     isAutoVerified: false,
+[0]     verifiedBy: null,
+[0]     dataPoint: 'VnzxoCXe',
+[0]     field: 'uxeLxDsc',
+[0]     contentType: 'group',
+[0]     parent: null
+[0]   }
+[0] ]
+[0] [fa1924db14eb7fb7] EMAIL: [
+[0]   {
+[0]     id: 1406428006,
+[0]     rectangle: {
+[0]       x0: 261.19897,
+[0]       y0: 58.650513,
+[0]       x1: 357.2855,
+[0]       y1: 66.80151,
+[0]       pageIndex: 0
+[0]     },
+[0]     rectangles: [ [Object] ],
+[0]     document: 'dzcwMgOP',
+[0]     pageIndex: 0,
+[0]     raw: 'kgregjackson@gmail.com',
+[0]     parsed: 'kgregjackson@gmail.com',
+[0]     confidence: 0.982,
+[0]     classificationConfidence: 0.982,
+[0]     textExtractionConfidence: 1,
+[0]     isVerified: false,
+[0]     isClientVerified: false,
+[0]     isAutoVerified: false,
+[0]     verifiedBy: null,
+[0]     dataPoint: 'dOXvRAeJ',
+[0]     field: 'PPxvqKBD',
+[0]     contentType: 'text',
+[0]     parent: null
+[0]   },
+[0]   {
+[0]     id: 1406428007,
+[0]     rectangle: {
+[0]       x0: 263.19897,
+[0]       y0: 758.2805,
+[0]       x1: 359.19647,
+[0]       y1: 766.4315,
+[0]       pageIndex: 0
+[0]     },
+[0]     rectangles: [ [Object] ],
+[0]     document: 'dzcwMgOP',
+[0]     pageIndex: 0,
+[0]     raw: 'kgregjackson@gmail.com',
+[0]     parsed: 'kgregjackson@gmail.com',
+[0]     confidence: 0.973,
+[0]     classificationConfidence: 0.973,
+[0]     textExtractionConfidence: 1,
+[0]     isVerified: false,
+[0]     isClientVerified: false,
+[0]     isAutoVerified: false,
+[0]     verifiedBy: null,
+[0]     dataPoint: 'dOXvRAeJ',
+[0]     field: 'PPxvqKBD',
+[0]     contentType: 'text',
+[0]     parent: null
+[0]   },
+[0]   {
+[0]     id: 1406428008,
+[0]     rectangle: {
+[0]       x0: 263.07898,
+[0]       y0: 705.0055,
+[0]       x1: 359.07648,
+[0]       y1: 713.1565,
+[0]       pageIndex: 1
+[0]     },
+[0]     rectangles: [ [Object] ],
+[0]     document: 'dzcwMgOP',
+[0]     pageIndex: 1,
+[0]     raw: 'kgregjackson@gmail.com',
+[0]     parsed: 'kgregjackson@gmail.com',
+[0]     confidence: 0.981,
+[0]     classificationConfidence: 0.981,
+[0]     textExtractionConfidence: 1,
+[0]     isVerified: false,
+[0]     isClientVerified: false,
+[0]     isAutoVerified: false,
+[0]     verifiedBy: null,
+[0]     dataPoint: 'dOXvRAeJ',
+[0]     field: 'PPxvqKBD',
+[0]     contentType: 'text',
+[0]     parent: null
+[0]   },
+[0]   {
+[0]     id: 1406428009,
+[0]     rectangle: {
+[0]       x0: 262.95898,
+[0]       y0: 705.6305,
+[0]       x1: 359.02548,
+[0]       y1: 713.7815,
+[0]       pageIndex: 1
+[0]     },
+[0]     rectangles: [ [Object] ],
+[0]     document: 'dzcwMgOP',
+[0]     pageIndex: 1,
+[0]     raw: 'kgregjackson@gmail.com',
+[0]     parsed: 'kgregjackson@gmail.com',
+[0]     confidence: 0.975,
+[0]     classificationConfidence: 0.975,
+[0]     textExtractionConfidence: 1,
+[0]     isVerified: false,
+[0]     isClientVerified: false,
+[0]     isAutoVerified: false,
+[0]     verifiedBy: null,
+[0]     dataPoint: 'dOXvRAeJ',
+[0]     field: 'PPxvqKBD',
+[0]     contentType: 'text',
+[0]     parent: null
+[0]   }
+[0] ]
+[0] [fa1924db14eb7fb7] LOCATION: {"id":1406428010,"rectangle":{"x0":126.783,"y0":58.650513,"x1":169.894,"y1":66.45001,"pageIndex":0},"rectangles":[{"x0":126.783,"y0":58.650513,"x1":169.894,"y1":66.45001,"pageIndex":0}],"document":"dzcwMgOP","pageIndex":0,"raw":"Orlando, FL","parsed":{"formatted":"Orlando, FL, USA","streetNumber":null,"street":null,"apartmentNumber":null,"city":"Orlando","postalCode":null,"state":"Florida","stateCode":"FL","country":"United States","rawInput":"Orlando, FL","countryCode":"US","latitude":28.5383832,"longitude":-81.3789269,"poBox":null},"confidence":0.982,"classificationConfidence":0.982,"textExtractionConfidence":1,"isVerified":false,"isClientVerified":false,"isAutoVerified":false,"verifiedBy":null,"dataPoint":"WTtoImKj","field":"jNpQJAKq","contentType":"location","parent":null}
+[0] [fa1924db14eb7fb7] WEBSITES: [{"id":1406428115,"rectangle":{"x0":374.479,"y0":58.346497,"x1":421.94948714285715,"y1":66.80151,"pageIndex":0},"rectangles":[{"x0":374.479,"y0":58.346497,"x1":421.94948714285715,"y1":66.80151,"pageIndex":0}],"document":"dzcwMgOP","pageIndex":0,"raw":"linkedin.com","parsed":{"url":"https://linkedin.com","domain":"linkedin.com"},"confidence":0.982,"classificationConfidence":0.982,"textExtractionConfidence":1,"isVerified":false,"isClientVerified":false,"isAutoVerified":false,"verifiedBy":null,"dataPoint":"GYIADckm","field":"pFmVDHZW","contentType":"url","parent":null},{"id":1406428116,"rectangle":{"x0":437.77298285714284,"y0":58.346497,"x1":485.24347,"y1":66.80151,"pageIndex":0},"rectangles":[{"x0":437.77298285714284,"y0":58.346497,"x1":485.24347,"y1":66.80151,"pageIndex":0}],"document":"dzcwMgOP","pageIndex":0,"raw":"kgregjackson","parsed":null,"confidence":0.978,"classificationConfidence":0.978,"textExtractionConfidence":1,"isVerified":false,"isClientVerified":false,"isAutoVerified":false,"verifiedBy":null,"dataPoint":"GYIADckm","field":"pFmVDHZW","contentType":"url","parent":null},{"id":1406428117,"rectangle":{"x0":376.479,"y0":757.9765,"x1":423.90707142857144,"y1":766.4315,"pageIndex":0},"rectangles":[{"x0":376.479,"y0":757.9765,"x1":423.90707142857144,"y1":766.4315,"pageIndex":0}],"document":"dzcwMgOP","pageIndex":0,"raw":"linkedin.com","parsed":{"url":"https://linkedin.com","domain":"linkedin.com"},"confidence":0.977,"classificationConfidence":0.977,"textExtractionConfidence":1,"isVerified":false,"isClientVerified":false,"isAutoVerified":false,"verifiedBy":null,"dataPoint":"GYIADckm","field":"pFmVDHZW","contentType":"url","parent":null},{"id":1406428118,"rectangle":{"x0":439.7164285714286,"y0":757.9765,"x1":487.1445,"y1":766.4315,"pageIndex":0},"rectangles":[{"x0":439.7164285714286,"y0":757.9765,"x1":487.1445,"y1":766.4315,"pageIndex":0}],"document":"dzcwMgOP","pageIndex":0,"raw":"kgregjackson","parsed":null,"confidence":0.921,"classificationConfidence":0.921,"textExtractionConfidence":1,"isVerified":false,"isClientVerified":false,"isAutoVerified":false,"verifiedBy":null,"dataPoint":"GYIADckm","field":"pFmVDHZW","contentType":"url","parent":null},{"id":1406428119,"rectangle":{"x0":376.35898655653,"y0":704.7015061378479,"x1":423.78705634389604,"y1":713.156506061554,"pageIndex":1},"rectangles":[{"x0":376.35898655653,"y0":704.7015061378479,"x1":423.78705634389604,"y1":713.156506061554,"pageIndex":1}],"document":"dzcwMgOP","pageIndex":1,"raw":"linkedin.com","parsed":{"url":"https://linkedin.com","domain":"linkedin.com"},"confidence":0.647,"classificationConfidence":0.647,"textExtractionConfidence":1,"isVerified":false,"isClientVerified":false,"isAutoVerified":false,"verifiedBy":null,"dataPoint":"GYIADckm","field":"pFmVDHZW","contentType":"url","parent":null},{"id":1406428120,"rectangle":{"x0":376.22897,"y0":705.3265,"x1":423.65704142857146,"y1":713.7815,"pageIndex":1},"rectangles":[{"x0":376.22897,"y0":705.3265,"x1":423.65704142857146,"y1":713.7815,"pageIndex":1}],"document":"dzcwMgOP","pageIndex":1,"raw":"linkedin.com","parsed":{"url":"https://linkedin.com","domain":"linkedin.com"},"confidence":0.631,"classificationConfidence":0.631,"textExtractionConfidence":1,"isVerified":false,"isClientVerified":false,"isAutoVerified":false,"verifiedBy":null,"dataPoint":"GYIADckm","field":"pFmVDHZW","contentType":"url","parent":null}]
+[0] [fa1924db14eb7fb7] RAW DATA KEYS: [
+[0]   'achievement',           'association',
+[0]   'availability',          'candidateName',
+[0]   'dateOfBirth',           'education',
+[0]   'email',                 'expectedSalary',
+[0]   'headshot',              'hobby',
+[0]   'language',              'location',
+[0]   'nationality',           'objective',
+[0]   'patent',                'phoneNumber',
+[0]   'preferredWorkLocation', 'project',
+[0]   'publication',           'referee',
+[0]   'rightToWork',           'skill',
+[0]   'summary',               'totalYearsExperience',
+[0]   'website',               'willingToRelocate',
+[0]   'workExperience',        'rawText'
+[0] ]
+[0] [fa1924db14eb7fb7] WORK EXP: 9 entries
+[0] [fa1924db14eb7fb7] ✅ Affinda parser completed in 12984ms
+[0] [fa1924db14eb7fb7] Successfully parsed resume for user demo-user: {
+[0]   basics: { name: 'K. JACKSON', email: 'kgregjackson@gmail.com' },
+[0]   workCount: 9,
+[0]   educationCount: 4,
+[0]   skillsCount: 1
+[0] }
+[0] [parse] resp.shape { hasData: true, hasPrefill: true, hasProfile: true }
+[0] [fa1924db14eb7fb7] PREFILL STEP3: {
+[0]   "fullLegalName": "K. JACKSON",
+[0]   "email": "kgregjackson@gmail.com",
+[0]   "phone": "+1 571-287-0086",
+[0]   "physicalAddress": "Orlando, Florida, US",
+[0]   "linkedIn": "https://linkedin.com/in/kgregjackson",
+[0]   "linkedin": "https://linkedin.com/in/kgregjackson",
+[0]   "linkedinUrl": "https://linkedin.com/in/kgregjackson",
+[0]   "currentJobTitle": "Executive Consultant, Talent",
+[0]   "currentTitle": "Executive Consultant, Talent"
+[0] }
+[0] POST /api/resume/parse 200 12985.887 ms - -

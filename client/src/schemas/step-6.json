@@ -1,0 +1,53 @@
+{
+  "id": "step-6",
+  "title": "Employment History (10 Years)",
+  "route": "/app/onboarding/step-6",
+  "nextRoute": "/app/onboarding/step-7",
+  "collection": {
+    "key": "employmentHistory",
+    "itemTitle": "Employment",
+    "addLabel": "Add Employment",
+    "prefillCollectionKey": "resume.data.workExperience",
+    "fields": [
+      { "key": "companyName", "label": "Company Name", "type": "text", "required": true, "prefillKeys": ["parsed.workExperienceOrganization","organization","company"], "testId": "emp-company" },
+
+      { "key": "companyAddressLine1", "label": "Company Address Line 1", "type": "text", "required": false, "testId": "emp-addr1" },
+      { "key": "companyAddressLine2", "label": "Company Address Line 2", "type": "text", "required": false, "testId": "emp-addr2" },
+      { "key": "companyCity", "label": "Company City", "type": "text", "required": false, "testId": "emp-city" },
+      { "key": "companyState", "label": "Company State/Province", "type": "text", "required": false, "testId": "emp-state" },
+      { "key": "companyPostalCode", "label": "Company ZIP/Postal Code", "type": "text", "required": false, "testId": "emp-zip" },
+      { "key": "companyCountry", "label": "Company Country", "type": "text", "required": false, "testId": "emp-country" },
+
+      { "key": "jobTitle", "label": "Job Title", "type": "text", "required": true, "prefillKeys": ["parsed.workExperienceJobTitle","jobTitle","position"], "testId": "emp-title" },
+
+      { "key": "fromMonth", "label": "From (Month)", "type": "select", "required": true, "options": [
+        {"value":"01","label":"01"},{"value":"02","label":"02"},{"value":"03","label":"03"},{"value":"04","label":"04"},
+        {"value":"05","label":"05"},{"value":"06","label":"06"},{"value":"07","label":"07"},{"value":"08","label":"08"},
+        {"value":"09","label":"09"},{"value":"10","label":"10"},{"value":"11","label":"11"},{"value":"12","label":"12"}
+      ], "testId": "emp-from-month" },
+      { "key": "fromYear", "label": "From (Year)", "type": "text", "required": true, "testId": "emp-from-year" },
+      { "key": "toMonth", "label": "To (Month)", "type": "select", "required": false, "options": [
+        {"value":"01","label":"01"},{"value":"02","label":"02"},{"value":"03","label":"03"},{"value":"04","label":"04"},
+        {"value":"05","label":"05"},{"value":"06","label":"06"},{"value":"07","label":"07"},{"value":"08","label":"08"},
+        {"value":"09","label":"09"},{"value":"10","label":"10"},{"value":"11","label":"11"},{"value":"12","label":"12"}
+      ], "testId": "emp-to-month" },
+      { "key": "toYear", "label": "To (Year)", "type": "text", "required": false, "testId": "emp-to-year" },
+      { "key": "current", "label": "Current Role", "type": "checkbox", "required": false, "testId": "emp-current" },
+
+      { "key": "supervisorName", "label": "Supervisor Name", "type": "text", "required": false, "testId": "emp-sup-name" },
+      { "key": "supervisorTitle", "label": "Supervisor Title", "type": "text", "required": true, "testId": "emp-sup-title" },
+      { "key": "contactSupervisor", "label": "Contact Supervisor?", "type": "select", "required": false, "options": [
+        {"value":"yes","label":"Yes"},
+        {"value":"no","label":"No"},
+        {"value":"after-offer","label":"Please contact after offer"}
+      ], "testId": "emp-sup-contact" },
+
+      { "key": "startingSalary", "label": "Starting Salary", "type": "text", "required": false, "testId": "emp-salary-start" },
+      { "key": "endingSalary", "label": "Ending Salary", "type": "text", "required": false, "testId": "emp-salary-end" },
+
+      { "key": "reasonForLeaving", "label": "Reason for Leaving", "type": "text", "required": true, "testId": "emp-reason" },
+      { "key": "responsibilities", "label": "Responsibilities / Achievements", "type": "textarea", "required": false, "testId": "emp-resp" }
+    ]
+  },
+  "fields": []
+}

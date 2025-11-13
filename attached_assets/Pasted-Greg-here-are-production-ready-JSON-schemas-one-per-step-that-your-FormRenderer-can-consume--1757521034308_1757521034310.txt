@@ -1,0 +1,424 @@
+Greg — here are **production-ready JSON schemas (one per step)** that your FormRenderer can consume right now. I kept your structure (`id`, `title`, `route`, `nextRoute`, `fields`) and added a few **non-breaking, optional** hints your dev can use (`prefillKeys`, `repeatable`, `collection`, `constraints`, etc.). These don’t conflict with your renderer—feel free to ignore any you don’t need.
+
+> ✅ With these schemas **plus** the Affinda mapping + CTA/footer fixes I already gave you, your team has everything needed. You don’t need to resend earlier messages—this set is all-inclusive for form generation.
+
+---
+
+### `step-1.json` — Account
+
+```json
+{
+  "id": "step-1",
+  "title": "Create Your Profile",
+  "route": "/app/onboarding/step-1",
+  "nextRoute": "/app/onboarding/step-2",
+  "fields": [
+    { "key": "firstName", "label": "First Name", "type": "text", "required": true, "testId": "input-firstname" },
+    { "key": "lastName", "label": "Last Name", "type": "text", "required": true, "testId": "input-lastname" },
+    { "key": "email", "label": "Email Address", "type": "email", "required": true, "testId": "input-email" },
+    { "key": "phone", "label": "Phone Number", "type": "tel", "required": true, "testId": "input-phone" },
+    { "key": "password", "label": "Password", "type": "text", "required": true, "testId": "input-password" },
+    { "key": "confirmPassword", "label": "Confirm Password", "type": "text", "required": true, "testId": "input-password-confirm" },
+    { "key": "agreeToTerms", "label": "I agree to the Terms and Privacy Policy", "type": "checkbox", "required": true, "testId": "checkbox-terms" }
+  ]
+}
+```
+
+---
+
+### `step-2.json` — Upload Résumé & Parse
+
+> Note: Step-2 is a **custom uploader** in code; schema here is for routing & test hooks. Renderer can show your upload widget when it sees `meta.customUploader: true`.
+
+```json
+{
+  "id": "step-2",
+  "title": "Upload Your Résumé",
+  "route": "/app/onboarding/step-2",
+  "nextRoute": "/app/onboarding/step-3",
+  "meta": { "customUploader": true },
+  "fields": [
+    {
+      "key": "ackParse",
+      "label": "I understand parsing runs automatically and I can continue manually if needed.",
+      "type": "checkbox",
+      "required": false,
+      "testId": "checkbox-ack-parse"
+    }
+  ]
+}
+```
+
+---
+
+### `step-3.json` — Personal Information (Canonical)
+
+```json
+{
+  "id": "step-3",
+  "title": "Personal Information",
+  "route": "/app/onboarding/step-3",
+  "nextRoute": "/app/onboarding/step-4",
+  "constraints": {
+    "atLeastOneOf": ["workOnsite", "workRemote", "workHybrid"]
+  },
+  "fields": [
+    { "key": "firstName", "label": "First Name", "type": "text", "required": true, "prefillKeys": ["prefill.step3.firstName", "resume.data.candidateName.listItem[0].parsed.firstName.parsed"], "testId": "pi-firstname" },
+    { "key": "middleName", "label": "Middle Name", "type": "text", "required": false, "prefillKeys": ["prefill.step3.middleName", "resume.data.candidateName.listItem[0].parsed.middleName.parsed"], "testId": "pi-middlename" },
+    { "key": "lastName", "label": "Last Name", "type": "text", "required": true, "prefillKeys": ["prefill.step3.lastName", "resume.data.candidateName.listItem[0].parsed.familyName.parsed"], "testId": "pi-lastname" },
+    { "key": "suffix", "label": "Suffix (Jr., Sr., III)", "type": "text", "required": false, "testId": "pi-suffix" },
+
+    { "key": "fullMaidenName", "label": "Full Maiden Name (N/A if not applicable)", "type": "text", "required": true, "testId": "pi-maiden" },
+    { "key": "nickname", "label": "Nickname (if any)", "type": "text", "required": false, "testId": "pi-nickname" },
+
+    { "key": "dateOfBirth", "label": "Date of Birth (YYYY-MM-DD)", "type": "date", "required": true, "prefillKeys": ["prefill.step3.dateOfBirth"], "testId": "pi-dob" },
+    { "key": "ssnLast4", "label": "SSN (last 4)", "type": "text", "required": true, "testId": "pi-ssn4" },
+
+    { "key": "email", "label": "Email Address", "type": "email", "required": true, "prefillKeys": ["prefill.step3.email"], "testId": "pi-email" },
+    { "key": "phone", "label": "Phone Number", "type": "tel", "required": true, "prefillKeys": ["prefill.step3.phone"], "testId": "pi-phone" },
+    { "key": "linkedin", "label": "LinkedIn Profile URL", "type": "text", "required": false, "prefillKeys": ["prefill.step3.linkedin", "prefill.step3.linkedIn", "prefill.step3.linkedinUrl"], "testId": "pi-linkedin" },
+    { "key": "website", "label": "Personal Website (optional)", "type": "text", "required": false, "prefillKeys": ["prefill.step3.website"], "testId": "pi-website" },
+
+    { "key": "addressLine1", "label": "Address Line 1 (Street Number & Street)", "type": "text", "required": true, "prefillKeys": ["prefill.step3.addressLine1"], "testId": "pi-addr1" },
+    { "key": "addressLine2", "label": "Address Line 2 (Apt/Suite/PO Box)", "type": "text", "required": false, "prefillKeys": ["prefill.step3.addressLine2"], "testId": "pi-addr2" },
+    { "key": "city", "label": "City", "type": "text", "required": true, "prefillKeys": ["prefill.step3.city"], "testId": "pi-city" },
+    { "key": "state", "label": "State/Province", "type": "select", "required": true, "options": [
+      {"value":"AL","label":"AL"},{"value":"AK","label":"AK"},{"value":"AZ","label":"AZ"},{"value":"AR","label":"AR"},
+      {"value":"CA","label":"CA"},{"value":"CO","label":"CO"},{"value":"CT","label":"CT"},{"value":"DC","label":"DC"},
+      {"value":"DE","label":"DE"},{"value":"FL","label":"FL"},{"value":"GA","label":"GA"},{"value":"HI","label":"HI"},
+      {"value":"IA","label":"IA"},{"value":"ID","label":"ID"},{"value":"IL","label":"IL"},{"value":"IN","label":"IN"},
+      {"value":"KS","label":"KS"},{"value":"KY","label":"KY"},{"value":"LA","label":"LA"},{"value":"MA","label":"MA"},
+      {"value":"MD","label":"MD"},{"value":"ME","label":"ME"},{"value":"MI","label":"MI"},{"value":"MN","label":"MN"},
+      {"value":"MO","label":"MO"},{"value":"MS","label":"MS"},{"value":"MT","label":"MT"},{"value":"NC","label":"NC"},
+      {"value":"ND","label":"ND"},{"value":"NE","label":"NE"},{"value":"NH","label":"NH"},{"value":"NJ","label":"NJ"},
+      {"value":"NM","label":"NM"},{"value":"NV","label":"NV"},{"value":"NY","label":"NY"},{"value":"OH","label":"OH"},
+      {"value":"OK","label":"OK"},{"value":"OR","label":"OR"},{"value":"PA","label":"PA"},{"value":"RI","label":"RI"},
+      {"value":"SC","label":"SC"},{"value":"SD","label":"SD"},{"value":"TN","label":"TN"},{"value":"TX","label":"TX"},
+      {"value":"UT","label":"UT"},{"value":"VA","label":"VA"},{"value":"VT","label":"VT"},{"value":"WA","label":"WA"},
+      {"value":"WI","label":"WI"},{"value":"WV","label":"WV"},{"value":"WY","label":"WY"}
+    ], "prefillKeys": ["prefill.step3.state"], "testId": "pi-state" },
+    { "key": "postalCode", "label": "ZIP/Postal Code", "type": "text", "required": true, "prefillKeys": ["prefill.step3.postalCode","prefill.step3.zip"], "testId": "pi-zip" },
+    { "key": "county", "label": "County", "type": "text", "required": true, "prefillKeys": ["prefill.step3.county"], "testId": "pi-county" },
+    { "key": "country", "label": "Country", "type": "select", "required": true, "options": [
+      {"value":"US","label":"United States"},
+      {"value":"CA","label":"Canada"},
+      {"value":"GB","label":"United Kingdom"}
+    ], "prefillKeys": ["prefill.step3.country"], "testId": "pi-country" },
+
+    { "key": "desiredComp", "label": "Target Salary Range", "type": "select", "required": true, "options": [
+      {"value":"50k-75k","label":"$50,000 - $75,000"},
+      {"value":"75k-100k","label":"$75,000 - $100,000"},
+      {"value":"100k-150k","label":"$100,000 - $150,000"},
+      {"value":"150k-200k","label":"$150,000 - $200,000"},
+      {"value":"200k+","label":"$200,000+"}
+    ], "prefillKeys": ["prefill.step3.desiredComp","prefill.step3.salaryRange"], "testId": "pi-salary" },
+    { "key": "availability", "label": "Availability to Start", "type": "select", "required": true, "options": [
+      {"value":"immediately","label":"Immediately"},
+      {"value":"2weeks","label":"2 weeks notice"},
+      {"value":"1month","label":"1 month"},
+      {"value":"2months","label":"2 months"},
+      {"value":"3months+","label":"3+ months"}
+    ], "prefillKeys": ["prefill.step3.availability"], "testId": "pi-availability" },
+    { "key": "yearsExperience", "label": "Years of Experience", "type": "select", "required": true, "options": [
+      {"value":"0-2","label":"0-2 years"},
+      {"value":"3-5","label":"3-5 years"},
+      {"value":"6-10","label":"6-10 years"},
+      {"value":"11-15","label":"11-15 years"},
+      {"value":"16-20","label":"16-20 years"},
+      {"value":"20+","label":"20+ years"}
+    ], "prefillKeys": ["prefill.step3.yearsExperience"], "testId": "pi-yoe" },
+
+    { "key": "workOnsite", "label": "Open to Onsite", "type": "checkbox", "required": false, "testId": "pi-onsite" },
+    { "key": "workRemote", "label": "Open to Remote", "type": "checkbox", "required": false, "testId": "pi-remote" },
+    { "key": "workHybrid", "label": "Open to Hybrid", "type": "checkbox", "required": false, "testId": "pi-hybrid" },
+
+    { "key": "openToRelocation", "label": "Open to Relocation", "type": "select", "required": true, "options": [
+      {"value":"yes","label":"Yes"},
+      {"value":"no","label":"No"},
+      {"value":"maybe","label":"Maybe"}
+    ], "prefillKeys": ["prefill.step3.openToRelocation"], "testId": "pi-relocate" },
+
+    { "key": "willingToTravel", "label": "Willing to Travel", "type": "select", "required": true, "options": [
+      {"value":"yes","label":"Yes"},
+      {"value":"no","label":"No"}
+    ], "prefillKeys": ["prefill.step3.willingToTravel"], "testId": "pi-travel" },
+    { "key": "travelPercent", "label": "Acceptable Travel %", "type": "select", "required": false, "options": [
+      {"value":"0%","label":"0%"},
+      {"value":"10%","label":"10%"},
+      {"value":"25%","label":"25%"},
+      {"value":"50%","label":"50%"},
+      {"value":"75%","label":"75%"},
+      {"value":">75%","label":">75%"}
+    ], "prefillKeys": ["prefill.step3.travelPercent"], "testId": "pi-travelpct" },
+
+    { "key": "usStatusAffirm", "label": "Are you a U.S. Citizen, Permanent Resident, or Refugee/Asylee?", "type": "select", "required": true, "options": [
+      {"value":"yes","label":"Yes"},
+      {"value":"no","label":"No"}
+    ], "testId": "pi-usstatus" },
+    { "key": "authorizedForAnyEmployer", "label": "Are you legally authorized to work for any employer in the U.S.?", "type": "select", "required": true, "options": [
+      {"value":"yes","label":"Yes"},
+      {"value":"no","label":"No"}
+    ], "testId": "pi-authorized" },
+    { "key": "sponsorshipNowOrFuture", "label": "Will you now or in the future require visa sponsorship for continued employment?", "type": "select", "required": true, "options": [
+      {"value":"yes","label":"Yes"},
+      {"value":"no","label":"No"}
+    ], "testId": "pi-sponsorship" },
+
+    { "key": "hasRestrictiveCovenant", "label": "Subject to a non-compete / non-solicit / confidentiality that could impact duties?", "type": "select", "required": true, "options": [
+      {"value":"yes","label":"Yes"},
+      {"value":"no","label":"No"}
+    ], "testId": "pi-covenant" },
+    { "key": "restrictiveCovenantDetails", "label": "If yes, please explain", "type": "textarea", "required": false, "testId": "pi-covenant-notes" },
+
+    { "key": "criminalHistoryDisclosure", "label": "Convicted of a misdemeanor/felony (excluding minor traffic) not expunged/sealed/dismissed?", "type": "select", "required": true, "options": [
+      {"value":"yes","label":"Yes"},
+      {"value":"no","label":"No"}
+    ], "testId": "pi-criminal" },
+    { "key": "criminalHistoryDetails", "label": "If yes, please provide details", "type": "textarea", "required": false, "testId": "pi-criminal-notes" },
+
+    { "key": "emergencyContactName", "label": "Emergency Contact Full Name", "type": "text", "required": true, "testId": "pi-ec-name" },
+    { "key": "emergencyContactRelationship", "label": "Emergency Contact Relationship", "type": "select", "required": true, "options": [
+      {"value":"Spouse","label":"Spouse"},
+      {"value":"Parent","label":"Parent"},
+      {"value":"Child","label":"Child"},
+      {"value":"Sibling","label":"Sibling"},
+      {"value":"Relative","label":"Relative"},
+      {"value":"Friend","label":"Friend"},
+      {"value":"Partner","label":"Partner"},
+      {"value":"Other","label":"Other"}
+    ], "testId": "pi-ec-relationship" },
+    { "key": "emergencyContactPhone", "label": "Emergency Contact Phone", "type": "tel", "required": true, "testId": "pi-ec-phone" },
+
+    { "key": "currentJobTitle", "label": "Current/Most Recent Job Title", "type": "text", "required": true, "prefillKeys": ["prefill.step3.currentJobTitle","prefill.step3.currentTitle"], "testId": "pi-current-title" }
+  ]
+}
+```
+
+---
+
+### `step-4.json` — Residential History (7 years)
+
+> Uses a **repeatable collection**. Your renderer can show an “Add Address” button and enforce coverage ≥7 years based on `collection.minYearsCoverage`.
+
+```json
+{
+  "id": "step-4",
+  "title": "Residential History (7 Years)",
+  "route": "/app/onboarding/step-4",
+  "nextRoute": "/app/onboarding/step-5",
+  "collection": {
+    "key": "residenceHistory",
+    "itemTitle": "Residence",
+    "addLabel": "Add Address",
+    "minYearsCoverage": 7,
+    "prefillCollectionKey": "resume.data.residenceHistory",
+    "fields": [
+      { "key": "addressLine1", "label": "Address Line 1", "type": "text", "required": true, "testId": "rh-addr1" },
+      { "key": "addressLine2", "label": "Address Line 2", "type": "text", "required": false, "testId": "rh-addr2" },
+      { "key": "city", "label": "City", "type": "text", "required": true, "testId": "rh-city" },
+      { "key": "state", "label": "State/Province", "type": "select", "required": true, "options": [
+        {"value":"AL","label":"AL"},{"value":"AK","label":"AK"},{"value":"AZ","label":"AZ"},{"value":"AR","label":"AR"},
+        {"value":"CA","label":"CA"},{"value":"CO","label":"CO"},{"value":"CT","label":"CT"},{"value":"DC","label":"DC"},
+        {"value":"DE","label":"DE"},{"value":"FL","label":"FL"},{"value":"GA","label":"GA"},{"value":"HI","label":"HI"},
+        {"value":"IA","label":"IA"},{"value":"ID","label":"ID"},{"value":"IL","label":"IL"},{"value":"IN","label":"IN"},
+        {"value":"KS","label":"KS"},{"value":"KY","label":"KY"},{"value":"LA","label":"LA"},{"value":"MA","label":"MA"},
+        {"value":"MD","label":"MD"},{"value":"ME","label":"ME"},{"value":"MI","label":"MI"},{"value":"MN","label":"MN"},
+        {"value":"MO","label":"MO"},{"value":"MS","label":"MS"},{"value":"MT","label":"MT"},{"value":"NC","label":"NC"},
+        {"value":"ND","label":"ND"},{"value":"NE","label":"NE"},{"value":"NH","label":"NH"},{"value":"NJ","label":"NJ"},
+        {"value":"NM","label":"NM"},{"value":"NV","label":"NV"},{"value":"NY","label":"NY"},{"value":"OH","label":"OH"},
+        {"value":"OK","label":"OK"},{"value":"OR","label":"OR"},{"value":"PA","label":"PA"},{"value":"RI","label":"RI"},
+        {"value":"SC","label":"SC"},{"value":"SD","label":"SD"},{"value":"TN","label":"TN"},{"value":"TX","label":"TX"},
+        {"value":"UT","label":"UT"},{"value":"VA","label":"VA"},{"value":"VT","label":"VT"},{"value":"WA","label":"WA"},
+        {"value":"WI","label":"WI"},{"value":"WV","label":"WV"},{"value":"WY","label":"WY"}
+      ], "testId": "rh-state" },
+      { "key": "postalCode", "label": "ZIP/Postal Code", "type": "text", "required": true, "testId": "rh-zip" },
+      { "key": "county", "label": "County", "type": "text", "required": true, "testId": "rh-county" },
+      { "key": "country", "label": "Country", "type": "select", "required": true, "options": [
+        {"value":"US","label":"United States"},
+        {"value":"CA","label":"Canada"},
+        {"value":"GB","label":"United Kingdom"}
+      ], "testId": "rh-country" },
+      { "key": "fromMonth", "label": "From (Month)", "type": "select", "required": true, "options": [
+        {"value":"01","label":"01"},{"value":"02","label":"02"},{"value":"03","label":"03"},{"value":"04","label":"04"},
+        {"value":"05","label":"05"},{"value":"06","label":"06"},{"value":"07","label":"07"},{"value":"08","label":"08"},
+        {"value":"09","label":"09"},{"value":"10","label":"10"},{"value":"11","label":"11"},{"value":"12","label":"12"}
+      ], "testId": "rh-from-month" },
+      { "key": "fromYear", "label": "From (Year)", "type": "text", "required": true, "testId": "rh-from-year" },
+      { "key": "toMonth", "label": "To (Month)", "type": "select", "required": false, "options": [
+        {"value":"01","label":"01"},{"value":"02","label":"02"},{"value":"03","label":"03"},{"value":"04","label":"04"},
+        {"value":"05","label":"05"},{"value":"06","label":"06"},{"value":"07","label":"07"},{"value":"08","label":"08"},
+        {"value":"09","label":"09"},{"value":"10","label":"10"},{"value":"11","label":"11"},{"value":"12","label":"12"}
+      ], "testId": "rh-to-month" },
+      { "key": "toYear", "label": "To (Year)", "type": "text", "required": false, "testId": "rh-to-year" },
+      { "key": "current", "label": "Current Address", "type": "checkbox", "required": false, "testId": "rh-current" }
+    ]
+  },
+  "fields": []
+}
+```
+
+---
+
+### `step-5.json` — Education History
+
+```json
+{
+  "id": "step-5",
+  "title": "Education History",
+  "route": "/app/onboarding/step-5",
+  "nextRoute": "/app/onboarding/step-6",
+  "collection": {
+    "key": "educationHistory",
+    "itemTitle": "Education",
+    "addLabel": "Add Education",
+    "prefillCollectionKey": "resume.data.education",
+    "fields": [
+      { "key": "institution", "label": "Institution", "type": "text", "required": true, "prefillKeys": ["parsed.educationOrganization","organization","school"], "testId": "ed-institution" },
+      { "key": "city", "label": "City", "type": "text", "required": true, "testId": "ed-city" },
+      { "key": "state", "label": "State/Province", "type": "text", "required": true, "testId": "ed-state" },
+      { "key": "degree", "label": "Degree", "type": "text", "required": true, "prefillKeys": ["parsed.educationAccreditation","educationLevel.value","degree"], "testId": "ed-degree" },
+      { "key": "major", "label": "Major/Field of Study", "type": "text", "required": true, "prefillKeys": ["parsed.educationMajor.listItem[0]","area","fieldOfStudy"], "testId": "ed-major" },
+      { "key": "gpa", "label": "GPA (optional)", "type": "text", "required": false, "prefillKeys": ["educationGrade.educationGradeScore","score","grade"], "testId": "ed-gpa" },
+      { "key": "fromMonth", "label": "From (Month)", "type": "select", "required": true, "options": [
+        {"value":"01","label":"01"},{"value":"02","label":"02"},{"value":"03","label":"03"},{"value":"04","label":"04"},
+        {"value":"05","label":"05"},{"value":"06","label":"06"},{"value":"07","label":"07"},{"value":"08","label":"08"},
+        {"value":"09","label":"09"},{"value":"10","label":"10"},{"value":"11","label":"11"},{"value":"12","label":"12"}
+      ], "testId": "ed-from-month" },
+      { "key": "fromYear", "label": "From (Year)", "type": "text", "required": true, "testId": "ed-from-year" },
+      { "key": "toMonth", "label": "To (Month)", "type": "select", "required": false, "options": [
+        {"value":"01","label":"01"},{"value":"02","label":"02"},{"value":"03","label":"03"},{"value":"04","label":"04"},
+        {"value":"05","label":"05"},{"value":"06","label":"06"},{"value":"07","label":"07"},{"value":"08","label":"08"},
+        {"value":"09","label":"09"},{"value":"10","label":"10"},{"value":"11","label":"11"},{"value":"12","label":"12"}
+      ], "testId": "ed-to-month" },
+      { "key": "toYear", "label": "To (Year)", "type": "text", "required": false, "testId": "ed-to-year" },
+      { "key": "current", "label": "Currently Enrolled", "type": "checkbox", "required": false, "testId": "ed-current" }
+    ]
+  },
+  "fields": []
+}
+```
+
+---
+
+### `step-6.json` — Employment History (10 years)
+
+```json
+{
+  "id": "step-6",
+  "title": "Employment History (10 Years)",
+  "route": "/app/onboarding/step-6",
+  "nextRoute": "/app/onboarding/step-7",
+  "collection": {
+    "key": "employmentHistory",
+    "itemTitle": "Employment",
+    "addLabel": "Add Employment",
+    "prefillCollectionKey": "resume.data.workExperience",
+    "fields": [
+      { "key": "companyName", "label": "Company Name", "type": "text", "required": true, "prefillKeys": ["parsed.workExperienceOrganization","organization","company"], "testId": "emp-company" },
+
+      { "key": "companyAddressLine1", "label": "Company Address Line 1", "type": "text", "required": false, "testId": "emp-addr1" },
+      { "key": "companyAddressLine2", "label": "Company Address Line 2", "type": "text", "required": false, "testId": "emp-addr2" },
+      { "key": "companyCity", "label": "Company City", "type": "text", "required": false, "testId": "emp-city" },
+      { "key": "companyState", "label": "Company State/Province", "type": "text", "required": false, "testId": "emp-state" },
+      { "key": "companyPostalCode", "label": "Company ZIP/Postal Code", "type": "text", "required": false, "testId": "emp-zip" },
+      { "key": "companyCountry", "label": "Company Country", "type": "text", "required": false, "testId": "emp-country" },
+
+      { "key": "jobTitle", "label": "Job Title", "type": "text", "required": true, "prefillKeys": ["parsed.workExperienceJobTitle","jobTitle","position"], "testId": "emp-title" },
+
+      { "key": "fromMonth", "label": "From (Month)", "type": "select", "required": true, "options": [
+        {"value":"01","label":"01"},{"value":"02","label":"02"},{"value":"03","label":"03"},{"value":"04","label":"04"},
+        {"value":"05","label":"05"},{"value":"06","label":"06"},{"value":"07","label":"07"},{"value":"08","label":"08"},
+        {"value":"09","label":"09"},{"value":"10","label":"10"},{"value":"11","label":"11"},{"value":"12","label":"12"}
+      ], "testId": "emp-from-month" },
+      { "key": "fromYear", "label": "From (Year)", "type": "text", "required": true, "testId": "emp-from-year" },
+      { "key": "toMonth", "label": "To (Month)", "type": "select", "required": false, "options": [
+        {"value":"01","label":"01"},{"value":"02","label":"02"},{"value":"03","label":"03"},{"value":"04","label":"04"},
+        {"value":"05","label":"05"},{"value":"06","label":"06"},{"value":"07","label":"07"},{"value":"08","label":"08"},
+        {"value":"09","label":"09"},{"value":"10","label":"10"},{"value":"11","label":"11"},{"value":"12","label":"12"}
+      ], "testId": "emp-to-month" },
+      { "key": "toYear", "label": "To (Year)", "type": "text", "required": false, "testId": "emp-to-year" },
+      { "key": "current", "label": "Current Role", "type": "checkbox", "required": false, "testId": "emp-current" },
+
+      { "key": "supervisorName", "label": "Supervisor Name", "type": "text", "required": false, "testId": "emp-sup-name" },
+      { "key": "supervisorTitle", "label": "Supervisor Title", "type": "text", "required": true, "testId": "emp-sup-title" },
+      { "key": "contactSupervisor", "label": "Contact Supervisor?", "type": "select", "required": false, "options": [
+        {"value":"yes","label":"Yes"},
+        {"value":"no","label":"No"},
+        {"value":"after-offer","label":"Please contact after offer"}
+      ], "testId": "emp-sup-contact" },
+
+      { "key": "startingSalary", "label": "Starting Salary", "type": "text", "required": false, "testId": "emp-salary-start" },
+      { "key": "endingSalary", "label": "Ending Salary", "type": "text", "required": false, "testId": "emp-salary-end" },
+
+      { "key": "reasonForLeaving", "label": "Reason for Leaving", "type": "text", "required": true, "testId": "emp-reason" },
+      { "key": "responsibilities", "label": "Responsibilities / Achievements", "type": "textarea", "required": false, "testId": "emp-resp" }
+    ]
+  },
+  "fields": []
+}
+```
+
+---
+
+### `step-7.json` — Optional Disclosures + Final Review
+
+```json
+{
+  "id": "step-7",
+  "title": "Optional Disclosures & Final Review",
+  "route": "/app/onboarding/step-7",
+  "nextRoute": "/checkout",
+  "fields": [
+    {
+      "key": "diversityProvide",
+      "label": "I choose to provide Diversity information",
+      "type": "checkbox",
+      "required": false,
+      "testId": "div-provide"
+    },
+    { "key": "genderIdentity", "label": "Gender Identity (optional)", "type": "select", "required": false, "options": [
+      {"value":"decline","label":"Prefer not to say"},
+      {"value":"female","label":"Female"},
+      {"value":"male","label":"Male"},
+      {"value":"nonbinary","label":"Non-binary"},
+      {"value":"self-describe","label":"Self-describe"}
+    ], "testId": "div-gender" },
+    { "key": "raceEthnicity", "label": "Race/Ethnicity (optional)", "type": "select", "required": false, "options": [
+      {"value":"decline","label":"Prefer not to say"},
+      {"value":"asian","label":"Asian"},
+      {"value":"black","label":"Black or African American"},
+      {"value":"hispanic","label":"Hispanic or Latino"},
+      {"value":"white","label":"White"},
+      {"value":"native","label":"American Indian or Alaska Native"},
+      {"value":"pacific","label":"Native Hawaiian or Other Pacific Islander"},
+      {"value":"two+","label":"Two or More Races"}
+    ], "testId": "div-race" },
+    { "key": "disabilityStatus", "label": "Disability Status (optional)", "type": "select", "required": false, "options": [
+      {"value":"decline","label":"Prefer not to say"},
+      {"value":"yes","label":"Yes"},
+      {"value":"no","label":"No"}
+    ], "testId": "div-disability" },
+    { "key": "veteranStatus", "label": "Protected Veteran Status (optional)", "type": "select", "required": false, "options": [
+      {"value":"decline","label":"Prefer not to say"},
+      {"value":"yes","label":"Yes"},
+      {"value":"no","label":"No"}
+    ], "testId": "div-veteran" },
+
+    { "key": "approveProfile", "label": "I have reviewed and approve my profile for applications", "type": "checkbox", "required": true, "testId": "approve-profile" }
+  ]
+}
+```
+
+---
+
+## Notes for the dev (quick)
+
+* **Prefill:** Read from `localStorage.resumeData.prefill.step3.*` for Step-3; for collections (Steps 5–6) use `prefillCollectionKey` to map Affinda arrays (`resume.data.education`, `resume.data.workExperience`).
+* **Validation:** Use Zod to:
+
+  * enforce Step-3 requireds (including **Emergency Contact** and **full structured address**),
+  * ensure **Step-4 coverage ≥ 7 years**,
+  * ensure Step-6 has **Supervisor Title** and **Reason for Leaving**.
+* **CTA/footer:** Ensure only one global footer; add bottom padding on step pages; enable “Continue” only when Zod says `valid`.
+
+If you want these as downloadable files, say the word and I’ll package them exactly as `step-1.json` … `step-7.json`.

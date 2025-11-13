@@ -1,0 +1,27 @@
+[0] [2bc830868518c36f] LOCATION: {"id":1403069764,"rectangle":{"x0":126.783,"y0":58.650513,"x1":169.894,"y1":66.45001,"pageIndex":0},"rectangles":[{"x0":126.783,"y0":58.650513,"x1":169.894,"y1":66.45001,"pageIndex":0}],"document":"gbpqWTuK","pageIndex":0,"raw":"Orlando, FL","parsed":{"formatted":"Orlando, FL, USA","streetNumber":null,"street":null,"apartmentNumber":null,"city":"Orlando","postalCode":null,"state":"Florida","stateCode":"FL","country":"United States","rawInput":"Orlando, FL","countryCode":"US","latitude":28.5383832,"longitude":-81.3789269,"poBox":null},"confidence":0.982,"classificationConfidence":0.982,"textExtractionConfidence":1,"isVerified":false,"isClientVerified":false,"isAutoVerified":false,"verifiedBy":null,"dataPoint":"WTtoImKj","field":"jNpQJAKq","contentType":"location","parent":null}
+[0] [2bc830868518c36f] WEBSITES: [{"id":1403069869,"rectangle":{"x0":374.479,"y0":58.346497,"x1":421.94948714285715,"y1":66.80151,"pageIndex":0},"rectangles":[{"x0":374.479,"y0":58.346497,"x1":421.94948714285715,"y1":66.80151,"pageIndex":0}],"document":"gbpqWTuK","pageIndex":0,"raw":"linkedin.com","parsed":{"url":"https://linkedin.com","domain":"linkedin.com"},"confidence":0.982,"classificationConfidence":0.982,"textExtractionConfidence":1,"isVerified":false,"isClientVerified":false,"isAutoVerified":false,"verifiedBy":null,"dataPoint":"GYIADckm","field":"pFmVDHZW","contentType":"url","parent":null},{"id":1403069870,"rectangle":{"x0":437.77298285714284,"y0":58.346497,"x1":485.24347,"y1":66.80151,"pageIndex":0},"rectangles":[{"x0":437.77298285714284,"y0":58.346497,"x1":485.24347,"y1":66.80151,"pageIndex":0}],"document":"gbpqWTuK","pageIndex":0,"raw":"kgregjackson","parsed":null,"confidence":0.978,"classificationConfidence":0.978,"textExtractionConfidence":1,"isVerified":false,"isClientVerified":false,"isAutoVerified":false,"verifiedBy":null,"dataPoint":"GYIADckm","field":"pFmVDHZW","contentType":"url","parent":null},{"id":1403069871,"rectangle":{"x0":376.479,"y0":757.9765,"x1":423.90707142857144,"y1":766.4315,"pageIndex":0},"rectangles":[{"x0":376.479,"y0":757.9765,"x1":423.90707142857144,"y1":766.4315,"pageIndex":0}],"document":"gbpqWTuK","pageIndex":0,"raw":"linkedin.com","parsed":{"url":"https://linkedin.com","domain":"linkedin.com"},"confidence":0.977,"classificationConfidence":0.977,"textExtractionConfidence":1,"isVerified":false,"isClientVerified":false,"isAutoVerified":false,"verifiedBy":null,"dataPoint":"GYIADckm","field":"pFmVDHZW","contentType":"url","parent":null},{"id":1403069872,"rectangle":{"x0":439.7164285714286,"y0":757.9765,"x1":487.1445,"y1":766.4315,"pageIndex":0},"rectangles":[{"x0":439.7164285714286,"y0":757.9765,"x1":487.1445,"y1":766.4315,"pageIndex":0}],"document":"gbpqWTuK","pageIndex":0,"raw":"kgregjackson","parsed":null,"confidence":0.921,"classificationConfidence":0.921,"textExtractionConfidence":1,"isVerified":false,"isClientVerified":false,"isAutoVerified":false,"verifiedBy":null,"dataPoint":"GYIADckm","field":"pFmVDHZW","contentType":"url","parent":null},{"id":1403069873,"rectangle":{"x0":376.35898655653,"y0":704.7015061378479,"x1":423.78705634389604,"y1":713.156506061554,"pageIndex":1},"rectangles":[{"x0":376.35898655653,"y0":704.7015061378479,"x1":423.78705634389604,"y1":713.156506061554,"pageIndex":1}],"document":"gbpqWTuK","pageIndex":1,"raw":"linkedin.com","parsed":{"url":"https://linkedin.com","domain":"linkedin.com"},"confidence":0.647,"classificationConfidence":0.647,"textExtractionConfidence":1,"isVerified":false,"isClientVerified":false,"isAutoVerified":false,"verifiedBy":null,"dataPoint":"GYIADckm","field":"pFmVDHZW","contentType":"url","parent":null},{"id":1403069874,"rectangle":{"x0":376.22897,"y0":705.3265,"x1":423.65704142857146,"y1":713.7815,"pageIndex":1},"rectangles":[{"x0":376.22897,"y0":705.3265,"x1":423.65704142857146,"y1":713.7815,"pageIndex":1}],"document":"gbpqWTuK","pageIndex":1,"raw":"linkedin.com","parsed":{"url":"https://linkedin.com","domain":"linkedin.com"},"confidence":0.631,"classificationConfidence":0.631,"textExtractionConfidence":1,"isVerified":false,"isClientVerified":false,"isAutoVerified":false,"verifiedBy":null,"dataPoint":"GYIADckm","field":"pFmVDHZW","contentType":"url","parent":null}]
+[0] [2bc830868518c36f] WORK EXP: 9 entries
+[0] [2bc830868518c36f] ✅ Affinda parser completed in 11892ms
+[0] [2bc830868518c36f] Successfully parsed resume for user demo-user: {
+[0]   basics: { name: 'K. JACKSON', email: 'kgregjackson@gmail.com' },
+[0]   workCount: 9,
+[0]   educationCount: 4,
+[0]   skillsCount: 1
+[0] }
+[0] [parse] resp.shape { hasData: true, hasPrefill: true, hasProfile: true }
+[0] [2bc830868518c36f] PREFILL STEP3: {
+[0]   "fullLegalName": "K. JACKSON",
+[0]   "email": "kgregjackson@gmail.com",
+[0]   "phone": "+1 571-287-0086",
+[0]   "physicalAddress": "Orlando, Florida, US",
+[0]   "linkedIn": "https://linkedin.com/in/kgregjackson",
+[0]   "linkedin": "https://linkedin.com/in/kgregjackson",
+[0]   "linkedinUrl": "https://linkedin.com/in/kgregjackson",
+[0]   "currentJobTitle": "Delivery Executive, Recruitment Process Outsourcing (RPO),",
+[0]   "currentTitle": "Delivery Executive, Recruitment Process Outsourcing (RPO),"
+[0] }
+[0] POST /api/resume/parse 200 11895.349 ms - -
+[1] Compiling...
+[1] Compiled successfully!
+[1] webpack compiled successfully
+^[

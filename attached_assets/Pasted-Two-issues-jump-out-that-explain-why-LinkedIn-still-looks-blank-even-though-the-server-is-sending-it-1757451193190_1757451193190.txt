@@ -1,0 +1,124 @@
+Two issues jump out that explain why LinkedIn still looks blank even though the server is sending it:
+
+1) You hydrate from pre.linkedIn only once at mount
+
+Even though your helper should return linkedIn, I don’t want this to hinge on one key. Also, you never re-hydrate after safeMergeResumeData() runs, so any late updates (or a different localStorage shape) won’t hit the form.
+
+2) You fetch /api/profile/draft and merge, but don’t update the form afterward
+
+If that merge adds or normalizes LinkedIn, your UI never picks it up.
+
+Here’s a surgical patch you can paste that makes the form tolerant and rehydrates after the server merge. It also guards against any casing/shape drift.
+
+A) Make hydration tolerant (read all LinkedIn/current-title variants)
+
+Replace your Step-3 hydration effect with this:
+
+useEffect(() => {
+  console.log('=== ONBOARDING STEP 3 HYDRATION ===');
+  console.log('Pre-fill data:', pre);
+
+  // Parse name into first/last
+  const fullName = pre.fullLegalName || '';
+  const [first = '', ...rest] = String(fullName).trim().split(/\s+/);
+  const last = rest.join(' ');
+
+  // Tolerant reads (cover all variants)
+  const li =
+    pre.linkedin || pre.linkedIn || pre.linkedinUrl || '';
+  const curTitle =
+    pre.currentJobTitle || pre.currentTitle || '';
+
+  setFormData(f => ({
+    ...f,
+    firstName: first,
+    lastName: last,
+    email: pre.email || '',
+    phone: pre.phone || '',
+    location: pre.physicalAddress || '',
+    linkedin: li,
+    currentJobTitle: curTitle
+  }));
+  console.log('💧Hydrated Step3 from prefill:', { li, curTitle, fullName });
+}, [pre]);
+
+B) After the server merge, rehydrate from localStorage and only fill if still empty
+
+In your /api/profile/draft effect, add the rehydrate block after safeMergeResumeData(serverDraft):
+
+useEffect(() => {
+  const fetchProfileDraft = async () => {
+    try {
+      console.log('Fetching profile draft...');
+      const resp = await fetch('/api/profile/draft');
+      if (resp.ok) {
+        const serverDraft = await resp.json();
+        console.log('Got server draft:', serverDraft);
+        safeMergeResumeData(serverDraft);
+
+        // ⬇️ Rehydrate from the latest localStorage (only if empty)
+        try {
+          const raw = JSON.parse(localStorage.getItem('resumeData') || 'null');
+          const bag = raw?.prefill?.step3 || raw?.data?.prefill?.step3 || {};
+          const li = bag.linkedin || bag.linkedIn || bag.linkedinUrl || '';
+          const cur = bag.currentJobTitle || bag.currentTitle || '';
+          setFormData(f => ({
+            ...f,
+            linkedin: f.linkedin || li,
+            currentJobTitle: f.currentJobTitle || cur
+          }));
+          console.log('♻️ Rehydrated after server merge:', { li, cur });
+        } catch (e) {
+          console.warn('Rehydrate after merge failed:', e);
+        }
+      } else if (resp.status === 204) {
+        console.log('No server draft available (204)');
+      } else {
+        console.warn('Profile draft fetch failed:', resp.status);
+      }
+    } catch (e) {
+      console.warn('No server draft; keeping existing local prefill:', e.message);
+    }
+  };
+
+  fetchProfileDraft();
+}, []);
+
+C) (Optional but powerful) Update your helper once so future pages never break
+
+If your getStep3Prefill() isn’t already tolerant, keep it like this and you can always read pre.linkedIn safely:
+
+// client/src/lib/prefill.js
+export function getStep3Prefill() {
+  const raw = JSON.parse(localStorage.getItem('resumeData') || 'null');
+  const bag = raw?.prefill?.step3 || raw?.data?.prefill?.step3 || {};
+  const linkedIn =
+    bag.linkedin || bag.linkedIn || bag.linkedinUrl || '';
+  const currentJobTitle =
+    bag.currentJobTitle || bag.currentTitle || '';
+  return { ...bag, linkedIn, currentJobTitle };
+}
+
+D) Keep your guard (good!) and add one more sanity log
+
+Your guard that blocks destructive writes is excellent — keep it. Add this tiny sanity log right after render (once) to confirm the bound value equals what’s in storage:
+
+useEffect(() => {
+  const raw = JSON.parse(localStorage.getItem('resumeData') || 'null');
+  const s3 = raw?.prefill?.step3 || raw?.data?.prefill?.step3 || {};
+  const fromStorage = s3.linkedin || s3.linkedIn || s3.linkedinUrl || '';
+  console.log('🔎 Storage vs Form → LinkedIn:', { fromStorage, formValue: formData.linkedin });
+}, []); // one-time check
+
+
+If fromStorage has the URL but formValue is empty, the two patches above fix that by (1) reading all variants and (2) rehydrating after server merge.
+
+Why this will finally show the URL
+
+Reads any of linkedin, linkedIn, or linkedinUrl.
+
+Doesn’t rely on the prefill arriving before first render only — it rehydrates after the server merge.
+
+Leaves your controlled input intact (value={formData.linkedin}), so what’s in state is what shows in the box.
+
+If you want me to hand you a single consolidated Onb3.js with these changes already applied to your exact file, say the word and I’ll paste it verbatim.

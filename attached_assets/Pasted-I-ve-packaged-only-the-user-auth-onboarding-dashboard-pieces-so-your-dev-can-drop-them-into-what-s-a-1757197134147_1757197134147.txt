@@ -1,0 +1,65 @@
+I’ve packaged only the user/auth/onboarding/dashboard pieces so your dev can drop them into what’s already working.
+
+Download (user & application only)
+
+Client pack (CRA components/routes):
+talendro_user_pack_client.zip
+
+Server pack (Express mock routes to support the UI):
+talendro_user_pack_server.zip
+
+Install guide (short + file list):
+USER_PACK_INSTALL.md
+
+What’s inside (scope-limited)
+
+Nav & Auth
+
+Updated Header.js with Sign In link.
+
+auth/SignIn.js page (email, password, forgot link; routes to dashboard).
+
+Onboarding
+
+Step 3 (Personal Information) — includes your recent inserts/wording.
+
+Step 4 (Residential) — County = required, Reason removed.
+
+Step 5 (Education).
+
+Step 6 (Employment) — Supervisor Title = required, Reason for Leaving = required (allow “N/A — current”).
+
+Step 7 (Voluntary Self-ID & Consent) — complete or decline; EEO, veteran, disability (CC-305) + standing consent.
+
+Review page updated.
+
+Dashboard
+
+KPI tiles (Today & All-Time) and deep links: Agents, Jobs, Resumes, Applications.
+
+Quick links to Original Uploaded Résumé and Originally Completed Application.
+
+Routes
+
+shell/App.js includes only the routes for the above pages so you can plug them into your existing app.
+
+Server (Express)
+
+routes.user.js (mock endpoints for KPI lists/files) and index.userpack.js (merge example) so links resolve.
+
+Install (2–5 minutes)
+
+Open the guide for the exact file paths:
+USER_PACK_INSTALL.md
+
+Cliff notes:
+
+Drop the client pack files into your CRA src/ (preserve folder paths).
+
+Add/merge the routes from src/shell/App.js into your router (or replace your shell if you’re using the one from my starter).
+
+On the server, add server/routes.user.js and register it with app.use('/api/user', userRoutes) (example in index.userpack.js).
+
+Run your existing dev scripts. The KPI counts will pull from the provided mock API; the deep links will render stub lists until you wire your data.
+
+If you want me to remove the stubs and target your current file layout (exact paths/names), just show me a quick tree of your src/ and I’ll regenerate this pack to match 1:1. 

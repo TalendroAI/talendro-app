@@ -1,0 +1,84 @@
+You nailed it, Greg — the client expects { success: true, data: {...} }, but the server is returning:
+
+{ "jobId": "...", "status": "complete", "profileDraft": {...}, "prefill": {...}, "confidence": {...} }
+
+
+So result.success is undefined, your if (result.success) never runs, and you never navigate.
+
+You’ve got two clean ways to fix it. Pick one.
+
+Option A (fastest): Fix the client to accept the current server shape
+
+client/src/app/Onb2.js — replace your “BROKEN CODE” block with this shape-agnostic version:
+
+// Always log the server payload so we can see the shape
+console.log('Server parse result:', result);
+
+// Accept either { success:true, data:{...} } or the current flat shape
+const ok = (result && (result.success === true || result.status === 'complete'));
+if (ok) {
+  const data = result.data || {
+    jobId: result.jobId,
+    status: result.status,
+    prefill: result.prefill,
+    profileDraft: result.profileDraft,
+    confidence: result.confidence
+  };
+
+  setParsedData(data);
+  localStorage.setItem('resumeData', JSON.stringify(data));
+  console.log('✅ Resume parsed successfully:', data);
+  console.log('🚀 FORCING NAVIGATION TO STEP 3 NOW...');
+
+  // Prefer React Router if available:
+  // navigate('/app/onboarding/step-3');
+  window.location.replace('/app/onboarding/step-3');
+} else {
+  console.warn('Parse result not marked complete/success:', result);
+  // Show a toast and allow manual continue
+}
+
+
+Also make sure you’re handling non-200s:
+
+const response = await fetch('/api/resume/parse', { method: 'POST', body: formData });
+if (!response.ok) {
+  const errText = await response.text().catch(()=> '');
+  throw new Error(`Parse request failed: ${response.status} ${errText}`);
+}
+const result = await response.json();
+
+Option B (also fine): Change the server to return the shape your client expects
+
+server/routes/parse.js — change the success response to:
+
+return res.json({
+  success: true,
+  data: {
+    jobId,
+    status: 'complete',
+    profileDraft: draft,
+    prefill,
+    confidence
+  }
+});
+
+
+…and the error path to:
+
+return res.status(500).json({ success: false, error: 'Failed to parse resume' });
+
+
+You can also update the status endpoint to be consistent:
+
+return res.json({ success: true, status: job.status, error: job.error || null });
+
+Why your console logs never appeared
+
+Your navigation logs are inside the if (result.success) block. Since result.success was falsy, that block never ran—so no logs and no redirect. The updated check above fixes that.
+
+My recommendation
+
+Do Option A now (1-minute client change) so you’re unblocked immediately. If you want tighter API guarantees, follow with Option B so both sides agree on { success, data }.
+
+If it still doesn’t navigate after this, send me the full Onb2.js handler and I’ll patch it in-line so it advances every time the server returns status: 'complete'.

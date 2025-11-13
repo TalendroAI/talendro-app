@@ -1,0 +1,178 @@
+With CRA + React Router on the front end and Express.js on the back end, I’d use a hybrid parser: fast, deterministic extraction first, then an LLM or rules-based mapper to normalize into a clean schema (JSON Resume). Here’s the approach I recommend.
+
+TL;DR stack
+
+Upload & validation: multer (Express) for file upload; allow PDF/DOCX only (flag others).
+
+Extraction (deterministic first):
+
+PDF: pdf-parse (text-layer PDFs) → fast, reliable.
+
+DOCX: mammoth (to HTML/text) → preserves logical order/headings.
+
+Fallbacks: textract as a catch-all for odd files; OCR via tesseract.js (Node) or an OCR service when we detect “image-only PDF.”
+
+Segmentation & cleanup: cheerio to parse DOCX→HTML; simple header heuristics (e.g., ^experience$, ^education$, ^skills$), bullet normalization, de-hyphenation across line wraps.
+
+Field extraction helpers (Node):
+
+Email: email-validator
+
+Phone: libphonenumber-js
+
+Dates: chrono-node + date-fns normalize to YYYY-MM
+
+Locations: light heuristics now; can add node-postal later if you want global address parsing
+
+Schema & validation: JSON Resume as the canonical structure; enforce with zod.
+
+Intelligence layer (only where needed):
+
+If headings are unclear or the resume is atypical, pass the plain text through an LLM with a strict JSON schema (function/tool calling) to map to JSON Resume. Keep PII server-side.
+
+Confidence scoring: per field (high/med/low). Use confidence to highlight fields in Steps 3–6 for user confirmation.
+
+Security & ops: Virus scan (optional ClamAV), size/type limits, store in private bucket, encrypt at rest, signed URLs, redact SSN to last 4, log access.
+
+Data flow (how it plugs into your onboarding)
+
+Step 2 (Upload Résumé) → POST /api/resume/parse
+
+Express flow:
+
+Validate file (size/MIME).
+
+Detect has text layer? If no → OCR; if yes → parser path.
+
+Extract raw text + simple structure (sections, bullets).
+
+Run deterministic extractors (contact, education, experience, skills).
+
+If coverage is low or headings are ambiguous → AI mapper to JSON Resume.
+
+Normalize & validate with zod; compute confidence per field.
+
+Response: { jsonResume, prefill: { step3, step4, step5, step6 }, confidence }
+
+Client (Step 3–6): prefill fields; badge low-confidence ones for review.
+
+JSON shape (what we store)
+
+Primary: JSON Resume (portable, works for future exports).
+
+Derived for your UI:
+
+Step 3 (personal/contact)
+
+Step 4 (residential hints if present)
+
+Step 5 (education[])
+
+Step 6 (work[] with start/end, title, company, bullets)
+
+Example (truncated):
+
+{
+  "basics": {
+    "name": "Jane Doe",
+    "email": "jane@doe.com",
+    "phone": "+1 555-555-1212",
+    "location": { "address": "...", "city": "Austin", "region": "TX", "countryCode": "US", "postalCode": "78701" }
+  },
+  "work": [
+    {
+      "name": "Acme Corp",
+      "position": "Senior Analyst",
+      "startDate": "2022-03",
+      "endDate": "2025-05",
+      "summary": "…",
+      "highlights": ["Improved X by 23%", "Led Y team of 6"]
+    }
+  ],
+  "education": [
+    { "institution": "UT Austin", "area": "Marketing", "studyType": "BS", "startDate": "2018-09", "endDate": "2022-05", "score": "3.8" }
+  ],
+  "skills": [{ "name": "SQL", "level": "advanced", "keywords": ["PostgreSQL","Snowflake"] }]
+}
+
+Express endpoint sketch
+// server/routes/parse.js
+import { Router } from 'express';
+import multer from 'multer';
+import pdfParse from 'pdf-parse';
+import mammoth from 'mammoth';
+import { z } from 'zod';
+// import textract, tesseract, cheerio, chrono-node, libphonenumber-js, etc.
+
+const r = Router();
+const upload = multer({ limits: { fileSize: 5 * 1024 * 1024 } });
+
+r.post('/resume/parse', upload.single('file'), async (req, res) => {
+  try {
+    const { originalname, mimetype, buffer } = req.file;
+
+    // 1) Choose extractor
+    let raw = '';
+    if (mimetype === 'application/pdf') {
+      const result = await pdfParse(buffer);
+      raw = (result.text || '').trim();
+      if (!raw) {
+        // OCR fallback (tesseract.js) -> raw = await ocrPdf(buffer)
+      }
+    } else if (mimetype ===
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+      const { value } = await mammoth.extractRawText({ buffer });
+      raw = (value || '').trim();
+    } else {
+      // textract fallback if you want to be permissive
+      // raw = await textract.fromBufferWithName(originalname, buffer)
+      return res.status(415).json({ error: 'Unsupported file type' });
+    }
+
+    // 2) Segment & extract (headings, bullets, contact info)
+    // const sections = segment(raw); const fields = extractFields(sections);
+
+    // 3) If coverage is weak, call LLM with JSON schema to map to JSON Resume
+    // const jsonResume = coverageOK ? mapToJsonResume(fields) : await mapViaLLM(raw);
+
+    // 4) Validate with zod & compute confidence
+    // const parsed = JSONResumeSchema.parse(jsonResume);
+    // const confidence = scoreConfidence(parsed, sections);
+
+    // 5) Derive prefill blocks for Steps 3–6
+    // const prefill = derivePrefill(parsed);
+
+    res.json({
+      // jsonResume: parsed,
+      // prefill,
+      // confidence
+      ok: true,
+      note: 'Stub — wire parsing + mapping here.'
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: 'Could not parse resume' });
+  }
+});
+
+export default r;
+
+Why this works well for Talendro™
+
+Fast for the 80% case (standard PDFs/DOCX), but robust when resumes are quirky (LLM mapper & OCR fallback).
+
+Deterministic core (you can unit test it) + LLM just for mapping (bounded, schema-validated).
+
+Portable storage (JSON Resume) that feeds your Step 3–6 forms and future exports.
+
+Confidence-driven UX reduces user friction: only review what’s uncertain.
+
+Nice-to-haves (v2)
+
+Skill ontology + synonym map (e.g., “PMP” ⇄ “Project Management Professional”) using a small dictionary + fuzzy matching (Fuse.js) and/or embeddings for smarter grouping.
+
+Two-column PDF reading order fixer (simple heuristics: column gap detection, reflow).
+
+Background OCR queue for huge scans so Step 2 isn’t blocked (return “Parsing… we’ll fill as soon as ready,” but still let them proceed).
+
+If you want, I can drop a ready-to-paste Express route (/api/resume/parse) wired with multer, pdf-parse, and mammoth, plus a zod JSON Resume schema and a tiny mapper that populates your Step 3–6 prefill objects.
