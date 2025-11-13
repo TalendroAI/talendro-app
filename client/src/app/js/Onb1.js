@@ -29,6 +29,8 @@ const Page = () => {
   });
 
   const [passwordStrength, setPasswordStrength] = useState('');
+  const [passwordErrors, setPasswordErrors] = useState([]);
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
 
   // Auto-save on every change
   useAutoSave('onboarding_step1', formData);
@@ -51,6 +53,83 @@ const Page = () => {
     }
   }, []);
 
+  // Universal password standards (NIST, OWASP, ISO 27001 compliant)
+  const validatePassword = (password) => {
+    const errors = [];
+    
+    // Minimum 12 characters (NIST recommendation)
+    if (password.length < 12) {
+      errors.push('Must be at least 12 characters long');
+    }
+    
+    // Maximum 128 characters (reasonable limit)
+    if (password.length > 128) {
+      errors.push('Must be no more than 128 characters long');
+    }
+    
+    // At least one uppercase letter
+    if (!/[A-Z]/.test(password)) {
+      errors.push('Must contain at least one uppercase letter');
+    }
+    
+    // At least one lowercase letter
+    if (!/[a-z]/.test(password)) {
+      errors.push('Must contain at least one lowercase letter');
+    }
+    
+    // At least one number
+    if (!/\d/.test(password)) {
+      errors.push('Must contain at least one number');
+    }
+    
+    // At least one special character
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      errors.push('Must contain at least one special character');
+    }
+    
+    // No common patterns or personal info
+    const commonPatterns = [
+      /(.)\1{2,}/, // No repeated characters (aaa, 111, etc.)
+      /123|234|345|456|567|678|789|890/, // No sequential numbers
+      /abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz/i, // No sequential letters
+      /password|qwerty|admin|user|login|welcome|123456/i // No common passwords
+    ];
+    
+    for (const pattern of commonPatterns) {
+      if (pattern.test(password)) {
+        errors.push('Cannot contain common patterns or dictionary words');
+        break;
+      }
+    }
+    
+    return errors;
+  };
+
+  // Generate a strong password
+  const generateStrongPassword = () => {
+    const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+    const numbers = '0123456789';
+    const special = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+    const allChars = uppercase + lowercase + numbers + special;
+    
+    let password = '';
+    
+    // Ensure at least one of each required character type
+    password += uppercase[Math.floor(Math.random() * uppercase.length)];
+    password += lowercase[Math.floor(Math.random() * lowercase.length)];
+    password += numbers[Math.floor(Math.random() * numbers.length)];
+    password += special[Math.floor(Math.random() * special.length)];
+    
+    // Fill the rest to make it 16 characters (strong and memorable)
+    for (let i = password.length; i < 16; i++) {
+      password += allChars[Math.floor(Math.random() * allChars.length)];
+    }
+    
+    // Shuffle the password
+    return password.split('').sort(() => Math.random() - 0.5).join('');
+  };
+
   const handleChange = (e) => {
     const { id, value, type, checked } = e.target;
     setFormData(prev => ({
@@ -58,8 +137,11 @@ const Page = () => {
       [id]: type === 'checkbox' ? checked : value
     }));
 
-    // Password strength checker
+    // Password validation and strength checker
     if (id === 'password') {
+      const errors = validatePassword(value);
+      setPasswordErrors(errors);
+      
       let strength = 0;
       if (value.length >= 12) strength++;
       if (/[a-z]/.test(value)) strength++;
@@ -67,18 +149,42 @@ const Page = () => {
       if (/[0-9]/.test(value)) strength++;
       if (/[^a-zA-Z0-9]/.test(value)) strength++;
       
-      if (strength <= 2) setPasswordStrength('weak');
+      if (strength <= 2 || errors.length > 0) setPasswordStrength('weak');
       else if (strength <= 4) setPasswordStrength('medium');
       else setPasswordStrength('strong');
+      
+      // Clear confirm password error if passwords match
+      if (formData.confirmPassword && value === formData.confirmPassword) {
+        setConfirmPasswordError('');
+      }
+    }
+    
+    // Confirm password validation
+    if (id === 'confirmPassword') {
+      if (value && value !== formData.password) {
+        setConfirmPasswordError('Passwords do not match');
+      } else {
+        setConfirmPasswordError('');
+      }
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     
+    // Validate password
+    const passwordValidationErrors = validatePassword(formData.password);
+    setPasswordErrors(passwordValidationErrors);
+    
     // Validate password match
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match');
+      setConfirmPasswordError('Passwords do not match');
+      return;
+    }
+    
+    // Check if password is valid
+    if (passwordValidationErrors.length > 0) {
+      alert('Please fix password errors before continuing');
       return;
     }
     
@@ -218,15 +324,55 @@ const Page = () => {
             <label className="block body mb-2">
               Password <span className="text-red-600">*</span>
             </label>
-            <input
-              type="password"
-              id="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              {...getInputStyle(formData.password)}
-            />
-            {passwordStrength && (
+            <div className="flex gap-2">
+              <input
+                type="password"
+                id="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                className={`flex-1 h-11 px-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-talAqua transition ${
+                  passwordErrors.length > 0 ? 'border-red-500 bg-red-50 ring-2 ring-red-200' : 'border-gray-300 bg-white'
+                }`}
+                style={passwordErrors.length > 0 ? {
+                  borderColor: '#dc2626',
+                  backgroundColor: '#fef2f2',
+                  boxShadow: '0 0 0 2px rgba(254, 202, 202, 0.5)'
+                } : {}}
+                placeholder="Create a secure password"
+                autoComplete="new-password"
+                autoCapitalize="off"
+                autoCorrect="off"
+                spellCheck="false"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const newPassword = generateStrongPassword();
+                  setFormData(prev => ({
+                    ...prev,
+                    password: newPassword,
+                    confirmPassword: newPassword
+                  }));
+                  // Trigger validation
+                  const errors = validatePassword(newPassword);
+                  setPasswordErrors(errors);
+                  setConfirmPasswordError('');
+                  setPasswordStrength('strong');
+                }}
+                className="px-4 py-2 bg-talBlue text-white rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-talAqua transition-colors duration-200 text-sm font-medium whitespace-nowrap"
+              >
+                Suggest strong
+              </button>
+            </div>
+            {passwordErrors.length > 0 && (
+              <div className="mt-2">
+                {passwordErrors.map((error, index) => (
+                  <p key={index} className="text-sm mt-1" style={{color: '#dc2626'}}>{error}</p>
+                ))}
+              </div>
+            )}
+            {passwordStrength && passwordErrors.length === 0 && (
               <div className="mt-2">
                 <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
                   <div className={`h-full transition-all duration-300 ${
@@ -249,8 +395,23 @@ const Page = () => {
               value={formData.confirmPassword}
               onChange={handleChange}
               required
-              {...getInputStyle(formData.confirmPassword)}
+              className={`w-full h-11 px-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-talAqua transition ${
+                confirmPasswordError ? 'border-red-500 bg-red-50 ring-2 ring-red-200' : 'border-gray-300 bg-white'
+              }`}
+              style={confirmPasswordError ? {
+                borderColor: '#dc2626',
+                backgroundColor: '#fef2f2',
+                boxShadow: '0 0 0 2px rgba(254, 202, 202, 0.5)'
+              } : {}}
+              placeholder="Re-enter your password"
+              autoComplete="new-password"
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck="false"
             />
+            {confirmPasswordError && (
+              <p className="text-sm mt-1" style={{color: '#dc2626'}}>{confirmPasswordError}</p>
+            )}
           </div>
         </div>
         
