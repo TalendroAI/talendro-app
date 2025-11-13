@@ -224,14 +224,14 @@ const Home = () => {
           
           {/* Two CTA Buttons Only */}
           <div className="flex gap-4 justify-center mb-6">
-            <Link to="/pricing">
+            <Link to="/app/onboarding/step-1">
               <button className="px-8 py-3 bg-talBlue text-white rounded-lg font-bold hover:bg-blue-700 transition shadow-md" style={{ border: 'none' }}>
                 Get Started
               </button>
             </Link>
-            <Link to="/how-it-works">
+            <Link to="/pricing">
               <button className="px-8 py-3 bg-white text-talBlue border-2 border-talBlue rounded-lg font-bold hover:bg-blue-50 transition">
-                How It Works
+                View Pricing
               </button>
             </Link>
           </div>
