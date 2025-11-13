@@ -2,11 +2,9 @@ services:
   - type: web
     name: talendro-app
     env: node
-    buildCommand: npm run install:all && npm run build
+    buildCommand: npm run install:all && rm -rf client/build && npm run build
     startCommand: cd server && npm start
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 10000
 
