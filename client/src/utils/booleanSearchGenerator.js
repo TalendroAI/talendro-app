@@ -3,11 +3,9 @@
  * CRITICAL: Generates search strings AND executes searches before payment
  */
 
-// API Configuration - Backend URL for proxy
-const BACKEND_API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
+import { apiUrl } from './api.js';
 
 console.log('✓ Boolean Search Generator loaded');
-console.log('Backend URL:', BACKEND_API_URL);
 console.log('Note: API calls go through backend proxy to avoid CORS issues');
 
 /**
@@ -77,11 +75,11 @@ export async function generateBooleanSearchString(profileData) {
     console.log('Profile Data:', JSON.stringify(profileData, null, 2));
     
     // Call backend proxy instead of Anthropic directly
-    const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
+    const apiEndpoint = apiUrl('/api/ai/generate-search-string');
     
-    console.log('Calling backend API at:', `${backendUrl}/api/ai/generate-search-string`);
+    console.log('Calling backend API at:', apiEndpoint);
     
-    const response = await fetch(`${backendUrl}/api/ai/generate-search-string`, {
+    const response = await fetch(apiEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -141,7 +139,7 @@ async function executeJobSearches(searchString, profileData) {
   
   try {
     // Try to call backend API first
-    const response = await fetch(`${BACKEND_API_URL}/jobs/search`, {
+    const response = await fetch(apiUrl('/api/jobs/search'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

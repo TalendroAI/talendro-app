@@ -33,7 +33,7 @@ function Dashboard() {
         return;
       }
 
-      const response = await fetch('http://localhost:5001/api/user/me', {
+      const response = await fetch('/api/user/me', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -101,7 +101,7 @@ function Dashboard() {
   const handleManageSubscription = async () => {
     try {
       // Get customer ID from user data
-      const response = await fetch('http://localhost:5001/api/user/subscription');
+      const response = await fetch('/api/user/subscription');
       const data = await response.json();
       
       if (!data.stripeCustomerId) {
@@ -110,7 +110,7 @@ function Dashboard() {
       }
 
       // Create portal session
-      const portalResponse = await fetch('http://localhost:5001/api/stripe/create-portal-session', {
+      const portalResponse = await fetch('/api/stripe/create-portal-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
