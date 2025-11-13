@@ -252,7 +252,9 @@ app.use(cors({
       'http://localhost:3000',
       'http://localhost:3001',
       'http://127.0.0.1:3000',
-      // Add your production domains here
+      // Production domains
+      'https://talendro.com',
+      'https://www.talendro.com',
       process.env.FRONTEND_URL, // Set this in Railway env vars
       process.env.DOMAIN, // Or set this
     ].filter(Boolean); // Remove undefined values
