@@ -118,19 +118,12 @@ export default function Page(){
             even see it—with a <strong>perfectly tailored resume</strong> for each position. You get both the 
             first-applicant advantage AND the tailored-resume advantage, automatically.
           </p>
-          <div className="text-center">
-            <a href="/pricing">
-              <button className="px-8 py-4 bg-talBlue text-white rounded-lg font-bold hover:bg-blue-700 transition shadow-lg text-lg" style={{ border: 'none' }}>
-                See Pricing & Get Started
-              </button>
-            </a>
-          </div>
         </div>
       </div>
       
-      <div className='mt-8 flex flex-wrap gap-3 justify-center'>
+      <div className='mt-8 flex flex-wrap gap-3'>
         <a href='/app/onboarding/step-1'><button className='btn btn-primary mr-3'>Get Started</button></a>
-        <a href='/pricing'><button className='btn btn-secondary mr-3'>View Pricing</button></a>
+        <a href='/services'><button className='btn btn-secondary mr-3'>Services</button></a>
       </div>
       
       <CitationsFooter />
