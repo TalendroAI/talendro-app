@@ -104,7 +104,6 @@ This is CRITICAL - your app needs API keys to work:
    ```
    CLAUDE_API_KEY = your-claude-api-key-here
    ANTHROPIC_API_KEY = your-anthropic-api-key-here
-   AFFINDA_API_KEY = your-affinda-api-key-here (if using)
    ```
 
    **Database (if using MongoDB):**

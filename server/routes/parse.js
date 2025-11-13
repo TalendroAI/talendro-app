@@ -113,7 +113,7 @@
 
 //   console.log(`[${traceId}] Starting resume parsing...`, new Date().toISOString());
 
-//   // 90-second timeout as per Affinda recommendations
+//   // 90-second timeout for parsing operations
 //   const timeout = setTimeout(() => {
 //     console.error(`[${traceId}] TIMEOUT: Request exceeded 90 seconds`);
 //     if (!res.headersSent) {
@@ -357,10 +357,9 @@
 
 // export default router;
 
-// server/routes/parse.js - AFFINDA ONLY MODE (NO FALLBACK)
+// server/routes/parse.js
 
 import express from 'express';
-import { parseWithAffinda, affindaStatus } from '../vendor/affindaAdapter.js';
 import { parseWithClaude, claudeStatus } from '../vendor/claudeAdapter.js';
 import { parseWithLocal, localParserStatus } from '../vendor/localParser.js';
 import mapToProfileDraft from '../mappers/mapToProfileDraft.js';
@@ -474,7 +473,7 @@ router.post('/resume/parse', formatProtectionMiddleware, (req, res) => {
 
   console.log(`[${traceId}] Starting resume parsing...`, new Date().toISOString());
 
-  // 90-second timeout as per Affinda recommendations
+  // 90-second timeout for parsing operations
   const timeout = setTimeout(() => {
     console.error(`[${traceId}] TIMEOUT: Request exceeded 90 seconds`);
     if (!res.headersSent) {
@@ -645,7 +644,7 @@ router.post('/resume/parse', formatProtectionMiddleware, (req, res) => {
 
 
       // ============================================
-      // AFFINDA WITH LOCAL FALLBACK MODE
+      // CLAUDE WITH LOCAL FALLBACK MODE
       // ============================================
 
 
@@ -708,19 +707,19 @@ router.post('/resume/parse', formatProtectionMiddleware, (req, res) => {
                 skillsCount: raw.data.skills?.length || 0
               });
             }
-          } catch (affindaError) {
+          } catch (claudeError) {
             // Determine if fallback is appropriate
-            const errorDetail = affindaError.message.toLowerCase();
+            const errorDetail = claudeError.message.toLowerCase();
             const shouldFallback =
               errorDetail.includes('timeout') ||
               errorDetail.includes('network') ||
               errorDetail.includes('econnrefused') ||
               errorDetail.includes('rate limit') ||
-              affindaError.code === 'ECONNRESET';
+              claudeError.code === 'ECONNRESET';
 
             if (shouldFallback) {
               console.warn(`[${traceId}] ⚠️  Claude failed (recoverable), falling back to local parser`);
-              console.warn(`[${traceId}] Claude error:`, affindaError.message);
+              console.warn(`[${traceId}] Claude error:`, claudeError.message);
 
               try {
                 const result = await parseWithLocal(fileBuffer, fileName, fileType);
@@ -735,16 +734,16 @@ router.post('/resume/parse', formatProtectionMiddleware, (req, res) => {
                 });
               } catch (localError) {
                 console.error(`[${traceId}] ❌ Local fallback also failed:`, localError.message);
-                throw new Error(`Both parsers failed. Claude: ${affindaError.message}, Local: ${localError.message}`);
+                throw new Error(`Both parsers failed. Claude: ${claudeError.message}, Local: ${localError.message}`);
               }
               } else {
               // Critical Claude errors (auth, credits) should not fallback
-              console.error(`[${traceId}] ❌ Claude parsing failed (non-recoverable):`, affindaError.message);
+              console.error(`[${traceId}] ❌ Claude parsing failed (non-recoverable):`, claudeError.message);
 
               // Update job status
               setJobStatus(jobId, {
                 status: 'failed',
-                error: affindaError.message
+                error: claudeError.message
               });
 
               // Determine error type and response
@@ -765,7 +764,7 @@ router.post('/resume/parse', formatProtectionMiddleware, (req, res) => {
               return res.status(statusCode).json({
                 success: false,
                 error: errorMessage,
-                detail: affindaError.message,
+                detail: claudeError.message,
                 suggestion,
                 traceId,
                 jobId,

@@ -1,67 +1,156 @@
-# 🚀 Complete Novice Guide: Deploy Talendro to Railway + Connect talendro.com
+# 🚀 Step-by-Step: Transfer Talendro to Railway
 
-**This guide assumes you know nothing about deployment. Every single step is explained in detail.**
+**Complete novice-friendly guide to move your Talendro app from your MacBook to Railway**
 
-**Your Goal**: Move Talendro from your MacBook to Railway, accessible at **talendro.com**
+**Your Goal**: Get Talendro running live at **talendro.com** on Railway
 
-**Total Time**: 30-45 minutes
+**Time Required**: 45-60 minutes
 
 ---
 
-## 📋 What You'll Need
+## 📋 BEFORE YOU START
 
+**What You Need**:
 - ✅ Your MacBook with Talendro code
 - ✅ GitHub account (we'll create if needed)
 - ✅ Railway account (you mentioned you have this)
 - ✅ Cloudflare account with talendro.com domain
-- ✅ Your API keys (Claude/Anthropic if you have them)
+- ✅ Your API keys ready:
+  - Anthropic/Claude API key (starts with `sk-ant-...`)
+  - Stripe secret key (if using payments)
+  - MongoDB connection string (if using database)
+  - JWT secret (we'll generate one)
 
 ---
 
-# PART 1: Upload Your Code to GitHub (10 minutes)
+# PART 1: Prepare Your Code (10 minutes)
 
-## Step 1.1: Create a GitHub Account (if you don't have one)
+## Step 1.1: Open Terminal on Your MacBook
 
-1. **Open your web browser** (Chrome, Safari, Firefox - any browser works)
+1. **Press** `Cmd + Space` (opens Spotlight search)
+2. **Type**: `Terminal`
+3. **Press** `Enter`
+4. **You'll see a window** with a command prompt
+
+**✅ Success**: Terminal is open!
+
+---
+
+## Step 1.2: Navigate to Your Project Folder
+
+**In Terminal, type this EXACT command** (then press Enter):
+
+```bash
+cd "/Users/gregjackson/Desktop/talendro-developer-package copy"
+```
+
+**What this does**: Changes to your project directory
+
+**✅ Success**: Your prompt should show the folder name
+
+**If you get an error**: Make sure you typed it exactly, including the quotes
+
+---
+
+## Step 1.3: Check Git Status
+
+**Type this command**:
+
+```bash
+git status
+```
+
+**What you might see**:
+- If it says "not a git repository" → Skip to Step 1.4
+- If it shows files → You already have git initialized (good!)
+
+**✅ Success**: You know your git status
+
+---
+
+## Step 1.4: Initialize Git (if needed)
+
+**Only do this if Step 1.3 said "not a git repository"**
+
+**Type these commands one at a time**:
+
+```bash
+git init
+```
+
+```bash
+git add .
+```
+
+```bash
+git commit -m "Initial commit - Talendro ready for Railway"
+```
+
+**✅ Success**: Git is initialized and your code is committed!
+
+---
+
+## Step 1.5: Verify Your Code is Ready
+
+**Type this command**:
+
+```bash
+ls -la
+```
+
+**You should see**:
+- `client/` folder
+- `server/` folder
+- `package.json` file
+- `Procfile` file
+- `railway.json` file
+
+**✅ Success**: All files are present!
+
+---
+
+# PART 2: Upload Code to GitHub (15 minutes)
+
+## Step 2.1: Create GitHub Account (if needed)
+
+1. **Open your web browser** (Chrome, Safari, Firefox)
 2. **Go to**: https://github.com
-3. **Click** the green "Sign up" button (top right)
-4. **Enter**:
-   - Username (choose something like `yourname` or `gregjackson`)
+3. **Click** "Sign up" (top right, green button)
+4. **Fill in**:
+   - Username (choose something like `yourname`)
    - Email address
    - Password
 5. **Click** "Create account"
-6. **Verify your email** (check your inbox, click the verification link)
-7. **Complete the setup** (choose free plan, skip optional questions)
+6. **Verify your email** (check inbox, click verification link)
+7. **Complete setup** (choose free plan, skip optional questions)
 
-**✅ Done**: You now have a GitHub account!
+**✅ Success**: You have a GitHub account!
 
 ---
 
-## Step 1.2: Create a New Repository on GitHub
+## Step 2.2: Create New Repository on GitHub
 
 1. **Make sure you're logged into GitHub**
-2. **Click the "+" icon** in the top right corner of GitHub
-3. **Click** "New repository" from the dropdown menu
+2. **Click the "+" icon** (top right)
+3. **Click** "New repository"
 4. **Fill in the form**:
-   - **Repository name**: Type `talendro-app` (or any name you like)
+   - **Repository name**: `talendro-app` (or any name you like)
    - **Description**: (optional) "Talendro job search application"
    - **Visibility**: 
-     - ✅ Click **"Private"** (recommended - keeps your code private)
+     - ✅ Click **"Private"** (recommended)
      - ❌ Do NOT click "Public"
-   - **DO NOT check** "Add a README file"
-   - **DO NOT check** "Add .gitignore"
-   - **DO NOT check** "Choose a license"
-5. **Click the green** "Create repository" button at the bottom
+   - **DO NOT check** any boxes (README, .gitignore, license)
+5. **Click** "Create repository" (green button at bottom)
 
-**✅ Done**: Your repository is created!
+**✅ Success**: Repository created!
 
 ---
 
-## Step 1.3: Copy Your Repository URL
+## Step 2.3: Copy Your Repository URL
 
-After creating the repository, GitHub will show you a page with setup instructions.
+**After creating the repository, GitHub shows you a page with setup instructions**
 
-**Look for a section that says "Quick setup"** - you'll see a URL that looks like:
+**Look for a section that says "Quick setup"** - you'll see a URL like:
 
 ```
 https://github.com/YOUR_USERNAME/talendro-app.git
@@ -72,46 +161,22 @@ https://github.com/YOUR_USERNAME/talendro-app.git
 https://github.com/gregjackson/talendro-app.git
 ```
 
-**📋 COPY THIS URL** - you'll need it in the next step!
+**📋 COPY THIS URL** - you'll need it!
 
-**How to copy**: 
+**How to copy**:
 - Click in the text box next to the URL
 - Press `Cmd+A` (select all)
 - Press `Cmd+C` (copy)
-- Or right-click and select "Copy"
+
+**✅ Success**: URL is copied!
 
 ---
 
-## Step 1.4: Open Terminal on Your MacBook
+## Step 2.4: Connect Your Code to GitHub
 
-1. **Press** `Cmd + Space` (opens Spotlight search)
-2. **Type**: `Terminal`
-3. **Press** `Enter` (opens Terminal app)
-4. **You'll see a window** with a command prompt like: `gregjackson@MacBook ~ %`
+**Back in Terminal** (make sure you're in your project folder):
 
-**✅ Done**: Terminal is open!
-
----
-
-## Step 1.5: Navigate to Your Project Folder
-
-**In Terminal, type this EXACT command** (then press Enter):
-
-```bash
-cd "/Users/gregjackson/Desktop/talendro-developer-package copy"
-```
-
-**What this does**: Changes directory to your project folder
-
-**✅ Success**: You should see the prompt change to show you're in that folder
-
-**If you get an error**: Make sure you typed it exactly, including the quotes and spaces
-
----
-
-## Step 1.6: Connect Your Code to GitHub
-
-**In Terminal, type this command** (replace `YOUR_USERNAME` and `talendro-app` with your actual values):
+**Type this command** (replace `YOUR_USERNAME` and `talendro-app` with your actual values):
 
 ```bash
 git remote add origin https://github.com/YOUR_USERNAME/talendro-app.git
@@ -124,17 +189,17 @@ git remote add origin https://github.com/gregjackson/talendro-app.git
 
 **Press Enter**
 
-**✅ Success**: You won't see any message - that's good! (No error = success)
+**✅ Success**: No error message = success!
 
 **If you see an error**: 
 - Make sure you copied the URL correctly
-- Make sure you're in the right folder (Step 1.5)
+- Make sure you're in the right folder (Step 1.2)
 
 ---
 
-## Step 1.7: Push Your Code to GitHub
+## Step 2.5: Push Your Code to GitHub
 
-**In Terminal, type this command**:
+**Type this command**:
 
 ```bash
 git push -u origin main
@@ -144,7 +209,7 @@ git push -u origin main
 
 **You'll be asked for credentials:**
 
-### Option A: If you have 2-Factor Authentication (2FA) enabled:
+### If you have 2-Factor Authentication (2FA) enabled:
 
 1. **Username**: Enter your GitHub username
 2. **Password**: You CANNOT use your regular password
@@ -152,14 +217,14 @@ git push -u origin main
    - **Get one now**:
      - Go to: https://github.com/settings/tokens
      - Click "Generate new token" → "Generate new token (classic)"
-     - **Note**: Type "Railway deployment" (or anything)
+     - **Note**: Type "Railway deployment"
      - **Expiration**: Choose "90 days" or "No expiration"
-     - **Scopes**: Check ✅ **"repo"** (this gives full repository access)
+     - **Scopes**: Check ✅ **"repo"** (gives full repository access)
      - Click "Generate token" at bottom
      - **COPY THE TOKEN** (you'll only see it once!)
      - **Use this token as your password** in Terminal
 
-### Option B: If you DON'T have 2FA:
+### If you DON'T have 2FA:
 
 1. **Username**: Enter your GitHub username
 2. **Password**: Enter your GitHub password
@@ -173,50 +238,48 @@ Counting objects: 100% (XXXX/XXXX), done.
 Writing objects: 100% (XXXX/XXXX), done.
 To https://github.com/YOUR_USERNAME/talendro-app.git
  * [new branch]      main -> main
-Branch 'main' set up to track 'remote branch 'main' from 'origin'.
 ```
 
-**✅ Done**: Your code is now on GitHub!
+**✅ Done**: Your code is on GitHub!
 
 **Verify**: Go to https://github.com/YOUR_USERNAME/talendro-app - you should see all your files!
 
 ---
 
-# PART 2: Deploy to Railway (15 minutes)
+# PART 3: Deploy to Railway (20 minutes)
 
-## Step 2.1: Log Into Railway
+## Step 3.1: Log Into Railway
 
-1. **Open your web browser**
+1. **Open your web browser** (new tab)
 2. **Go to**: https://railway.app
 3. **Click** "Login" (top right)
-4. **Click** "Login with GitHub" (or use your Railway credentials if you have them)
-5. **Authorize Railway** if asked (click "Authorize Railway App")
+4. **Click** "Login with GitHub"
+5. **Authorize Railway** (click "Authorize Railway App" if asked)
 
-**✅ Done**: You're logged into Railway!
+**✅ Success**: You're logged into Railway!
 
 ---
 
-## Step 2.2: Create a New Project
+## Step 3.2: Create New Project
 
-1. **On Railway dashboard**, you'll see a big button that says **"New Project"**
-2. **Click** "New Project"
-3. **You'll see options**:
+1. **On Railway dashboard**, click **"New Project"** (big button)
+2. **You'll see options**:
    - "Deploy from GitHub repo" ← **CLICK THIS ONE**
-   - "Empty Project" (don't click this)
-   - "Deploy a Template" (don't click this)
-4. **If first time**: You'll be asked to **authorize Railway** to access GitHub
+   - "Empty Project" (don't click)
+   - "Deploy a Template" (don't click)
+3. **If first time**: You'll be asked to **authorize Railway** to access GitHub
    - Click "Authorize Railway App"
-   - You may need to enter your GitHub password
-   - Click "Authorize" on the GitHub page
-5. **You'll see a list of your GitHub repositories**
-6. **Find and click** `talendro-app` (or whatever you named it)
-7. **Railway will automatically start deploying!**
+   - Enter your GitHub password if asked
+   - Click "Authorize"
+4. **You'll see a list of your GitHub repositories**
+5. **Find and click** `talendro-app` (or whatever you named it)
+6. **Railway will automatically start deploying!**
 
-**✅ Done**: Railway is now building your app!
+**✅ Success**: Railway is building your app!
 
 ---
 
-## Step 2.3: Wait for Initial Build (3-5 minutes)
+## Step 3.3: Wait for Initial Build (3-5 minutes)
 
 **What's happening**: Railway is:
 - Installing all your dependencies
@@ -232,22 +295,22 @@ Branch 'main' set up to track 'remote branch 'main' from 'origin'.
 
 **✅ Success**: Status will change to "Deployed" or "Active" (usually green)
 
-**If it fails**: Don't panic! We'll fix it in the next steps.
+**If it fails**: Don't panic! We'll check logs in the next steps.
 
 ---
 
-## Step 2.4: Configure Build Settings
+## Step 3.4: Configure Build Settings
 
 **Even if the build succeeded, we need to verify settings:**
 
 1. **Click on your service** in Railway (the box showing your app name)
-2. **Click the "Settings" tab** (looks like a gear icon ⚙️, usually on the right side)
+2. **Click the "Settings" tab** (gear icon ⚙️, usually on the right)
 3. **Scroll down** to find these sections:
 
 ### Build Command:
 
 1. **Find** "Build Command" field
-2. **Click in the field** (it might be empty or have something)
+2. **Click in the field**
 3. **Type exactly**: 
    ```
    npm run build
@@ -266,9 +329,11 @@ Branch 'main' set up to track 'remote branch 'main' from 'origin'.
 
 **✅ Done**: Settings are saved! Railway will automatically redeploy.
 
+**Wait 2-3 minutes** for the redeployment to complete.
+
 ---
 
-## Step 2.5: Add Environment Variables
+## Step 3.5: Add Environment Variables
 
 **Still in the Settings tab**, scroll to find **"Variables"** section:
 
@@ -280,29 +345,66 @@ Branch 'main' set up to track 'remote branch 'main' from 'origin'.
 4. **Click** "Add" (or press Enter)
 5. **Railway will automatically redeploy** (you'll see it start building again)
 
-### Add Your API Keys (if you have them):
+### Add JWT_SECRET:
 
-**For Claude API Key:**
+**This is critical for authentication!**
 
-1. **Click** "New Variable" again
-2. **Name**: `CLAUDE_API_KEY`
-3. **Value**: Paste your Claude API key (starts with `sk-ant-...`)
-4. **Click** "Add"
+1. **First, generate a secret**:
+   - **In Terminal** (on your MacBook), type:
+     ```bash
+     openssl rand -base64 32
+     ```
+   - **Press Enter**
+   - **Copy the output** (long random string)
 
-**For Anthropic API Key** (if different from Claude):
+2. **Back in Railway**:
+   - **Click** "New Variable" again
+   - **Name**: `JWT_SECRET`
+   - **Value**: Paste the secret you just generated
+   - **Click** "Add"
+
+### Add Your API Keys:
+
+**For Anthropic/Claude API Key:**
 
 1. **Click** "New Variable" again
 2. **Name**: `ANTHROPIC_API_KEY`
-3. **Value**: Paste your Anthropic API key
+3. **Value**: Paste your Claude API key (starts with `sk-ant-...`)
 4. **Click** "Add"
 
+**For Stripe** (if using payments):
 
-**For MongoDB** (if you're using a database):
+1. **Click** "New Variable" again
+2. **Name**: `STRIPE_SECRET_KEY`
+3. **Value**: Paste your Stripe secret key (starts with `sk_live_...` or `sk_test_...`)
+4. **Click** "Add"
+
+2. **Click** "New Variable" again
+3. **Name**: `STRIPE_PRICE_ID_BASIC`
+4. **Value**: Paste your Stripe Price ID for Basic plan (starts with `price_...`)
+5. **Click** "Add"
+
+6. **Repeat for** `STRIPE_PRICE_ID_PRO` and `STRIPE_PRICE_ID_PREMIUM` if you have them
+
+**For MongoDB** (if using database):
 
 1. **Click** "New Variable" again
 2. **Name**: `MONGODB_URI`
 3. **Value**: Paste your MongoDB connection string
+   - Format: `mongodb+srv://username:password@cluster.mongodb.net/talendro?retryWrites=true&w=majority`
 4. **Click** "Add"
+
+**For Domain Configuration:**
+
+1. **Click** "New Variable" again
+2. **Name**: `FRONTEND_URL`
+3. **Value**: `https://talendro.com`
+4. **Click** "Add"
+
+2. **Click** "New Variable" again
+3. **Name**: `DOMAIN`
+4. **Value**: `https://talendro.com`
+5. **Click** "Add"
 
 **✅ Done**: All environment variables are set!
 
@@ -310,7 +412,7 @@ Branch 'main' set up to track 'remote branch 'main' from 'origin'.
 
 ---
 
-## Step 2.6: Get Your Railway URL
+## Step 3.6: Get Your Railway URL
 
 1. **Still in Settings tab**, scroll to **"Domains"** section
 2. **You'll see** a Railway-generated domain that looks like:
@@ -325,7 +427,7 @@ Branch 'main' set up to track 'remote branch 'main' from 'origin'.
 
 ---
 
-## Step 2.7: Test Your Railway URL
+## Step 3.7: Test Your Railway URL
 
 1. **Open a new browser tab**
 2. **Paste your Railway URL** in the address bar
@@ -342,9 +444,9 @@ Branch 'main' set up to track 'remote branch 'main' from 'origin'.
 
 ---
 
-# PART 3: Connect talendro.com Domain (15 minutes)
+# PART 4: Connect talendro.com Domain (15 minutes)
 
-## Step 3.1: Add Custom Domain in Railway
+## Step 4.1: Add Custom Domain in Railway
 
 1. **In Railway**, go to your service → **Settings** → **Domains** section
 2. **Click** "Add Domain" button
@@ -367,32 +469,32 @@ Target: talendro-app-production.up.railway.app
 
 **Example**: `talendro-app-production.up.railway.app`
 
-**✅ Done**: Domain added in Railway! Keep this page open.
+**✅ Success**: Domain added in Railway! Keep this page open.
 
 ---
 
-## Step 3.2: Log Into Cloudflare
+## Step 4.2: Log Into Cloudflare
 
 1. **Open a new browser tab** (keep Railway tab open)
 2. **Go to**: https://dash.cloudflare.com
 3. **Enter your email** and **password**
 4. **Click** "Log in"
 
-**✅ Done**: You're logged into Cloudflare!
+**✅ Success**: You're logged into Cloudflare!
 
 ---
 
-## Step 3.3: Select Your Domain in Cloudflare
+## Step 4.3: Select Your Domain in Cloudflare
 
 1. **On Cloudflare dashboard**, you'll see a list of your domains
 2. **Find and click** `talendro.com` (your domain)
 3. **You'll be taken to the domain's dashboard**
 
-**✅ Done**: You're now managing talendro.com!
+**✅ Success**: You're now managing talendro.com!
 
 ---
 
-## Step 3.4: Add DNS Record for Root Domain (talendro.com)
+## Step 4.4: Add DNS Record for Root Domain (talendro.com)
 
 1. **In Cloudflare**, look at the left sidebar menu
 2. **Click** "DNS" (it has a globe icon 🌐)
@@ -410,7 +512,7 @@ Target: talendro-app-production.up.railway.app
    - (The @ symbol means "root domain" - this makes talendro.com work)
 
 3. **Target field**:
-   - **Paste the Target value** from Railway (Step 3.1)
+   - **Paste the Target value** from Railway (Step 4.1)
    - Example: `talendro-app-production.up.railway.app`
    - **Make sure there are NO spaces** before or after
 
@@ -425,11 +527,11 @@ Target: talendro-app-production.up.railway.app
 
 6. **Click** "Save" button (bottom right of the form)
 
-**✅ Done**: DNS record added for talendro.com!
+**✅ Success**: DNS record added for talendro.com!
 
 ---
 
-## Step 3.5: Add DNS Record for WWW (www.talendro.com)
+## Step 4.5: Add DNS Record for WWW (www.talendro.com)
 
 **This makes www.talendro.com work too:**
 
@@ -452,11 +554,11 @@ Target: talendro-app-production.up.railway.app
 
 6. **Click** "Save"
 
-**✅ Done**: Both talendro.com and www.talendro.com are configured!
+**✅ Success**: Both talendro.com and www.talendro.com are configured!
 
 ---
 
-## Step 3.6: Enable SSL/HTTPS in Cloudflare
+## Step 4.6: Enable SSL/HTTPS in Cloudflare
 
 1. **In Cloudflare**, look at the left sidebar
 2. **Click** "SSL/TLS" (it has a lock icon 🔒)
@@ -467,11 +569,11 @@ Target: talendro-app-production.up.railway.app
    - **"Full (strict)"** is more secure but requires Railway to have a valid certificate
 6. **The setting saves automatically**
 
-**✅ Done**: SSL/HTTPS is enabled!
+**✅ Success**: SSL/HTTPS is enabled!
 
 ---
 
-## Step 3.7: Wait for DNS Propagation (5-10 minutes)
+## Step 4.7: Wait for DNS Propagation (5-10 minutes)
 
 **What's happening**: 
 - Cloudflare is updating DNS records worldwide
@@ -483,11 +585,11 @@ Target: talendro-app-production.up.railway.app
 - You can check status in Cloudflare (DNS page will show the records)
 - You can test if it's ready (next step)
 
-**✅ Done**: Waiting for DNS to propagate!
+**✅ Success**: Waiting for DNS to propagate!
 
 ---
 
-## Step 3.8: Test Your Domain
+## Step 4.8: Test Your Domain
 
 **After 5-10 minutes:**
 
@@ -507,93 +609,51 @@ Target: talendro-app-production.up.railway.app
 
 ---
 
-# PART 4: Update CORS for Production (5 minutes)
+# PART 5: Verify Everything Works (5 minutes)
 
-**This step allows your live domain to communicate with your API.**
+## Step 5.1: Test Your Homepage
 
-## Step 4.1: Edit the CORS File
+1. **Go to**: `https://talendro.com`
+2. **Verify**: Homepage loads correctly
+3. **Check**: No console errors (press F12, look at Console tab)
 
-1. **On your MacBook**, open your code editor (VS Code, TextEdit, or any editor)
-2. **Navigate to**: `server/index.js`
-3. **Open the file**
-
-## Step 4.2: Find the CORS Configuration
-
-**Look for a section** that says something like:
-```javascript
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:3001',
-  ...
-]
-```
-
-**This is around line 251** in the file.
-
-## Step 4.3: Add Your Domain
-
-**Add these two lines** to the `allowedOrigins` array:
-
-```javascript
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:3001',
-  'http://127.0.0.1:3000',
-  'https://talendro.com',        // ADD THIS LINE
-  'https://www.talendro.com',    // ADD THIS LINE
-];
-```
-
-**Make sure**:
-- You have a comma after each line (except the last one)
-- You use `https://` (not `http://`)
-- You use your actual domain: `talendro.com`
-
-## Step 4.4: Save the File
-
-1. **Press** `Cmd + S` (or File → Save)
-2. **File is saved!**
+**✅ Success**: Homepage works!
 
 ---
 
-## Step 4.5: Push Changes to GitHub
+## Step 5.2: Test Resume Upload
 
-**Back in Terminal** (on your MacBook):
+1. **Navigate to** the resume upload page
+2. **Upload a test resume** (PDF or DOCX)
+3. **Verify**: Resume parses correctly
+4. **Check**: Data populates in forms
 
-1. **Make sure you're in the project folder**:
-   ```bash
-   cd "/Users/gregjackson/Desktop/talendro-developer-package copy"
-   ```
-
-2. **Add the changed file**:
-   ```bash
-   git add server/index.js
-   ```
-
-3. **Commit the changes**:
-   ```bash
-   git commit -m "Update CORS for production domain talendro.com"
-   ```
-
-4. **Push to GitHub**:
-   ```bash
-   git push
-   ```
-
-**✅ Success**: Changes are pushed to GitHub!
+**✅ Success**: Resume parsing works!
 
 ---
 
-## Step 4.6: Wait for Railway to Redeploy
+## Step 5.3: Test API Endpoints
 
-**Railway automatically detects GitHub changes and redeploys:**
+1. **Go to**: `https://talendro.com/api/health`
+2. **You should see**: `{"ok":true,"service":"talendro-server"}`
+3. **If you see this**: API is working!
+
+**✅ Success**: API is responding!
+
+---
+
+## Step 5.4: Check Railway Logs
 
 1. **Go back to Railway dashboard**
-2. **You'll see** a new deployment starting automatically
-3. **Wait 2-3 minutes** for it to complete
-4. **Status will show** "Deployed" when done
+2. **Click on your service**
+3. **Click** "Deployments" tab
+4. **Click** the latest deployment
+5. **Click** "View Logs"
+6. **Check for errors**:
+   - ✅ No red error messages = Good!
+   - ❌ Red errors = Need to fix (see troubleshooting)
 
-**✅ Done**: CORS is updated, app is redeployed!
+**✅ Success**: No critical errors in logs!
 
 ---
 
@@ -606,7 +666,14 @@ Use this to verify everything is working:
 - [ ] Build completed successfully in Railway
 - [ ] Build Command set: `npm run build`
 - [ ] Start Command set: `cd server && npm start`
-- [ ] Environment variables added (NODE_ENV, API keys)
+- [ ] Environment variables added:
+  - [ ] NODE_ENV = production
+  - [ ] JWT_SECRET = (generated secret)
+  - [ ] ANTHROPIC_API_KEY = (your key)
+  - [ ] STRIPE_SECRET_KEY = (if using)
+  - [ ] MONGODB_URI = (if using)
+  - [ ] FRONTEND_URL = https://talendro.com
+  - [ ] DOMAIN = https://talendro.com
 - [ ] Railway URL works (test it in browser)
 - [ ] Custom domain `talendro.com` added in Railway
 - [ ] CNAME record added in Cloudflare for `@` (root)
@@ -616,9 +683,10 @@ Use this to verify everything is working:
 - [ ] Waited 5-10 minutes for DNS propagation
 - [ ] `https://talendro.com` works in browser
 - [ ] `https://www.talendro.com` works in browser
-- [ ] CORS updated in server/index.js
-- [ ] CORS changes pushed to GitHub
-- [ ] Railway redeployed after CORS update
+- [ ] Homepage loads correctly
+- [ ] Resume upload works
+- [ ] API endpoints respond
+- [ ] No critical errors in Railway logs
 
 ---
 
@@ -632,10 +700,11 @@ Use this to verify everything is working:
 3. **Click** the latest deployment (the one that failed)
 4. **Click** "View Logs"
 5. **Scroll through the logs** - look for red error messages
-6. **Common issues**:
-   - "Command not found" → Check Build/Start commands are correct
-   - "Module not found" → Dependencies might be missing
-   - "Port already in use" → Railway handles ports automatically
+
+**Common issues**:
+- "Command not found" → Check Build/Start commands are correct
+- "Module not found" → Dependencies might be missing
+- "Port already in use" → Railway handles ports automatically
 
 **Fix**: 
 - Check the error message
@@ -653,10 +722,14 @@ Use this to verify everything is working:
    - "Error: Cannot find module..."
    - "Port X is already in use"
    - "Environment variable missing"
-3. **Common fixes**:
-   - Missing environment variables → Add them in Railway Settings
-   - Wrong start command → Verify it's `cd server && npm start`
-   - Build didn't complete → Check build logs
+   - "JWT_SECRET must be set"
+   - "MongoDB connection error"
+
+**Common fixes**:
+- Missing environment variables → Add them in Railway Settings
+- Wrong start command → Verify it's `cd server && npm start`
+- Build didn't complete → Check build logs
+- Missing JWT_SECRET → Generate and add it (Step 3.5)
 
 ---
 
@@ -694,10 +767,9 @@ Use this to verify everything is working:
 ## Problem: CORS Errors in Browser Console
 
 **What to do**:
-1. **Verify** you updated CORS in `server/index.js` (Step 4.3)
-2. **Verify** you pushed changes to GitHub (Step 4.5)
-3. **Verify** Railway redeployed (check Deployments tab)
-4. **Clear browser cache**: 
+1. **Verify** `talendro.com` is in CORS allowed origins (already done in code)
+2. **Verify** environment variables `FRONTEND_URL` and `DOMAIN` are set
+3. **Clear browser cache**: 
    - Chrome: `Cmd + Shift + Delete` → Clear cached images and files
    - Or try incognito/private browsing mode
 
@@ -771,4 +843,34 @@ Use this to verify everything is working:
    - Didn't wait long enough for DNS propagation
 
 **You've got this!** Take it one step at a time. 🚀
+
+---
+
+# 📝 Quick Command Reference
+
+**For your reference, here are the key commands:**
+
+```bash
+# Navigate to project
+cd "/Users/gregjackson/Desktop/talendro-developer-package copy"
+
+# Check git status
+git status
+
+# Add all changes
+git add .
+
+# Commit changes
+git commit -m "Your message here"
+
+# Push to GitHub
+git push
+
+# Generate JWT secret
+openssl rand -base64 32
+```
+
+---
+
+**Good luck with your deployment!** 🎉
 

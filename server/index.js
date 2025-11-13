@@ -191,9 +191,6 @@ import './bootstrap-env.js';  // ✅ MUST BE FIRST
 
 // ✅ DIAGNOSTIC: Print environment status immediately
 console.log('[ENV] CWD:', process.cwd());
-console.log('[ENV] has AFFINDA_API_KEY:', !!process.env.AFFINDA_API_KEY);
-console.log('[ENV] key length:', (process.env.AFFINDA_API_KEY || '').length);
-console.log('[ENV] key preview:', (process.env.AFFINDA_API_KEY || '').substring(0, 15) + '...');
 console.log('[ENV] has ANTHROPIC_API_KEY:', !!process.env.ANTHROPIC_API_KEY);
 console.log('[ENV] Anthropic key configured:', !!process.env.ANTHROPIC_API_KEY && process.env.ANTHROPIC_API_KEY.startsWith('sk-ant-'));
 
@@ -212,7 +209,6 @@ import aiRoutes from './routes/ai.js'
 import authRoutes from './routes/auth.js'
 import webhookRoutes from './routes/webhooks.js'
 import { parseResumeData } from './resume-parser-ultimate.js'
-import { affindaStatus } from './vendor/affindaAdapter.js'
 import crypto from 'crypto'
 
 // Simple traceId generator without external dependencies
@@ -315,20 +311,6 @@ app.use('/api/stripe', stripeRoutes)
 // --- Mock API ---
 app.get('/api/health', (req,res)=> res.json({ ok:true, service:'talendro-server' }))
 
-// Debug endpoint to check AFFINDA_API_KEY configuration
-app.get('/api/debug/config', (req,res)=>{
-  res.json({ affindaConfigured: !!process.env.AFFINDA_API_KEY });
-});
-
-// Debug endpoint to check Affinda setup
-app.get('/api/debug/affinda', async (req, res) => {
-  try {
-    const status = await affindaStatus();
-    res.json(status);
-  } catch (e) {
-    res.status(500).json({ error: String(e.message || e) });
-  }
-});
 
 app.get('/api/metrics/today', (req, res)=>{
   res.json({ applied: 3, optimized: 2, found: 25, agents: 1 })

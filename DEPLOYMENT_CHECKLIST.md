@@ -21,7 +21,6 @@ Use this checklist as you go through the deployment process.
   - [ ] `NODE_ENV=production`
   - [ ] `CLAUDE_API_KEY` (if you have it)
   - [ ] `ANTHROPIC_API_KEY` (if you have it)
-  - [ ] `AFFINDA_API_KEY` (if using)
   - [ ] `MONGODB_URI` (if using database)
 - [ ] Wait for deployment to complete
 - [ ] Test Railway URL (should see your app!)
