@@ -216,8 +216,11 @@ function generateTraceId() {
   return crypto.randomBytes(8).toString('hex')
 }
 
-// Set to production mode to serve React build from port 5000
-process.env.NODE_ENV = 'production'
+// Set to production mode to serve React build
+// Railway sets NODE_ENV automatically, but ensure it's set for local testing
+if (!process.env.NODE_ENV) {
+  process.env.NODE_ENV = 'production'
+}
 
 // TODO: Initialize database when pg package is available
 // initializeDatabase()
