@@ -2,13 +2,13 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "npm run install:all && rm -rf client/build client/node_modules/.cache && npm run build && echo 'BUILD_TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)' > .build-info"
+    "buildCommand": "npm run install:all && find . -name 'client/build' -type d -exec rm -rf {} + 2>/dev/null || true && find . -name '.cache' -type d -exec rm -rf {} + 2>/dev/null || true && npm run build && ls -la client/build/static/js/ | head -5"
   },
   "deploy": {
     "startCommand": "cd server && npm start",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   },
-  "version": "4"
+  "version": "5"
 }
 

@@ -5,8 +5,8 @@
   "scripts": {
     "install:all": "npm --prefix client install && npm --prefix server install",
     "dev": "concurrently \"npm --prefix server run dev\" \"npm --prefix client start\"",
-    "clean": "rm -rf client/build client/node_modules/.cache",
-    "build": "echo '🧹 Cleaning old build...' && npm run clean && echo '🏗️  Building React app...' && npm --prefix client run build && echo '✅ Build complete!'",
+    "clean": "rm -rf client/build client/node_modules/.cache && find . -name 'client/build' -type d -exec rm -rf {} + 2>/dev/null || true",
+    "build": "echo '🧹 FORCE CLEANING ALL BUILDS...' && npm run clean && sleep 1 && echo '🏗️  Building React app...' && npm --prefix client run build && echo '✅ Build complete! Verifying...' && ls -la client/build/static/js/ 2>/dev/null | head -3 || echo '❌ Build directory missing!'",
     "start": "cd server && npm start"
   },
   "devDependencies": {
