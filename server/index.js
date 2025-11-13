@@ -415,6 +415,22 @@ if (!fs.existsSync(clientBuildPath)) {
   console.log('✅ React build directory found at:', clientBuildPath)
   const buildFiles = fs.readdirSync(clientBuildPath)
   console.log('✅ Build files:', buildFiles.slice(0, 5).join(', '), '...')
+  
+  // Check build timestamp to verify it's fresh
+  const buildStats = fs.statSync(clientBuildPath)
+  const buildTime = new Date(buildStats.mtime).toISOString()
+  console.log('✅ Build timestamp:', buildTime)
+  
+  // Verify How.js changes are in the build
+  const indexPath = path.join(clientBuildPath, 'index.html')
+  if (fs.existsSync(indexPath)) {
+    const indexContent = fs.readFileSync(indexPath, 'utf8')
+    if (indexContent.includes('Services') && !indexContent.includes('See Pricing')) {
+      console.log('✅ Build verification: How.js changes detected in build')
+    } else {
+      console.warn('⚠️  Build verification: How.js changes may not be in build')
+    }
+  }
 }
 
 app.use(express.static(clientBuildPath))
