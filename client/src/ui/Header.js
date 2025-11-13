@@ -128,11 +128,11 @@ const Header = () => {
             ) : (
               // Public Navigation
               <>
-                <Link to="/services" className="text-sm font-medium text-gray-700 hover:text-talBlue transition">
-                  Services
-                </Link>
                 <Link to="/how-it-works" className="text-sm font-medium text-gray-700 hover:text-talBlue transition">
                   How It Works
+                </Link>
+                <Link to="/services" className="text-sm font-medium text-gray-700 hover:text-talBlue transition">
+                  Services
                 </Link>
                 <Link to="/pricing" className="text-sm font-medium text-gray-700 hover:text-talBlue transition">
                   Pricing
@@ -299,6 +299,11 @@ const Header = () => {
                 >
                   Sign In
                 </Link>
+                <Link to="/pricing">
+                  <button className="px-6 py-2 bg-white text-talBlue border-2 border-talBlue rounded-lg font-semibold hover:bg-blue-50 transition">
+                    View Pricing
+                  </button>
+                </Link>
                 <Link to="/app/onboarding/step-1">
                   <button className="px-6 py-2 bg-talBlue text-white rounded-lg font-semibold hover:bg-blue-700 transition shadow-md" style={{ border: 'none' }}>
                     Get Started
@@ -362,18 +367,18 @@ const Header = () => {
               // Public Mobile Menu
               <>
                 <Link 
-                  to="/services" 
-                  className="block py-2 text-sm font-medium text-gray-700 hover:text-talBlue transition"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Services
-                </Link>
-                <Link 
                   to="/how-it-works" 
                   className="block py-2 text-sm font-medium text-gray-700 hover:text-talBlue transition"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   How It Works
+                </Link>
+                <Link 
+                  to="/services" 
+                  className="block py-2 text-sm font-medium text-gray-700 hover:text-talBlue transition"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Services
                 </Link>
                 <Link 
                   to="/pricing" 
