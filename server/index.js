@@ -403,8 +403,8 @@ app.post('/api/resume/parse-legacy', (req, res) => {
 })
 
 // --- Serve React build files ---
+import fs from 'fs'
 const clientBuildPath = path.resolve(__dirname, '../client/build')
-const fs = require('fs')
 
 // Check if build directory exists
 if (!fs.existsSync(clientBuildPath)) {
