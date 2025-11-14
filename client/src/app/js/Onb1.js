@@ -325,7 +325,7 @@ const Page = () => {
             <label className="block body mb-2">
               Password <span className="text-red-600">*</span>
             </label>
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-2 items-start">
               <input
                 type="password"
                 id="password"
