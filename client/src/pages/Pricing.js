@@ -78,22 +78,9 @@ export default function Page() {
   return (
     <section style={{ padding: '2rem 1rem', maxWidth: '1200px', margin: '0 auto' }}>
       {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-        <h1 style={{ 
-          fontSize: '2.5rem', 
-          fontWeight: 'bold', 
-          color: '#1f2937', 
-          marginBottom: '0.5rem' 
-        }}>
-          Choose Your Plan
-        </h1>
-        <p style={{ 
-          fontSize: '1.125rem', 
-          color: '#6b7280', 
-          marginBottom: '2rem' 
-        }}>
-          All plans include AI-powered job matching and automated applications
-        </p>
+      <div style={{ marginBottom: '3rem' }}>
+        <h1 className="h1">Choose Your Plan</h1>
+        <p className='tagline mt-2'>All plans include AI-powered job matching and automated applications</p>
 
         {/* Billing Toggle */}
         <div style={{ 
