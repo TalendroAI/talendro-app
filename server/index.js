@@ -264,10 +264,11 @@ app.use(cors({
       process.env.DOMAIN, // Or set this
     ].filter(Boolean); // Remove undefined values
     
-    // In production, allow Railway domains and custom domains
+    // In production, allow Railway domains, Render.com domains, and custom domains
     const isRailwayDomain = origin.includes('.up.railway.app');
+    const isRenderDomain = origin.includes('.onrender.com');
     const isLocalhost = origin.includes('localhost') || origin.includes('127.0.0.1');
-    const isAllowed = allowedOrigins.includes(origin) || isRailwayDomain;
+    const isAllowed = allowedOrigins.includes(origin) || isRailwayDomain || isRenderDomain;
     
     if (isAllowed || isLocalhost || process.env.NODE_ENV !== 'production') {
       callback(null, true);
