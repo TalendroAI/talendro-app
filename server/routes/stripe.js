@@ -18,10 +18,51 @@ import User from '../models/User.js';
 // ============================================
 
 const PLANS = {
+    // Frontend plan names (from checkout.html)
+    starter: {
+        name: 'Starter',
+        price: 29,
+        priceId: process.env.STRIPE_PRICE_ID_STARTER || process.env.STRIPE_PRICE_ID_BASIC, // Stripe Price ID
+        features: [
+            'Daily job searches',
+            '50 auto-applications/month',
+            'AI-powered matching',
+            'Resume auto-tailoring',
+            'SMS + Email notifications',
+            'Basic analytics'
+        ]
+    },
+    professional: {
+        name: 'Professional',
+        price: 59,
+        priceId: process.env.STRIPE_PRICE_ID_PROFESSIONAL || process.env.STRIPE_PRICE_ID_PRO,
+        features: [
+            'Hourly job searches',
+            'Unlimited auto-applications',
+            'Priority auto-apply',
+            'Advanced AI matching',
+            'Detailed analytics',
+            'Everything in Starter'
+        ]
+    },
+    premium: {
+        name: 'Premium',
+        price: 99,
+        priceId: process.env.STRIPE_PRICE_ID_PREMIUM,
+        features: [
+            'Real-time alerts',
+            'Dedicated success manager',
+            'Interview preparation',
+            'Salary negotiation support',
+            'Priority support',
+            'Everything in Professional'
+        ]
+    },
+    // Legacy plan names (for backward compatibility)
     basic: {
         name: 'Basic',
         price: 29,
-        priceId: process.env.STRIPE_PRICE_ID_BASIC, // Stripe Price ID
+        priceId: process.env.STRIPE_PRICE_ID_BASIC,
         features: [
             'Daily job searches',
             '50 auto-applications/month',
@@ -42,19 +83,6 @@ const PLANS = {
             'Advanced AI matching',
             'Detailed analytics',
             'Everything in Basic'
-        ]
-    },
-    premium: {
-        name: 'Premium',
-        price: 99,
-        priceId: process.env.STRIPE_PRICE_ID_PREMIUM,
-        features: [
-            'Real-time alerts',
-            'Dedicated success manager',
-            'Interview preparation',
-            'Salary negotiation support',
-            'Priority support',
-            'Everything in Pro'
         ]
     }
 };

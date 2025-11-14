@@ -998,29 +998,45 @@
                 }
                 
                 // Create subscription on backend
-                const response = await fetch(`${API_BASE_URL}/stripe/create-subscription`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        paymentMethodId: paymentMethod.id,
-                        plan: selectedPlan.name,
-                        billing: selectedPlan.billing,
-                        email: step1Data.email || step2Data.email,
-                        name: step2Data.fullLegalName || `${step1Data.firstName} ${step1Data.lastName}`,
-                        onboardingData: {
-                            step1: step1Data,
-                            step2: step2Data,
-                            step3: step3Data,
-                            step4: step4Data
-                        }
-                    })
-                });
+                const apiUrl = `${API_BASE_URL}/stripe/create-subscription`;
+                console.log('Calling API:', apiUrl);
+                
+                let response;
+                try {
+                    response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            paymentMethodId: paymentMethod.id,
+                            plan: selectedPlan.name,
+                            billing: selectedPlan.billing,
+                            email: step1Data.email || step2Data.email,
+                            name: step2Data.fullLegalName || `${step1Data.firstName} ${step1Data.lastName}`,
+                            onboardingData: {
+                                step1: step1Data,
+                                step2: step2Data,
+                                step3: step3Data,
+                                step4: step4Data
+                            }
+                        })
+                    });
+                } catch (fetchError) {
+                    console.error('Network error:', fetchError);
+                    throw new Error(`Network error: ${fetchError.message}. Please check your connection and try again.`);
+                }
                 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || 'Payment failed');
+                    let errorMessage = `Server error (${response.status})`;
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.message || errorData.error || errorMessage;
+                    } catch (parseError) {
+                        const text = await response.text();
+                        errorMessage = text || errorMessage;
+                    }
+                    throw new Error(errorMessage);
                 }
                 
                 const result = await response.json();
