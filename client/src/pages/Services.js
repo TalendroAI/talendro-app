@@ -111,7 +111,7 @@ export default function Page(){
         </div>
       </div>
       
-      <div className='mt-8 flex flex-wrap gap-3 justify-center'>
+      <div className='mt-8 flex flex-wrap gap-3'>
         <a href='/app/onboarding/welcome'><button className='btn btn-primary mr-3'>Get Started</button></a>
         <a href='/pricing'><button className='btn btn-secondary mr-3'>View Pricing</button></a>
       </div>
