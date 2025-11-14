@@ -229,9 +229,9 @@ const Home = () => {
                 Get Started
               </button>
             </Link>
-            <Link to="/pricing">
+            <Link to="/how-it-works">
               <button className="px-8 py-3 bg-white text-talBlue border-2 border-talBlue rounded-lg font-bold hover:bg-blue-50 transition">
-                View Pricing
+                How It Works
               </button>
             </Link>
           </div>
