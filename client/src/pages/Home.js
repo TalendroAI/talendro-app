@@ -231,7 +231,7 @@ const Home = () => {
             </Link>
             <Link to="/how-it-works">
               <button className="px-8 py-3 bg-white text-talBlue border-2 border-talBlue rounded-lg font-bold hover:bg-blue-50 transition" style={{ minWidth: '160px' }}>
-                How It Works
+                See How It Works
               </button>
             </Link>
           </div>
