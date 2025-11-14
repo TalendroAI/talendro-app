@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 export default function PricingRestored() {
   return (
-    <section style={{ padding: '2rem 1rem', maxWidth: '1200px', margin: '0 auto' }}>
+    <section>
       {/* Header */}
       <div style={{ marginBottom: '3rem' }}>
         <h1 className="h1">Pricing</h1>
@@ -725,9 +725,6 @@ export default function PricingRestored() {
       {/* Mobile Responsive Styles */}
       <style>{`
         @media (max-width: 768px) {
-          section {
-            padding: 1rem !important;
-          }
           h1 {
             font-size: 2rem !important;
           }
