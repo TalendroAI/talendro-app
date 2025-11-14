@@ -69,6 +69,7 @@ export default function Page(){
       
       <div className='mt-8 flex flex-wrap gap-3 justify-center'>
         <a href='/app/onboarding/step-1'><button className='btn btn-primary mr-3 text-lg py-3 px-6'>Upload Resume</button></a>
+        <a href='/how-it-works'><button className='btn btn-secondary mr-3 text-lg py-3 px-6'>See How It Works</button></a>
       </div>
     </section>
   )
