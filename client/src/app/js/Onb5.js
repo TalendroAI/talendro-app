@@ -239,11 +239,14 @@ const Onb5 = () => {
               }
             >
               {[
-                { id: 'race_white', value: 'white', label: 'White' },
-                { id: 'race_black', value: 'black', label: 'Black or African American' },
-                { id: 'race_asian', value: 'asian', label: 'Asian' },
-                { id: 'race_pacific', value: 'pacific', label: 'Native Hawaiian or Other Pacific Islander' },
+                // Alphabetized options
                 { id: 'race_native', value: 'native', label: 'American Indian or Alaska Native' },
+                { id: 'race_asian', value: 'asian', label: 'Asian' },
+                { id: 'race_black', value: 'black', label: 'Black or African American' },
+                { id: 'race_hispanic', value: 'hispanic', label: 'Hispanic or Latin' },
+                { id: 'race_pacific', value: 'pacific', label: 'Native Hawaiian or Other Pacific Islander' },
+                { id: 'race_white', value: 'white', label: 'White' },
+                // Non-alphabetized options at the end
                 { id: 'race_two', value: 'two_or_more', label: 'Two or More Races' },
                 { id: 'race_other', value: 'other', label: 'Other' },
                 { id: 'race_decline', value: 'decline', label: 'I prefer not to say' }
