@@ -34,8 +34,8 @@ export default function Page(){
       </div>
       
       <div className='mt-8 flex flex-wrap gap-3'>
-        <a href='/services/navigator'><button className='btn btn-primary mr-3'>Try Talendro™ Navigator</button></a>
-        <a href='/about'><button className='btn btn-secondary mr-3'>Learn More About Us</button></a>
+        <a href='/app/onboarding/step-1'><button className='btn btn-primary mr-3'>Get Started</button></a>
+        <a href='/contact'><button className='btn btn-secondary mr-3'>Contact Us</button></a>
       </div>
     </section>
   )
