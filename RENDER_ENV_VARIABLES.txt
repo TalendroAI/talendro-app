@@ -1,0 +1,24 @@
+# Copy and paste these EXACT values into Render.com Environment Variables
+
+# Go to: Render Dashboard → Your Service → Environment → Add Environment Variable
+
+# ============================================
+# STRIPE CONFIGURATION
+# ============================================
+
+STRIPE_SECRET_KEY=sk_test_51SQk2qECvCuCTIlIcq8YWA6HDMnoHNHolOIlKtCfm24Pv4XExY5Cd74nYDlYbV5MQlTyknA7mrgynn8CpWuv91f500BTk5V0Yl
+
+STRIPE_PRICE_ID_STARTER=price_1SQkzlECvCuCTIlIxmvC3LM2
+
+STRIPE_PRICE_ID_PROFESSIONAL=price_1SQkz9ECvCuCTIlI8bck0w1a
+
+STRIPE_PRICE_ID_PREMIUM=price_1SQkyNECvCuCTIlIsaF3xcO0
+
+# ============================================
+# NOTES
+# ============================================
+# - The publishable key is already set in checkout.html
+# - After adding these, Render will automatically redeploy
+# - Test with Stripe test card: 4242 4242 4242 4242
+# - Webhook secret (STRIPE_WEBHOOK_SECRET) can be added later when setting up webhooks
+
