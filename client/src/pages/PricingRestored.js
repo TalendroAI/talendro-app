@@ -657,7 +657,7 @@ export default function PricingRestored() {
         marginTop: '4rem',
         marginBottom: '2rem'
       }}>
-        <Link to="/app/onboarding/step-1">
+        <Link to="/app/onboarding/welcome">
           <button style={{
             padding: '0.75rem 2rem',
             borderRadius: '0.5rem',

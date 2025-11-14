@@ -224,7 +224,7 @@ const Home = () => {
           
           {/* Two CTA Buttons Only */}
           <div className="flex gap-4 justify-center mb-6">
-            <Link to="/app/onboarding/step-1">
+            <Link to="/app/onboarding/welcome">
               <button className="px-8 py-3 bg-talBlue text-white rounded-lg font-bold hover:bg-blue-700 transition shadow-md" style={{ border: 'none', minWidth: '160px' }}>
                 Get Started
               </button>
