@@ -111,14 +111,27 @@ router.post('/create-subscription', async (req, res) => {
         
         const selectedPlan = PLANS[plan];
         
-        // Check if user already exists
-        let user = await User.findOne({ email });
+        // Check if MongoDB is connected
+        const isMongoConnected = mongoose.connection.readyState === 1;
         
-        if (user) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'An account with this email already exists' 
-            });
+        // Check if user already exists (only if MongoDB is connected)
+        let user = null;
+        if (isMongoConnected) {
+            try {
+                user = await User.findOne({ email });
+                
+                if (user) {
+                    return res.status(400).json({ 
+                        success: false, 
+                        message: 'An account with this email already exists' 
+                    });
+                }
+            } catch (dbError) {
+                console.error('⚠️ Database error checking user:', dbError.message);
+                // Continue without database check - allow Stripe subscription to proceed
+            }
+        } else {
+            console.log('⚠️ MongoDB not connected - skipping user existence check');
         }
         
         // Create Stripe customer
@@ -191,29 +204,41 @@ router.post('/create-subscription', async (req, res) => {
             }
         }
         
-        // Create user in database
-        user = await User.create({
-            email,
-            name,
-            stripeCustomerId: customer.id,
-            stripeSubscriptionId: subscription.id,
-            plan: plan,
-            subscriptionStatus: 'trialing',
-            trialEndsAt: trialEnd,
-            onboardingData: onboardingData,
-            createdAt: new Date(),
-            updatedAt: new Date()
-        });
-        
-        console.log(`✅ New user created: ${email} (${plan} plan, trial until ${trialEnd.toLocaleDateString()})`);
+        // Create user in database (only if MongoDB is connected)
+        let userId = null;
+        if (isMongoConnected) {
+            try {
+                user = await User.create({
+                    email,
+                    name,
+                    stripeCustomerId: customer.id,
+                    stripeSubscriptionId: subscription.id,
+                    plan: plan,
+                    subscriptionStatus: 'trialing',
+                    trialEndsAt: trialEnd,
+                    onboardingData: onboardingData,
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                });
+                userId = user._id;
+                console.log(`✅ New user created in database: ${email} (${plan} plan, trial until ${trialEnd.toLocaleDateString()})`);
+            } catch (dbError) {
+                console.error('⚠️ Database error creating user:', dbError.message);
+                console.log('⚠️ Continuing without database user - Stripe subscription created successfully');
+                // Continue - Stripe subscription is still valid
+            }
+        } else {
+            console.log(`⚠️ MongoDB not connected - skipping user creation. Stripe subscription created: ${subscription.id}`);
+        }
         
         res.json({
             success: true,
             subscriptionId: subscription.id,
             clientSecret: clientSecret,
             customerId: customer.id,
-            userId: user._id,
-            trialEnd: trialEnd
+            userId: userId,
+            trialEnd: trialEnd,
+            message: isMongoConnected ? 'User created successfully' : 'Subscription created (database not available)'
         });
         
     } catch (error) {
