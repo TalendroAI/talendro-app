@@ -140,6 +140,9 @@ const Header = () => {
                 <Link to="/about" className="text-sm font-medium text-gray-700 hover:text-talBlue transition">
                   About
                 </Link>
+                <Link to="/about/our-story" className="text-sm font-medium text-gray-700 hover:text-talBlue transition">
+                  Our Story
+                </Link>
                 <Link to="/contact" className="text-sm font-medium text-gray-700 hover:text-talBlue transition">
                   Contact
                 </Link>
@@ -388,6 +391,13 @@ const Header = () => {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   About
+                </Link>
+                <Link 
+                  to="/about/our-story" 
+                  className="block py-2 text-sm font-medium text-gray-700 hover:text-talBlue transition"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Our Story
                 </Link>
                 <Link 
                   to="/contact" 
