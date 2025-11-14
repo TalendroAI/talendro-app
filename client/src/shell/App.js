@@ -9,6 +9,7 @@ import Services from '../pages/Services'
 import Navigator from '../pages/Navigator'
 import Optional from '../pages/Optional'
 import Pricing from '../pages/Pricing'
+import PricingRestored from '../pages/PricingRestored'
 import About from '../pages/About'
 import Story from '../pages/Story'
 import Team from '../pages/Team'
@@ -54,6 +55,7 @@ export default function App(){
           <Route path="/services/navigator" element={<Navigator />} />
           <Route path="/services/optional" element={<Optional />} />
           <Route path="/pricing" element={<Pricing />} />
+          <Route path="/pricing-new" element={<PricingRestored />} />
           <Route path="/about" element={<About />} />
           <Route path="/about/our-story" element={<Story />} />
           <Route path="/about/our-team" element={<Team />} />
