@@ -649,6 +649,58 @@ export default function PricingRestored() {
         </Link>
       </div>
 
+      {/* Bottom CTA Buttons */}
+      <div style={{
+        display: 'flex',
+        gap: '1rem',
+        justifyContent: 'flex-start',
+        marginTop: '4rem',
+        marginBottom: '2rem'
+      }}>
+        <Link to="/app/onboarding/step-1">
+          <button style={{
+            padding: '0.75rem 2rem',
+            borderRadius: '0.5rem',
+            border: 'none',
+            fontSize: '1rem',
+            fontWeight: '600',
+            cursor: 'pointer',
+            transition: 'all 0.3s',
+            backgroundColor: '#2563eb',
+            color: 'white'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = '#1d4ed8';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = '#2563eb';
+          }}>
+            Get Started
+          </button>
+        </Link>
+        <Link to="/about">
+          <button style={{
+            padding: '0.75rem 2rem',
+            borderRadius: '0.5rem',
+            border: '2px solid #2563eb',
+            fontSize: '1rem',
+            fontWeight: '600',
+            cursor: 'pointer',
+            transition: 'all 0.3s',
+            backgroundColor: 'white',
+            color: '#2563eb'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = '#eff6ff';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = 'white';
+          }}>
+            About
+          </button>
+        </Link>
+      </div>
+
       {/* Mobile Responsive Styles */}
       <style>{`
         @media (max-width: 768px) {
