@@ -393,19 +393,20 @@ export default function OnbReview() {
       </div>
 
       {/* Action Buttons */}
-      <div className="mt-6 flex gap-3">
-        <a href="/app/checkout" className="flex-1">
-          <button className="btn btn-primary w-full">
-            Continue to Payment & Checkout →
-          </button>
-        </a>
+      <div className="flex gap-3 mt-6">
         <button 
-          className="btn btn-tertiary"
-          onClick={() => {
-            alert('Profile saved! You can return anytime to complete your registration.');
-          }}
+          type="button" 
+          onClick={() => navigate('/app/onboarding/step-5')} 
+          className="btn btn-secondary"
         >
-          Save & Return Later
+          ← Back
+        </button>
+        <button 
+          type="button"
+          onClick={() => navigate('/app/checkout')}
+          className="btn btn-primary flex-1"
+        >
+          Continue to Payment & Checkout →
         </button>
       </div>
     </section>

@@ -447,8 +447,15 @@ const Page = () => {
           </label>
         </div>
         
-        <div className="mt-6">
-          <button type="submit" className="btn btn-primary">
+        <div className="flex gap-3 mt-6">
+          <button 
+            type="button" 
+            onClick={() => navigate('/app/onboarding/step-1')} 
+            className="btn btn-secondary"
+          >
+            ← Back
+          </button>
+          <button type="submit" className="btn btn-primary flex-1">
             Continue to Personal Information →
           </button>
         </div>
