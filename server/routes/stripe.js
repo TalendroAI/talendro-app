@@ -9,6 +9,7 @@ import express from 'express';
 const router = express.Router();
 import Stripe from 'stripe';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+import mongoose from 'mongoose';
 
 // Import models (you'll create these next)
 import User from '../models/User.js';
