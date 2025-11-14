@@ -782,7 +782,8 @@
     <script>
         // Configuration
         const STRIPE_PUBLISHABLE_KEY = 'pk_test_51SQk2qECvCuCTIlIzi5wkfLJnUSIwEooPJeVfeu6TCBDgfyJ7tSWiBuy1OIH9mU60JGCgbELqZpuu2YC3oOAp6dO00wvUC4SJI'; // Replace with your Stripe key
-        const API_BASE_URL = 'http://localhost:5001/api'; // Your backend URL
+        // Use current hostname for API (works for both localhost and production)
+        const API_BASE_URL = window.location.origin + '/api';
         
         // Initialize Stripe
         const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
