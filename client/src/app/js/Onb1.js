@@ -110,7 +110,8 @@ const Page = () => {
     const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const lowercase = 'abcdefghijklmnopqrstuvwxyz';
     const numbers = '0123456789';
-    const special = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+    // Include all special characters that the validator checks for: !@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?
+    const special = "!@#$%^&*()_+-=[]{}|;:',.<>/?\\";
     const allChars = uppercase + lowercase + numbers + special;
     
     let password = '';
@@ -126,7 +127,7 @@ const Page = () => {
       password += allChars[Math.floor(Math.random() * allChars.length)];
     }
     
-    // Shuffle the password
+    // Shuffle the password to randomize character positions
     return password.split('').sort(() => Math.random() - 0.5).join('');
   };
 
