@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 export default function PricingRestored() {
-  const navigate = useNavigate();
   const [billing, setBilling] = useState('monthly'); // 'monthly' or 'annual'
 
   // Pricing configuration - matching restored page pricing
@@ -58,16 +57,6 @@ export default function PricingRestored() {
     const monthlyTotal = plan.monthly * 12;
     const annualTotal = plan.annual * 12;
     return monthlyTotal - annualTotal;
-  };
-
-  // Handle plan selection
-  const handleSelectPlan = (planKey) => {
-    const selection = {
-      plan: planKey,
-      billing: billing
-    };
-    localStorage.setItem('selectedPlan', JSON.stringify(selection));
-    navigate('/app/onboarding/step-1');
   };
 
   // Get current price for a plan
@@ -282,8 +271,7 @@ export default function PricingRestored() {
                 listStyle: 'none',
                 padding: 0,
                 margin: 0,
-                marginBottom: '2rem',
-                flex: 1
+                marginBottom: '0'
               }}>
                 {plan.features.map((feature, index) => (
                   <li key={index} style={{
@@ -303,34 +291,6 @@ export default function PricingRestored() {
                   </li>
                 ))}
               </ul>
-
-              <button
-                onClick={() => handleSelectPlan(key)}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem 1.5rem',
-                  borderRadius: '0.5rem',
-                  border: 'none',
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s',
-                  backgroundColor: isPopular ? '#2563eb' : 'white',
-                  color: isPopular ? 'white' : '#2563eb',
-                  borderWidth: isPopular ? '0' : '2px',
-                  borderStyle: isPopular ? 'none' : 'solid',
-                  borderColor: '#2563eb',
-                  marginTop: 'auto'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = isPopular ? '#1d4ed8' : '#eff6ff';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = isPopular ? '#2563eb' : 'white';
-                }}
-              >
-                Get Started
-              </button>
             </div>
           );
         })}
