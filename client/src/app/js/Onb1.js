@@ -332,7 +332,7 @@ const Page = () => {
                 value={formData.password}
                 onChange={handleChange}
                 required
-                className={`flex-1 h-11 px-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-talAqua transition ${
+                className={`flex-1 h-10 px-3 py-2 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-talAqua transition ${
                   passwordErrors.length > 0 ? 'border-red-500 bg-red-50 ring-2 ring-red-200' : 'border-gray-300 bg-white'
                 }`}
                 style={passwordErrors.length > 0 ? {
@@ -396,7 +396,7 @@ const Page = () => {
               value={formData.confirmPassword}
               onChange={handleChange}
               required
-              className={`w-full h-11 px-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-talAqua transition ${
+              className={`w-full h-10 px-3 py-2 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-talAqua transition ${
                 confirmPasswordError ? 'border-red-500 bg-red-50 ring-2 ring-red-200' : 'border-gray-300 bg-white'
               }`}
               style={confirmPasswordError ? {
@@ -447,9 +447,11 @@ const Page = () => {
           </label>
         </div>
         
-        <button type="submit" className="btn btn-primary w-full mt-6">
-          Continue to Personal Information →
-        </button>
+        <div className="mt-6">
+          <button type="submit" className="btn btn-primary">
+            Continue →
+          </button>
+        </div>
         
         <div className="text-center mt-6">
           <p className="body text-sm text-talGray">
