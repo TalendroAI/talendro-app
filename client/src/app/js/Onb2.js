@@ -114,7 +114,7 @@ export default function Onb2() {
       <h1 className="h1">Upload Résumé</h1>
       <p className="body mt-2">We'll parse your résumé to pre-fill your profile.</p>
 
-      <form className="card mt-6 max-w-md" onSubmit={(e)=>{ 
+      <form className="card mt-6" style={{ maxWidth: '500px' }} onSubmit={(e)=>{ 
         console.log('📝 Form submitted!'); 
         e.preventDefault(); 
         parseAndGo(); 
