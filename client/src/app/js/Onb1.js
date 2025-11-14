@@ -332,7 +332,7 @@ const Page = () => {
                 value={formData.password}
                 onChange={handleChange}
                 required
-                className={`flex-1 h-10 px-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-talAqua transition ${
+                className={`flex-1 h-10 px-3 py-2 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-talAqua transition ${
                   passwordErrors.length > 0 ? 'border-red-500 bg-red-50 ring-2 ring-red-200' : 'border-gray-300 bg-white'
                 }`}
                 style={passwordErrors.length > 0 ? {
@@ -361,7 +361,7 @@ const Page = () => {
                   setConfirmPasswordError('');
                   setPasswordStrength('strong');
                 }}
-                className="h-10 px-4 bg-talBlue text-white rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-talAqua transition-colors duration-200 text-sm font-medium whitespace-nowrap"
+                className="h-10 px-4 py-2 bg-talBlue text-white rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-talAqua transition-colors duration-200 text-sm font-medium whitespace-nowrap"
               >
                 Suggest strong
               </button>
@@ -396,7 +396,7 @@ const Page = () => {
               value={formData.confirmPassword}
               onChange={handleChange}
               required
-              className={`w-full h-10 px-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-talAqua transition ${
+              className={`w-full h-10 px-3 py-2 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-talAqua transition ${
                 confirmPasswordError ? 'border-red-500 bg-red-50 ring-2 ring-red-200' : 'border-gray-300 bg-white'
               }`}
               style={confirmPasswordError ? {
