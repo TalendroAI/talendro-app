@@ -449,7 +449,7 @@ const Page = () => {
         
         <div className="mt-6">
           <button type="submit" className="btn btn-primary">
-            Continue →
+            Continue to Personal Information →
           </button>
         </div>
         

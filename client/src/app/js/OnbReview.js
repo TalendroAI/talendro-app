@@ -396,7 +396,7 @@ export default function OnbReview() {
       <div className="mt-6 flex gap-3">
         <a href="/app/checkout" className="flex-1">
           <button className="btn btn-primary w-full">
-            Continue to Payment & Checkout
+            Continue to Payment & Checkout →
           </button>
         </a>
         <button 
