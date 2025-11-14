@@ -415,34 +415,6 @@ if (!fs.existsSync(clientBuildPath)) {
   console.log('✅ React build directory found at:', clientBuildPath)
   const buildFiles = fs.readdirSync(clientBuildPath)
   console.log('✅ Build files:', buildFiles.slice(0, 5).join(', '), '...')
-  
-  // Check build timestamp to verify it's fresh
-  const buildStats = fs.statSync(clientBuildPath)
-  const buildTime = new Date(buildStats.mtime).toISOString()
-  console.log('✅ Build timestamp:', buildTime)
-  
-  // Verify How.js changes are in the build - check actual JS bundle
-  const staticJsPath = path.join(clientBuildPath, 'static/js')
-  if (fs.existsSync(staticJsPath)) {
-    const jsFiles = fs.readdirSync(staticJsPath).filter(f => f.endsWith('.js') && f.startsWith('main.'))
-    if (jsFiles.length > 0) {
-      const mainJsPath = path.join(staticJsPath, jsFiles[0])
-      const jsContent = fs.readFileSync(mainJsPath, 'utf8')
-      const hasServices = jsContent.includes('/services') || jsContent.includes('Services')
-      const hasSeePricing = jsContent.includes('See Pricing') || jsContent.includes('SeePricing')
-      const hasViewPricing = jsContent.includes('View Pricing') || jsContent.includes('ViewPricing')
-      
-      if (hasServices && !hasSeePricing && !hasViewPricing) {
-        console.log('✅ Build verification: How.js changes detected in build (Services button, no Pricing buttons)')
-      } else {
-        console.warn('⚠️  Build verification FAILED:')
-        console.warn('   - Has Services:', hasServices)
-        console.warn('   - Has See Pricing:', hasSeePricing)
-        console.warn('   - Has View Pricing:', hasViewPricing)
-        console.warn('   - Build is STALE - Railway needs to rebuild!')
-      }
-    }
-  }
 }
 
 app.use(express.static(clientBuildPath))
