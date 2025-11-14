@@ -1,7 +1,80 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function PricingRestored() {
+  const navigate = useNavigate();
+  const [billing, setBilling] = useState('monthly'); // 'monthly' or 'annual'
+
+  // Pricing configuration - matching restored page pricing
+  const plans = {
+    basic: {
+      name: 'Basic',
+      monthly: 29,
+      annual: 23,
+      description: 'Perfect for passive job seekers',
+      features: [
+        'Daily job searches (AI runs once per day)',
+        'Up to 50 auto-applications/month',
+        'AI-powered matching & scoring',
+        'Resume auto-tailored for each job',
+        'SMS + Email notifications',
+        'Basic analytics dashboard'
+      ]
+    },
+    professional: {
+      name: 'Professional',
+      monthly: 49,
+      annual: 39,
+      description: 'For active job seekers',
+      features: [
+        'Hourly job searches (AI runs 24x per day)',
+        'Unlimited auto-applications',
+        'Priority auto-apply (first to submit)',
+        'Advanced AI matching algorithms',
+        'Detailed analytics & insights',
+        'Everything in Basic'
+      ],
+      popular: true
+    },
+    premium: {
+      name: 'Premium',
+      monthly: 99,
+      annual: 79,
+      description: 'Maximum results & support',
+      features: [
+        'Real-time alerts (AI runs every 30 min)',
+        'Dedicated success manager',
+        'Interview preparation resources',
+        'Salary negotiation support',
+        'Priority customer support',
+        'Everything in Pro'
+      ]
+    }
+  };
+
+  // Calculate savings for annual billing
+  const calculateSavings = (planKey) => {
+    const plan = plans[planKey];
+    const monthlyTotal = plan.monthly * 12;
+    const annualTotal = plan.annual * 12;
+    return monthlyTotal - annualTotal;
+  };
+
+  // Handle plan selection
+  const handleSelectPlan = (planKey) => {
+    const selection = {
+      plan: planKey,
+      billing: billing
+    };
+    localStorage.setItem('selectedPlan', JSON.stringify(selection));
+    navigate('/app/onboarding/step-1');
+  };
+
+  // Get current price for a plan
+  const getPrice = (planKey) => {
+    return billing === 'monthly' ? plans[planKey].monthly : plans[planKey].annual;
+  };
+
   return (
     <section>
       {/* Header */}
@@ -35,338 +108,232 @@ export default function PricingRestored() {
         }}>
           Our comprehensive onboarding collects 10 years of employment history, education, certifications, and references—enabling fully automated applications for 90% of positions. For the remaining 10%, the AI may ask 1-2 clarifying questions, learn from your answers, then auto-submit.
         </p>
+
+        {/* Billing Toggle */}
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          gap: '1rem',
+          marginTop: '2rem',
+          marginBottom: '2rem'
+        }}>
+          <span style={{ 
+            color: billing === 'monthly' ? '#2563eb' : '#6b7280',
+            fontWeight: billing === 'monthly' ? '600' : '400',
+            fontSize: '1rem'
+          }}>
+            Monthly
+          </span>
+          <button
+            onClick={() => setBilling(billing === 'monthly' ? 'annual' : 'monthly')}
+            style={{
+              width: '56px',
+              height: '32px',
+              borderRadius: '16px',
+              border: 'none',
+              backgroundColor: billing === 'annual' ? '#2563eb' : '#d1d5db',
+              cursor: 'pointer',
+              position: 'relative',
+              transition: 'background-color 0.3s',
+              outline: 'none'
+            }}
+            aria-label="Toggle billing period"
+          >
+            <span
+              style={{
+                position: 'absolute',
+                top: '4px',
+                left: billing === 'monthly' ? '4px' : '28px',
+                width: '24px',
+                height: '24px',
+                borderRadius: '50%',
+                backgroundColor: 'white',
+                transition: 'left 0.3s',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+              }}
+            />
+          </button>
+          <span style={{ 
+            color: billing === 'annual' ? '#2563eb' : '#6b7280',
+            fontWeight: billing === 'annual' ? '600' : '400',
+            fontSize: '1rem'
+          }}>
+            Annual
+          </span>
+          {billing === 'annual' && (
+            <span style={{
+              backgroundColor: '#dcfce7',
+              color: '#16a34a',
+              padding: '0.25rem 0.75rem',
+              borderRadius: '0.5rem',
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              marginLeft: '0.5rem'
+            }}>
+              Save up to ${calculateSavings('premium')}/year
+            </span>
+          )}
+        </div>
       </div>
 
-      {/* Pricing Plans */}
+      {/* Pricing Cards */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
         gap: '2rem',
         marginBottom: '4rem'
       }}>
-        {/* Basic Plan */}
-        <div style={{
-          backgroundColor: 'white',
-          borderRadius: '1rem',
-          padding: '2rem',
-          border: '2px solid #e5e7eb',
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-          display: 'flex',
-          flexDirection: 'column'
-        }}>
-          <h3 style={{
-            fontSize: '1.5rem',
-            fontWeight: 'bold',
-            color: '#1f2937',
-            marginBottom: '0.5rem'
-          }}>
-            Basic
-          </h3>
-          
-          <div style={{ marginBottom: '0.5rem' }}>
-            <span style={{
-              fontSize: '3rem',
-              fontWeight: 'bold',
-              color: '#2563eb'
-            }}>
-              $29
-            </span>
-            <span style={{
-              fontSize: '1.125rem',
-              color: '#6b7280',
-              marginLeft: '0.5rem'
-            }}>
-              /month
-            </span>
-          </div>
-          
-          <p style={{
-            fontSize: '0.875rem',
-            color: '#6b7280',
-            marginBottom: '1.5rem'
-          }}>
-            Perfect for passive job seekers
-          </p>
-          
-          <ul style={{
-            listStyle: 'none',
-            padding: 0,
-            margin: 0,
-            marginBottom: '2rem',
-            flex: 1
-          }}>
-            {[
-              'Daily job searches (AI runs once per day)',
-              'Up to 50 auto-applications/month',
-              'AI-powered matching & scoring',
-              'Resume auto-tailored for each job',
-              'SMS + Email notifications',
-              'Basic analytics dashboard'
-            ].map((feature, index) => (
-              <li key={index} style={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                marginBottom: '0.75rem',
-                fontSize: '0.875rem',
-                color: '#374151'
-              }}>
-                <span style={{
-                  color: '#00bcd4',
-                  marginRight: '0.75rem',
-                  fontSize: '1.25rem',
-                  lineHeight: '1'
-                }}>●</span>
-                <span>{feature}</span>
-              </li>
-            ))}
-          </ul>
-          
-          <Link to="/app/onboarding/step-1">
-            <button style={{
-              width: '100%',
-              padding: '0.75rem 1.5rem',
-              borderRadius: '0.5rem',
-              border: '2px solid #2563eb',
-              fontSize: '1rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              transition: 'all 0.3s',
-              backgroundColor: 'white',
-              color: '#2563eb',
-              marginTop: 'auto'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#eff6ff';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = 'white';
-            }}>
-              Get Started
-            </button>
-          </Link>
-        </div>
+        {Object.entries(plans).map(([key, plan]) => {
+          const price = getPrice(key);
+          const savings = calculateSavings(key);
+          const isPopular = plan.popular;
 
-        {/* Professional Plan (Most Popular) */}
-        <div style={{
-          backgroundColor: 'white',
-          borderRadius: '1rem',
-          padding: '2rem',
-          border: '2px solid #2563eb',
-          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-          position: 'relative',
-          display: 'flex',
-          flexDirection: 'column',
-          transform: 'scale(1.05)'
-        }}>
-          <div style={{
-            position: 'absolute',
-            top: '-12px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            backgroundColor: '#2563eb',
-            color: 'white',
-            padding: '0.5rem 1.5rem',
-            borderRadius: '9999px',
-            fontSize: '0.875rem',
-            fontWeight: '600'
-          }}>
-            Most Popular
-          </div>
-          
-          <h3 style={{
-            fontSize: '1.5rem',
-            fontWeight: 'bold',
-            color: '#2563eb',
-            marginBottom: '0.5rem',
-            marginTop: '1rem'
-          }}>
-            Professional
-          </h3>
-          
-          <div style={{ marginBottom: '0.5rem' }}>
-            <span style={{
-              fontSize: '3rem',
-              fontWeight: 'bold',
-              color: '#2563eb'
-            }}>
-              $49
-            </span>
-            <span style={{
-              fontSize: '1.125rem',
-              color: '#6b7280',
-              marginLeft: '0.5rem'
-            }}>
-              /month
-            </span>
-          </div>
-          
-          <p style={{
-            fontSize: '0.875rem',
-            color: '#6b7280',
-            marginBottom: '1.5rem'
-          }}>
-            For active job seekers
-          </p>
-          
-          <ul style={{
-            listStyle: 'none',
-            padding: 0,
-            margin: 0,
-            marginBottom: '2rem',
-            flex: 1
-          }}>
-            {[
-              'Hourly job searches (AI runs 24x per day)',
-              'Unlimited auto-applications',
-              'Priority auto-apply (first to submit)',
-              'Advanced AI matching algorithms',
-              'Detailed analytics & insights',
-              'Everything in Basic'
-            ].map((feature, index) => (
-              <li key={index} style={{
+          return (
+            <div
+              key={key}
+              style={{
+                backgroundColor: 'white',
+                borderRadius: '1rem',
+                padding: '2rem',
+                border: isPopular ? '2px solid #2563eb' : '2px solid #e5e7eb',
+                boxShadow: isPopular ? '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                position: 'relative',
                 display: 'flex',
-                alignItems: 'flex-start',
-                marginBottom: '0.75rem',
-                fontSize: '0.875rem',
-                color: '#374151'
-              }}>
-                <span style={{
-                  color: '#00bcd4',
-                  marginRight: '0.75rem',
-                  fontSize: '1.25rem',
-                  lineHeight: '1'
-                }}>●</span>
-                <span>{feature}</span>
-              </li>
-            ))}
-          </ul>
-          
-          <Link to="/app/onboarding/step-1">
-            <button style={{
-              width: '100%',
-              padding: '0.75rem 1.5rem',
-              borderRadius: '0.5rem',
-              border: 'none',
-              fontSize: '1rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              transition: 'all 0.3s',
-              backgroundColor: '#2563eb',
-              color: 'white',
-              marginTop: 'auto'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#1d4ed8';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = '#2563eb';
-            }}>
-              Get Started
-            </button>
-          </Link>
-        </div>
+                flexDirection: 'column',
+                transform: isPopular ? 'scale(1.05)' : 'scale(1)',
+                transition: 'transform 0.3s'
+              }}
+            >
+              {isPopular && (
+                <div style={{
+                  position: 'absolute',
+                  top: '-12px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  backgroundColor: '#2563eb',
+                  color: 'white',
+                  padding: '0.5rem 1.5rem',
+                  borderRadius: '9999px',
+                  fontSize: '0.875rem',
+                  fontWeight: '600'
+                }}>
+                  Most Popular
+                </div>
+              )}
 
-        {/* Premium Plan */}
-        <div style={{
-          backgroundColor: 'white',
-          borderRadius: '1rem',
-          padding: '2rem',
-          border: '2px solid #e5e7eb',
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-          display: 'flex',
-          flexDirection: 'column'
-        }}>
-          <h3 style={{
-            fontSize: '1.5rem',
-            fontWeight: 'bold',
-            color: '#1f2937',
-            marginBottom: '0.5rem'
-          }}>
-            Premium
-          </h3>
-          
-          <div style={{ marginBottom: '0.5rem' }}>
-            <span style={{
-              fontSize: '3rem',
-              fontWeight: 'bold',
-              color: '#2563eb'
-            }}>
-              $99
-            </span>
-            <span style={{
-              fontSize: '1.125rem',
-              color: '#6b7280',
-              marginLeft: '0.5rem'
-            }}>
-              /month
-            </span>
-          </div>
-          
-          <p style={{
-            fontSize: '0.875rem',
-            color: '#6b7280',
-            marginBottom: '1.5rem'
-          }}>
-            Maximum results & support
-          </p>
-          
-          <ul style={{
-            listStyle: 'none',
-            padding: 0,
-            margin: 0,
-            marginBottom: '2rem',
-            flex: 1
-          }}>
-            {[
-              'Real-time alerts (AI runs every 30 min)',
-              'Dedicated success manager',
-              'Interview preparation resources',
-              'Salary negotiation support',
-              'Priority customer support',
-              'Everything in Pro'
-            ].map((feature, index) => (
-              <li key={index} style={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                marginBottom: '0.75rem',
-                fontSize: '0.875rem',
-                color: '#374151'
+              <h3 style={{
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                color: isPopular ? '#2563eb' : '#1f2937',
+                marginBottom: '0.5rem',
+                marginTop: isPopular ? '1rem' : '0'
               }}>
+                {plan.name}
+              </h3>
+
+              <div style={{ marginBottom: '0.5rem' }}>
                 <span style={{
-                  color: '#00bcd4',
-                  marginRight: '0.75rem',
-                  fontSize: '1.25rem',
-                  lineHeight: '1'
-                }}>●</span>
-                <span>{feature}</span>
-              </li>
-            ))}
-          </ul>
-          
-          <Link to="/app/onboarding/step-1">
-            <button style={{
-              width: '100%',
-              padding: '0.75rem 1.5rem',
-              borderRadius: '0.5rem',
-              border: '2px solid #2563eb',
-              fontSize: '1rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              transition: 'all 0.3s',
-              backgroundColor: 'white',
-              color: '#2563eb',
-              marginTop: 'auto'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#eff6ff';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = 'white';
-            }}>
-              Get Started
-            </button>
-          </Link>
-        </div>
+                  fontSize: '3rem',
+                  fontWeight: 'bold',
+                  color: '#2563eb'
+                }}>
+                  ${price}
+                </span>
+                <span style={{
+                  fontSize: '1.125rem',
+                  color: '#6b7280',
+                  marginLeft: '0.5rem'
+                }}>
+                  /month
+                </span>
+                {billing === 'annual' && (
+                  <span style={{
+                    fontSize: '0.875rem',
+                    color: '#6b7280',
+                    display: 'block',
+                    marginTop: '0.25rem'
+                  }}>
+                    billed annually
+                  </span>
+                )}
+              </div>
+
+              {billing === 'annual' && (
+                <p style={{
+                  fontSize: '0.875rem',
+                  color: '#16a34a',
+                  fontWeight: '600',
+                  marginBottom: '1rem'
+                }}>
+                  Save ${savings}/year
+                </p>
+              )}
+
+              <p style={{
+                fontSize: '0.875rem',
+                color: '#6b7280',
+                marginBottom: '1.5rem'
+              }}>
+                {plan.description}
+              </p>
+
+              <ul style={{
+                listStyle: 'none',
+                padding: 0,
+                margin: 0,
+                marginBottom: '2rem',
+                flex: 1
+              }}>
+                {plan.features.map((feature, index) => (
+                  <li key={index} style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    marginBottom: '0.75rem',
+                    fontSize: '0.875rem',
+                    color: '#374151'
+                  }}>
+                    <span style={{
+                      color: '#00bcd4',
+                      marginRight: '0.75rem',
+                      fontSize: '1.25rem',
+                      lineHeight: '1'
+                    }}>●</span>
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <button
+                onClick={() => handleSelectPlan(key)}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s',
+                  backgroundColor: isPopular ? '#2563eb' : 'white',
+                  color: isPopular ? 'white' : '#2563eb',
+                  borderWidth: isPopular ? '0' : '2px',
+                  borderStyle: isPopular ? 'none' : 'solid',
+                  borderColor: '#2563eb',
+                  marginTop: 'auto'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = isPopular ? '#1d4ed8' : '#eff6ff';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = isPopular ? '#2563eb' : 'white';
+                }}
+              >
+                Get Started
+              </button>
+            </div>
+          );
+        })}
       </div>
 
       {/* Why This Investment Pays for Itself */}
