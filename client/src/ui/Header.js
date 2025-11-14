@@ -302,7 +302,7 @@ const Header = () => {
                 >
                   Sign In
                 </Link>
-                <Link to="/app/onboarding/welcome">
+                <Link to={location.pathname === '/app/onboarding/welcome' ? '/app/onboarding/step-1' : '/app/onboarding/welcome'}>
                   <button className="px-6 py-2 bg-talBlue text-white rounded-lg font-semibold hover:bg-blue-700 transition shadow-md" style={{ border: 'none' }}>
                     {location.pathname === '/app/onboarding/welcome' ? 'Upload Resume' : 'Get Started'}
                   </button>
