@@ -235,12 +235,17 @@ const app = express()
 // ============================================
 // DATABASE CONNECTION
 // ============================================
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/talendro', {
+// MongoDB connection - make it optional for deployment
+if (process.env.MONGODB_URI && !process.env.MONGODB_URI.includes('railway.internal')) {
+  mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-})
-.then(() => console.log('✅ MongoDB connected'))
-.catch(err => console.error('❌ MongoDB connection error:', err));
+  })
+  .then(() => console.log('✅ MongoDB connected'))
+  .catch(err => console.error('❌ MongoDB connection error:', err));
+} else {
+  console.warn('⚠️  MongoDB URI not configured or using Railway internal hostname. App will run without database.');
+}
 
 // CORS Configuration - Allow requests from frontend
 app.use(cors({
