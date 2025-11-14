@@ -119,21 +119,23 @@ export default function Onb2() {
         e.preventDefault(); 
         parseAndGo(); 
       }}>
-        <input 
-          type="file" 
-          accept=".pdf,.doc,.docx,.txt" 
-          onChange={e => {
-            const selectedFile = e.target.files?.[0] || null;
-            console.log('📁 File selected:', selectedFile?.name, selectedFile?.size);
-            setFile(selectedFile);
-          }}
-          className="w-full px-3 py-2 border-2 rounded-xl transition"
-          style={
-            file 
-              ? { borderColor: '#9ca3af', backgroundColor: 'white' }
-              : { borderColor: '#ef4444', backgroundColor: '#fef2f2', boxShadow: '0 0 0 2px rgba(254, 202, 202, 0.5)' }
-          }
-        />
+        <div>
+          <input 
+            type="file" 
+            accept=".pdf,.doc,.docx,.txt" 
+            onChange={e => {
+              const selectedFile = e.target.files?.[0] || null;
+              console.log('📁 File selected:', selectedFile?.name, selectedFile?.size);
+              setFile(selectedFile);
+            }}
+            className="max-w-md px-3 py-2 border-2 rounded-xl transition"
+            style={
+              file 
+                ? { borderColor: '#9ca3af', backgroundColor: 'white' }
+                : { borderColor: '#ef4444', backgroundColor: '#fef2f2', boxShadow: '0 0 0 2px rgba(254, 202, 202, 0.5)' }
+            }
+          />
+        </div>
         <div className="mt-4 flex gap-3">
           <button 
             type="button" 
