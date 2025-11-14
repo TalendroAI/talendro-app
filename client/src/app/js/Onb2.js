@@ -114,7 +114,7 @@ export default function Onb2() {
       <h1 className="h1">Upload Résumé</h1>
       <p className="body mt-2">We'll parse your résumé to pre-fill your profile.</p>
 
-      <form className="card mt-6 max-w-xl" onSubmit={(e)=>{ 
+      <form className="card mt-6 max-w-md" onSubmit={(e)=>{ 
         console.log('📝 Form submitted!'); 
         e.preventDefault(); 
         parseAndGo(); 
@@ -128,7 +128,7 @@ export default function Onb2() {
               console.log('📁 File selected:', selectedFile?.name, selectedFile?.size);
               setFile(selectedFile);
             }}
-            className="max-w-md px-3 py-2 border-2 rounded-xl transition"
+            className="w-full px-3 py-2 border-2 rounded-xl transition"
             style={
               file 
                 ? { borderColor: '#9ca3af', backgroundColor: 'white' }
