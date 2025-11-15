@@ -406,7 +406,7 @@ export default function OnbReview() {
           onClick={() => navigate('/app/checkout')}
           className="btn btn-primary flex-1"
         >
-          Continue to Payment & Checkout →
+          Continue to Choose Your Plan →
         </button>
       </div>
     </section>
