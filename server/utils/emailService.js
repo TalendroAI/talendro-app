@@ -2,10 +2,12 @@ import nodemailer from 'nodemailer';
 
 // Create reusable transporter
 const createTransporter = () => {
-  // If SendGrid API key is provided, use it
+  // If SendGrid API key is provided, use SendGrid SMTP
   if (process.env.SENDGRID_API_KEY) {
     return nodemailer.createTransport({
-      service: 'SendGrid',
+      host: 'smtp.sendgrid.net',
+      port: 587,
+      secure: false,
       auth: {
         user: 'apikey',
         pass: process.env.SENDGRID_API_KEY
@@ -15,10 +17,11 @@ const createTransporter = () => {
 
   // Otherwise, use SMTP configuration
   if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    const port = parseInt(process.env.SMTP_PORT || '587', 10);
     return nodemailer.createTransport({
       host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT || 587,
-      secure: process.env.SMTP_PORT == 465, // true for 465, false for other ports
+      port: port,
+      secure: port === 465, // true for 465, false for other ports
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS
