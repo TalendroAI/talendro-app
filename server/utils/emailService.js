@@ -2,6 +2,7 @@ import nodemailer from 'nodemailer';
 
 // Create reusable transporter
 const createTransporter = () => {
+  try {
   // If SendGrid API key is provided, use SendGrid SMTP
   if (process.env.SENDGRID_API_KEY) {
     return nodemailer.createTransport({
@@ -42,6 +43,10 @@ const createTransporter = () => {
 
   // If no email config, return null (will log instead)
   return null;
+  } catch (error) {
+    console.error('Error creating email transporter:', error);
+    return null;
+  }
 };
 
 // Send password reset email
