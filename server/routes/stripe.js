@@ -209,7 +209,14 @@ router.post('/create-subscription', async (req, res) => {
         let userId = null;
         if (isMongoConnected) {
             try {
-                user = await User.create({
+                // Extract and hash password from onboardingData if available
+                let hashedPassword = null;
+                if (onboardingData?.step1?.password) {
+                    const bcrypt = (await import('bcryptjs')).default;
+                    hashedPassword = await bcrypt.hash(onboardingData.step1.password, 10);
+                }
+                
+                const userData = {
                     email,
                     name,
                     stripeCustomerId: customer.id,
@@ -220,9 +227,16 @@ router.post('/create-subscription', async (req, res) => {
                     onboardingData: onboardingData,
                     createdAt: new Date(),
                     updatedAt: new Date()
-                });
+                };
+                
+                // Add password if available
+                if (hashedPassword) {
+                    userData.password = hashedPassword;
+                }
+                
+                user = await User.create(userData);
                 userId = user._id;
-                console.log(`✅ New user created in database: ${email} (${plan} plan, trial until ${trialEnd.toLocaleDateString()})`);
+                console.log(`✅ New user created in database: ${email} (${plan} plan, trial until ${trialEnd.toLocaleDateString()})${hashedPassword ? ' with password' : ' (password to be set later)'}`);
             } catch (dbError) {
                 console.error('⚠️ Database error creating user:', dbError.message);
                 console.log('⚠️ Continuing without database user - Stripe subscription created successfully');
