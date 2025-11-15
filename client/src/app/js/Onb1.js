@@ -31,6 +31,8 @@ const Page = () => {
   const [passwordStrength, setPasswordStrength] = useState('');
   const [passwordErrors, setPasswordErrors] = useState([]);
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Auto-save on every change
   useAutoSave('onboarding_step1', formData);
@@ -327,7 +329,7 @@ const Page = () => {
             </label>
             <div className="flex gap-2 items-start">
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 id="password"
                 value={formData.password}
                 onChange={handleChange}
@@ -348,6 +350,14 @@ const Page = () => {
               />
               <button
                 type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="h-10 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 focus:outline-none"
+                title={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? "👁️" : "👁️‍🗨️"}
+              </button>
+              <button
+                type="button"
                 onClick={() => {
                   const newPassword = generateStrongPassword();
                   setFormData(prev => ({
@@ -355,6 +365,9 @@ const Page = () => {
                     password: newPassword,
                     confirmPassword: newPassword
                   }));
+                  // Show the password so user can see and remember it
+                  setShowPassword(true);
+                  setShowConfirmPassword(true);
                   // Trigger validation
                   const errors = validatePassword(newPassword);
                   setPasswordErrors(errors);
@@ -390,13 +403,14 @@ const Page = () => {
             <label className="block body mb-2">
               Confirm Password <span className="text-red-600">*</span>
             </label>
-            <input
-              type="password"
-              id="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              required
-              className={`w-full h-10 px-3 py-2 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-talAqua transition ${
+            <div className="flex gap-2 items-start">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                id="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+                className={`flex-1 h-10 px-3 py-2 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-talAqua transition ${
                 confirmPasswordError ? 'border-red-500 bg-red-50 ring-2 ring-red-200' : 'border-gray-300 bg-white'
               }`}
               style={confirmPasswordError ? {
