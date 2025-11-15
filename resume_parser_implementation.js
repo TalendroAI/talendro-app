@@ -114,6 +114,7 @@ Extract and return ONLY a valid JSON object with this EXACT structure. If a fiel
     "personalInfo": {
         "fullLegalName": "",
         "preferredFirstName": "",
+        "middleName": "",
         "maidenName": "",
         "previousNames": "",
         "email": "",
@@ -221,13 +222,18 @@ Extract and return ONLY a valid JSON object with this EXACT structure. If a fiel
 IMPORTANT INSTRUCTIONS:
 1. Return ONLY the JSON object, no other text before or after
 2. Use exact field names as shown above
-3. For dates, use format YYYY-MM (e.g., "2020-01")
-4. For current positions, set endDate to "Present" and current to true
-5. Extract ALL work history going back 10 years if available
-6. Extract ALL residential history going back 7 years if available
-7. If information is not in resume, leave as empty string "" or empty array []
-8. For phone numbers, try to format as (555) 123-4567
-9. Infer information when possible (e.g., if someone lives in Orlando, county is likely Orange)
+3. For names with middle initials or middle names (e.g., "K. Greg Jackson", "Gladys C. Jackson"):
+   - fullLegalName should be the complete name exactly as written
+   - preferredFirstName should be the FIRST name only (e.g., "Greg", "Gladys")
+   - middleName should contain the middle initial or middle name (e.g., "K.", "C.", "Elizabeth")
+   - NEVER include middle initials or middle names in preferredFirstName
+4. For dates, use format YYYY-MM (e.g., "2020-01")
+5. For current positions, set endDate to "Present" and current to true
+6. Extract ALL work history going back 10 years if available
+7. Extract ALL residential history going back 7 years if available
+8. If information is not in resume, leave as empty string "" or empty array []
+9. For phone numbers, try to format as (555) 123-4567
+10. Infer information when possible (e.g., if someone lives in Orlando, county is likely Orange)
 
 Return the JSON now:`;
     }
@@ -286,9 +292,24 @@ class FormFiller {
      * Fill Step 1: Account Creation
      */
     fillAccountForm(data) {
-        const names = data.personalInfo.fullLegalName.split(' ');
-        this.setField('firstName', names[0] || '');
-        this.setField('lastName', names.slice(1).join(' ') || '');
+        // Use preferredFirstName if available, otherwise extract first name from full name
+        const firstName = data.personalInfo.preferredFirstName || 
+                         data.personalInfo.fullLegalName.split(' ')[0] || '';
+        
+        // Extract last name (everything after first name, excluding middle name if present)
+        let lastName = '';
+        if (data.personalInfo.fullLegalName) {
+            const nameParts = data.personalInfo.fullLegalName.split(' ');
+            // If we have a middle name, skip it and get the rest
+            if (nameParts.length > 2) {
+                lastName = nameParts.slice(2).join(' '); // Skip first and middle
+            } else if (nameParts.length === 2) {
+                lastName = nameParts[1];
+            }
+        }
+        
+        this.setField('firstName', firstName);
+        this.setField('lastName', lastName);
         this.setField('email', data.personalInfo.email);
         this.setField('phone', data.personalInfo.phone);
     }
@@ -299,7 +320,13 @@ class FormFiller {
     fillPersonalInfoForm(data) {
         // Contact Information
         this.setField('fullLegalName', data.personalInfo.fullLegalName);
-        this.setField('preferredFirstName', data.personalInfo.preferredFirstName || data.personalInfo.fullLegalName.split(' ')[0]);
+        
+        // Use preferredFirstName from parsed data, or extract first name only
+        const preferredFirstName = data.personalInfo.preferredFirstName || 
+                                   (data.personalInfo.fullLegalName ? 
+                                    data.personalInfo.fullLegalName.split(' ')[0] : '');
+        this.setField('preferredFirstName', preferredFirstName);
+        
         this.setField('maidenName', data.personalInfo.maidenName);
         this.setField('previousNames', data.personalInfo.previousNames);
         this.setField('email', data.personalInfo.email);
