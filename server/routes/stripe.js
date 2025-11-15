@@ -127,7 +127,6 @@ router.post('/create-subscription', async (req, res) => {
         
         const selectedPlan = PLANS[plan];
         const dbPlanName = mapPlanToDatabase(plan);
-        console.log(`✅ Creating subscription - Frontend plan: "${plan}" → Database plan: "${dbPlanName}"`);
         
         // Check if MongoDB is connected
         const isMongoConnected = mongoose.connection.readyState === 1;
