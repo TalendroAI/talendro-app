@@ -95,7 +95,15 @@ function Login() {
               <input type="checkbox" />
               <span>Remember me</span>
             </label>
-            <a href="/forgot-password" className="forgot-password">
+            <a 
+              href="/contact" 
+              className="forgot-password"
+              onClick={(e) => {
+                e.preventDefault();
+                alert('Please contact support to reset your password. You can reach us through the Contact page.');
+                window.location.href = '/contact';
+              }}
+            >
               Forgot password?
             </a>
           </div>
@@ -111,16 +119,6 @@ function Login() {
             )}
           </button>
         </form>
-
-        {/* Sign Up Link */}
-        <div className="login-footer">
-          <p>
-            Don't have an account?{' '}
-            <a href="/signup" className="signup-link">
-              Start your free trial
-            </a>
-          </p>
-        </div>
 
         {/* Security Note */}
         <div className="security-note">
