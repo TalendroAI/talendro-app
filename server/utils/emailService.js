@@ -1,11 +1,34 @@
-import nodemailer from 'nodemailer';
+// Lazy-load nodemailer to handle cases where it's not installed
+let nodemailer = null;
+let nodemailerLoaded = false;
+
+const loadNodemailer = async () => {
+  if (nodemailerLoaded) {
+    return nodemailer;
+  }
+  try {
+    const module = await import('nodemailer');
+    nodemailer = module.default;
+    nodemailerLoaded = true;
+    return nodemailer;
+  } catch (e) {
+    console.warn('⚠️  nodemailer not available - email sending will be disabled');
+    nodemailerLoaded = true; // Mark as loaded even if failed to prevent retries
+    return null;
+  }
+};
 
 // Create reusable transporter
-const createTransporter = () => {
+const createTransporter = async () => {
+  const nm = await loadNodemailer();
+  if (!nm) {
+    return null;
+  }
+  
   try {
   // If SendGrid API key is provided, use SendGrid SMTP
   if (process.env.SENDGRID_API_KEY) {
-    return nodemailer.createTransport({
+    return nm.createTransport({
       host: 'smtp.sendgrid.net',
       port: 587,
       secure: false,
@@ -19,7 +42,7 @@ const createTransporter = () => {
   // Otherwise, use SMTP configuration
   if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
     const port = parseInt(process.env.SMTP_PORT || '587', 10);
-    return nodemailer.createTransport({
+    return nm.createTransport({
       host: process.env.SMTP_HOST,
       port: port,
       secure: port === 465, // true for 465, false for other ports
@@ -32,7 +55,7 @@ const createTransporter = () => {
 
   // Fallback: Gmail (requires app-specific password)
   if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
-    return nodemailer.createTransport({
+    return nm.createTransport({
       service: 'gmail',
       auth: {
         user: process.env.GMAIL_USER,
@@ -51,7 +74,7 @@ const createTransporter = () => {
 
 // Send password reset email
 export const sendPasswordResetEmail = async (email, resetUrl) => {
-  const transporter = createTransporter();
+  const transporter = await createTransporter();
 
   if (!transporter) {
     // No email service configured - log the reset link
