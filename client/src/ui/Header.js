@@ -37,6 +37,8 @@ const Header = () => {
   // For now, determine if user is authenticated based on route
   // Exclude onboarding pages from showing profile button
   const isOnboardingRoute = location.pathname.startsWith('/app/onboarding/');
+  const isCheckoutRoute = location.pathname === '/checkout.html' || location.pathname.includes('/checkout');
+  const isOnboardingOrCheckout = isOnboardingRoute || isCheckoutRoute;
   const isDashboardRoute = location.pathname === '/dashboard' || location.pathname === '/app/dashboard';
   const isAuthenticatedRoute = (location.pathname.startsWith('/app/') && !isOnboardingRoute) || user !== null;
   const shouldShowProfileButton = isAuthenticatedRoute && !isDashboardRoute;
@@ -302,11 +304,13 @@ const Header = () => {
                 >
                   Sign In
                 </Link>
-                <Link to={location.pathname === '/app/onboarding/welcome' ? '/app/onboarding/step-1' : '/app/onboarding/welcome'}>
-                  <button className="px-6 py-2 bg-talBlue text-white rounded-lg font-semibold hover:bg-blue-700 transition shadow-md" style={{ border: 'none' }}>
-                    {location.pathname === '/app/onboarding/welcome' ? 'Upload Resume' : 'Get Started'}
-                  </button>
-                </Link>
+                {!isOnboardingOrCheckout && (
+                  <Link to="/app/onboarding/welcome">
+                    <button className="px-6 py-2 bg-talBlue text-white rounded-lg font-semibold hover:bg-blue-700 transition shadow-md" style={{ border: 'none' }}>
+                      Get Started
+                    </button>
+                  </Link>
+                )}
               </>
             )}
             
