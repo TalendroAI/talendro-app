@@ -109,58 +109,50 @@ const Home = () => {
             Built by recruitment veterans specifically for mid-to-late career professionals
           </p>
           
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {/* Benefit 1 */}
-            <div className="bg-white rounded-xl p-4 shadow-md" style={{ marginRight: '-2rem' }}>
-              <div className="flex items-center gap-3">
-                <div className="text-2xl flex-shrink-0">⏰</div>
-                <h3 className="text-xl font-bold text-gray-900 mb-0">
-                  Time-Efficient & Fully Autonomous
-                </h3>
-              </div>
-              <p className="text-gray-700 mt-2 ml-[2.75rem] text-sm">
+            <div className="bg-white rounded-xl p-6 shadow-md text-center">
+              <div className="text-4xl mb-4">⏰</div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">
+                Time-Efficient & Fully Autonomous
+              </h3>
+              <p className="text-gray-700 text-sm">
                 Focus on your current role while our AI handles your entire job search. 
                 Zero hours per week required after initial 10-25 minute setup.
               </p>
             </div>
             
             {/* Benefit 2 */}
-            <div className="bg-white rounded-xl p-4 shadow-md">
-              <div className="flex items-center gap-3">
-                <div className="text-2xl flex-shrink-0">🎯</div>
-                <h3 className="text-xl font-bold text-gray-900 mb-0">
-                  Quality Over Quantity
-                </h3>
-              </div>
-              <p className="text-gray-700 mt-2 ml-[2.75rem] text-sm">
+            <div className="bg-white rounded-xl p-6 shadow-md text-center">
+              <div className="text-4xl mb-4">🎯</div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">
+                Quality Over Quantity
+              </h3>
+              <p className="text-gray-700 text-sm">
                 Smart 75%+ match threshold ensures you only apply to roles where 
                 you're a strong fit. No spray-and-pray approach.
               </p>
             </div>
             
             {/* Benefit 3 */}
-            <div className="bg-white rounded-xl p-4 shadow-md" style={{ marginRight: '-2rem' }}>
-              <div className="flex items-center gap-3">
-                <div className="text-2xl flex-shrink-0">💼</div>
-                <h3 className="text-xl font-bold text-gray-900 mb-0">
-                  Built for Experienced Professionals
-                </h3>
-              </div>
-              <p className="text-gray-700 mt-2 ml-[2.75rem] text-sm">
+            <div className="bg-white rounded-xl p-6 shadow-md text-center">
+              <div className="text-4xl mb-4">💼</div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">
+                Built for Experienced Professionals
+              </h3>
+              <p className="text-gray-700 text-sm">
                 Designed specifically for professionals with 5+ years of experience. 
                 Our AI understands senior-level job markets and requirements.
               </p>
             </div>
             
             {/* Benefit 4 */}
-            <div className="bg-white rounded-xl p-4 shadow-md">
-              <div className="flex items-center gap-3">
-                <div className="text-2xl flex-shrink-0">🏆</div>
-                <h3 className="text-xl font-bold text-gray-900 mb-0">
-                  Recruiter-Built Technology
-                </h3>
-              </div>
-              <p className="text-gray-700 mt-2 ml-[2.75rem] text-sm">
+            <div className="bg-white rounded-xl p-6 shadow-md text-center">
+              <div className="text-4xl mb-4">🏆</div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">
+                Recruiter-Built Technology
+              </h3>
+              <p className="text-gray-700 text-sm">
                 Created by recruitment industry veterans with 20+ years of experience. 
                 We know exactly what hiring managers want to see.
               </p>
