@@ -172,7 +172,7 @@ const Page = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Validate password
@@ -189,6 +189,33 @@ const Page = () => {
     if (passwordValidationErrors.length > 0) {
       alert('Please fix password errors before continuing');
       return;
+    }
+    
+    // Save password to server if user exists (from checkout)
+    if (formData.email && formData.password) {
+      try {
+        const response = await fetch('/api/auth/set-password', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password
+          }),
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          // Don't block navigation if user doesn't exist yet (will be created at checkout)
+          if (errorData.error !== 'User not found') {
+            console.error('Failed to save password:', errorData.error);
+          }
+        }
+      } catch (error) {
+        // Don't block navigation - password will be saved at checkout
+        console.error('Error saving password:', error);
+      }
     }
     
     // Data is already auto-saved, just navigate

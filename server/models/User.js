@@ -16,7 +16,7 @@ const UserSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true,
+        required: false,  // Password is set during onboarding, not at account creation
         select: false  // Don't return password in queries by default
     },
     phone: {
