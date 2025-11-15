@@ -61,6 +61,11 @@ export default function OnbReview() {
 
   return (
     <section>
+      <div className="mb-6">
+        <a href="/app/onboarding/step-5" className="text-talBlue hover:underline flex items-center gap-2">
+          ← Back to Disclosures & Authorizations
+        </a>
+      </div>
       <h1 className="h1">Final Review</h1>
       <p className="body mt-2">Review your profile before Talendro™ goes to work.</p>
       
