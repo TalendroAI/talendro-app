@@ -68,8 +68,11 @@ export default function Page(){
       </div>
       
       <div className="flex gap-3 mt-6">
-        <a href='/app/onboarding/step-1' className="btn btn-primary flex-1 text-center">
-          ← Upload Resume & See How it Works →
+        <a href='/app/onboarding/step-1' className="btn btn-secondary">
+          ← Upload Resume
+        </a>
+        <a href='/how-it-works' className="btn btn-primary flex-1">
+          See How it Works →
         </a>
       </div>
     </section>
