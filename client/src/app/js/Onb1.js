@@ -411,19 +411,28 @@ const Page = () => {
                 onChange={handleChange}
                 required
                 className={`flex-1 h-10 px-3 py-2 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-talAqua transition ${
-                confirmPasswordError ? 'border-red-500 bg-red-50 ring-2 ring-red-200' : 'border-gray-300 bg-white'
-              }`}
-              style={confirmPasswordError ? {
-                borderColor: '#dc2626',
-                backgroundColor: '#fef2f2',
-                boxShadow: '0 0 0 2px rgba(254, 202, 202, 0.5)'
-              } : {}}
-              placeholder="Re-enter your password"
-              autoComplete="new-password"
-              autoCapitalize="off"
-              autoCorrect="off"
-              spellCheck="false"
-            />
+                  confirmPasswordError ? 'border-red-500 bg-red-50 ring-2 ring-red-200' : 'border-gray-300 bg-white'
+                }`}
+                style={confirmPasswordError ? {
+                  borderColor: '#dc2626',
+                  backgroundColor: '#fef2f2',
+                  boxShadow: '0 0 0 2px rgba(254, 202, 202, 0.5)'
+                } : {}}
+                placeholder="Re-enter your password"
+                autoComplete="new-password"
+                autoCapitalize="off"
+                autoCorrect="off"
+                spellCheck="false"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="h-10 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 focus:outline-none"
+                title={showConfirmPassword ? "Hide password" : "Show password"}
+              >
+                {showConfirmPassword ? "👁️" : "👁️‍🗨️"}
+              </button>
+            </div>
             {confirmPasswordError && (
               <p className="text-sm mt-1" style={{color: '#dc2626'}}>{confirmPasswordError}</p>
             )}
