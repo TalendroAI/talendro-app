@@ -194,8 +194,14 @@ router.post('/forgot-password', async (req, res) => {
     // Generate reset URL
     const resetUrl = `${process.env.FRONTEND_URL || 'https://talendro-app-1.onrender.com'}/reset-password?token=${resetToken}`;
 
-    // Send password reset email
-    await sendPasswordResetEmail(user.email, resetUrl);
+    // Send password reset email (don't fail if email sending fails)
+    try {
+      await sendPasswordResetEmail(user.email, resetUrl);
+    } catch (emailError) {
+      // Log error but don't fail the request - reset link is still valid
+      console.error('Failed to send password reset email (non-fatal):', emailError);
+      // Reset link is still logged in emailService fallback
+    }
 
     res.json({ 
       message: 'If an account with that email exists, a password reset link has been sent.' 
