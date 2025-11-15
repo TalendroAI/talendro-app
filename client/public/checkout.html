@@ -22,53 +22,11 @@
             margin: 0 auto;
         }
         
-        .header {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            padding: 40px;
-            margin-bottom: 30px;
-            text-align: left;
-        }
-        
-        .header h1 {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 3rem;
-            font-weight: 700;
-            color: #2F6DF6;
-            margin: 0 0 8px 0;
-            text-align: left;
-        }
-        
         .tagline {
             font-family: 'DM Serif Display', serif;
             font-style: italic;
             font-size: 1.125rem;
             color: #00C4CC;
-            margin: 8px 0 30px 0;
-            text-align: left;
-        }
-        
-        .subtitle {
-            font-family: 'Inter', sans-serif;
-            color: #2C2F38;
-            font-size: 1rem;
-            margin-bottom: 20px;
-            text-align: left;
-        }
-        
-        .progress-bar {
-            height: 6px;
-            background: #e5e7eb;
-            border-radius: 3px;
-            margin-bottom: 20px;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(to right, #2563eb, #00bcd4);
-            width: 100%;
-            border-radius: 3px;
         }
         
         .trial-notice {
@@ -615,20 +573,15 @@
     <div class="container">
         <!-- Back Navigation -->
         <div style="margin-bottom: 24px;">
-            <a href="/app/onboarding/review" style="color: #2563eb; text-decoration: none; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 8px;">
+            <a href="/app/onboarding/review" style="color: #2F6DF6; text-decoration: none; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 8px;">
                 ← Back to Final Review
             </a>
         </div>
         
         <!-- Header -->
-        <div class="header">
-            <h1>Choose Your Plan</h1>
-            <p class="tagline">Select your subscription and complete payment</p>
-            <div class="progress-bar">
-                <div class="progress-fill"></div>
-            </div>
-            <p class="subtitle">Choose the plan that matches your job search intensity.</p>
-        </div>
+        <h1 style="font-family: 'Montserrat', sans-serif; font-size: 3rem; font-weight: 700; color: #2F6DF6; margin: 0 0 8px 0;">Choose Your Plan</h1>
+        <p class="tagline" style="margin-top: 8px; margin-bottom: 24px;">Select your subscription and complete payment</p>
+        <p style="font-family: 'Inter', sans-serif; color: #2C2F38; font-size: 1rem; margin-bottom: 30px;">Choose the plan that matches your job search intensity.</p>
         
         <!-- Trial Notice -->
         <div class="trial-notice">
