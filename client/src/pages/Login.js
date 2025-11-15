@@ -33,6 +33,9 @@ function Login() {
       localStorage.setItem('authToken', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
 
+      // Dispatch auth change event to update header
+      window.dispatchEvent(new Event('authChange'));
+
       // Redirect to dashboard
       navigate('/dashboard');
 

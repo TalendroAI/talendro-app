@@ -2,6 +2,42 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './Header.css';
 
+// Helper function to decode JWT token (without verification - just to check expiration)
+const decodeJWT = (token) => {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    return null;
+  }
+};
+
+// Helper function to validate JWT token
+const isTokenValid = (token) => {
+  if (!token) return false;
+  
+  try {
+    const decoded = decodeJWT(token);
+    if (!decoded) return false;
+    
+    // Check if token is expired
+    if (decoded.exp && decoded.exp * 1000 < Date.now()) {
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
 const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -9,29 +45,82 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   
-  // Check if user is authenticated from localStorage
-  useEffect(() => {
+  // Function to check authentication and update user state
+  const checkAuthentication = () => {
     const token = localStorage.getItem('authToken');
     const storedUser = localStorage.getItem('user');
     
-    if (token && storedUser) {
+    // Validate token
+    if (token && isTokenValid(token) && storedUser) {
       try {
         const userData = JSON.parse(storedUser);
         setUser({
           firstName: userData.name?.split(' ')[0] || 'User',
           lastName: userData.name?.split(' ').slice(1).join(' ') || '',
           email: userData.email,
-          plan: userData.plan || 'Pro'
+          plan: userData.plan || 'Pro',
+          subscriptionStatus: userData.subscriptionStatus || 'trialing',
+          fullName: userData.name || 'User'
         });
+        setIsAuthenticated(true);
       } catch (error) {
         console.error('Error parsing user data:', error);
         setUser(null);
+        setIsAuthenticated(false);
+        // Clear invalid data
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
       }
     } else {
+      // Token is invalid or missing
       setUser(null);
+      setIsAuthenticated(false);
+      // Clear invalid token
+      if (token) {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
+      }
     }
+  };
+  
+  // Check authentication on mount and route changes
+  useEffect(() => {
+    checkAuthentication();
   }, [location]);
+  
+  // Listen for storage changes (when user logs in/out in another tab)
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'authToken' || e.key === 'user') {
+        checkAuthentication();
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also listen for custom events (for same-tab login/logout)
+    const handleAuthChange = () => {
+      checkAuthentication();
+    };
+    
+    window.addEventListener('authChange', handleAuthChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('authChange', handleAuthChange);
+    };
+  }, []);
+  
+  // Periodically check token validity (every 5 minutes)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      checkAuthentication();
+    }, 5 * 60 * 1000); // 5 minutes
+    
+    return () => clearInterval(interval);
+  }, []);
   
   // TODO: Replace with actual auth context
   // For now, determine if user is authenticated based on route
@@ -51,12 +140,20 @@ const Header = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
     setUser(null);
+    setIsAuthenticated(false);
+    // Dispatch custom event to update other components
+    window.dispatchEvent(new Event('authChange'));
     navigate('/');
   };
 
   const handleSignOut = () => {
     // Clear any stored data
-    localStorage.clear();
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    setUser(null);
+    setIsAuthenticated(false);
+    // Dispatch custom event to update other components
+    window.dispatchEvent(new Event('authChange'));
     // Redirect to home
     window.location.href = '/';
   };
@@ -155,8 +252,8 @@ const Header = () => {
           
           {/* Right Side Actions */}
           <div className="flex items-center gap-4">
-            {isDashboardRoute && user ? (
-              // User Menu - Only show on dashboard pages
+            {isDashboardRoute && isAuthenticated && user ? (
+              // User Menu - Only show on dashboard pages when authenticated
               <div className="nav-right">
                 {/* Notifications */}
                 <button className="nav-notification">
@@ -172,8 +269,10 @@ const Header = () => {
                     className="user-menu-trigger"
                     onClick={() => setDropdownOpen(!dropdownOpen)}
                   >
-                    <div className="user-avatar">KJ</div>
-                    <span className="user-name">Kenneth</span>
+                    <div className="user-avatar">
+                      {user.firstName?.[0] || ''}{user.lastName?.[0] || ''}
+                    </div>
+                    <span className="user-name">{user.firstName || 'User'}</span>
                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd"/>
                     </svg>
@@ -183,8 +282,10 @@ const Header = () => {
                     <div className="user-dropdown">
                       <div className="dropdown-header">
                         <div className="dropdown-user-info">
-                          <div className="dropdown-name">Kenneth Jackson</div>
-                          <div className="dropdown-plan">Pro Plan • Trial</div>
+                          <div className="dropdown-name">{user.fullName || `${user.firstName} ${user.lastName}`.trim() || 'User'}</div>
+                          <div className="dropdown-plan">
+                            {user.plan || 'Pro'} Plan • {user.subscriptionStatus === 'trialing' ? 'Trial' : user.subscriptionStatus === 'active' ? 'Active' : 'Inactive'}
+                          </div>
                         </div>
                       </div>
                       
@@ -222,7 +323,7 @@ const Header = () => {
                   )}
                 </div>
               </div>
-            ) : user && shouldShowProfileButton ? (
+            ) : isAuthenticated && user && shouldShowProfileButton ? (
               // User Menu (Authenticated) - but not on dashboard
               <div className="relative">
                 <button
@@ -230,10 +331,10 @@ const Header = () => {
                   className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition"
                 >
                   <div className="w-8 h-8 bg-talBlue rounded-full flex items-center justify-center text-white font-bold text-sm">
-                    {user.firstName[0]}{user.lastName[0]}
+                    {(user.firstName?.[0] || '') + (user.lastName?.[0] || '') || 'U'}
                   </div>
                   <span className="hidden md:block text-sm font-medium text-gray-700">
-                    {user.firstName}
+                    {user.firstName || 'User'}
                   </span>
                   <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -252,10 +353,12 @@ const Header = () => {
                     {/* Menu */}
                     <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-20">
                       <div className="px-4 py-3 border-b border-gray-200">
-                        <p className="text-sm font-semibold text-gray-900">{user.firstName} {user.lastName}</p>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {user.fullName || `${user.firstName} ${user.lastName}`.trim() || 'User'}
+                        </p>
                         <p className="text-xs text-gray-600 mt-1">{user.email}</p>
                         <p className="text-xs text-talBlue font-semibold mt-2 bg-blue-50 px-2 py-1 rounded inline-block">
-                          {user.plan} Plan
+                          {user.plan || 'Pro'} Plan
                         </p>
                       </div>
                       
@@ -297,13 +400,13 @@ const Header = () => {
                 )}
               </div>
             ) : (
-              // Public Actions (Not Authenticated)
+              // Public Actions (Not Authenticated) - Show Login button
               <>
                 <Link 
-                  to="/signin" 
+                  to="/login" 
                   className="text-sm font-medium text-gray-700 hover:text-talBlue transition"
                 >
-                  Sign In
+                  Login
                 </Link>
                 {isWelcomePage ? (
                   // Welcome page: Show "Upload Resume" button
@@ -342,7 +445,7 @@ const Header = () => {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-gray-200">
-            {user ? (
+            {isAuthenticated && user ? (
               // Authenticated Mobile Menu
               <>
                 <Link 
