@@ -15,6 +15,21 @@ import mongoose from 'mongoose';
 import User from '../models/User.js';
 
 // ============================================
+// PLAN MAPPING FUNCTION
+// ============================================
+
+function mapPlanToDatabase(frontendPlan) {
+    const planMapping = {
+        'starter': 'basic',
+        'professional': 'pro',
+        'premium': 'premium',
+        'basic': 'basic',
+        'pro': 'pro'
+    };
+    return planMapping[frontendPlan] || frontendPlan;
+}
+
+// ============================================
 // PRICING CONFIGURATION
 // ============================================
 
@@ -111,6 +126,8 @@ router.post('/create-subscription', async (req, res) => {
         }
         
         const selectedPlan = PLANS[plan];
+        const dbPlanName = mapPlanToDatabase(plan);
+        console.log(`✅ Creating subscription - Frontend plan: "${plan}" → Database plan: "${dbPlanName}"`);
         
         // Check if MongoDB is connected
         const isMongoConnected = mongoose.connection.readyState === 1;
@@ -119,7 +136,7 @@ router.post('/create-subscription', async (req, res) => {
         let user = null;
         if (isMongoConnected) {
             try {
-                user = await User.findOne({ email });
+                user = await User.findOne({ email: email.toLowerCase().trim() });
                 
                 if (user) {
                     return res.status(400).json({ 
@@ -217,11 +234,11 @@ router.post('/create-subscription', async (req, res) => {
                 }
                 
                 const userData = {
-                    email,
-                    name,
+                    email: email.toLowerCase().trim(),
+                    name: name || email.split('@')[0],
                     stripeCustomerId: customer.id,
                     stripeSubscriptionId: subscription.id,
-                    plan: plan,
+                    plan: dbPlanName,
                     subscriptionStatus: 'trialing',
                     trialEndsAt: trialEnd,
                     onboardingData: onboardingData,
