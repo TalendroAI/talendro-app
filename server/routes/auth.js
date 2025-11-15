@@ -1,6 +1,7 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import User from '../models/User.js';
 
 const router = express.Router();
@@ -157,7 +158,113 @@ router.post('/set-password', async (req, res) => {
   }
 });
 
+// Forgot password - request reset link
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    // Find user
+    const user = await User.findOne({ email: email.toLowerCase() });
+
+    // Always return success (don't reveal if email exists)
+    if (!user) {
+      return res.json({ 
+        message: 'If an account with that email exists, a password reset link has been sent.' 
+      });
+    }
+
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
+    
+    // Set token expiration (1 hour)
+    const resetExpires = new Date();
+    resetExpires.setHours(resetExpires.getHours() + 1);
+
+    // Save token to user
+    user.passwordResetToken = resetTokenHash;
+    user.passwordResetExpires = resetExpires;
+    await user.save({ validateBeforeSave: false });
+
+    // Generate reset URL
+    const resetUrl = `${process.env.FRONTEND_URL || 'https://talendro-app-1.onrender.com'}/reset-password?token=${resetToken}`;
+
+    // Send email (for now, log it - can be connected to SendGrid later)
+    console.log('📧 Password Reset Email:');
+    console.log(`To: ${user.email}`);
+    console.log(`Subject: Reset Your Talendro Password`);
+    console.log(`Reset Link: ${resetUrl}`);
+    console.log('---');
+    
+    // TODO: Integrate with SendGrid or email service
+    // await sendPasswordResetEmail(user.email, resetUrl);
+
+    res.json({ 
+      message: 'If an account with that email exists, a password reset link has been sent.' 
+    });
+
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ error: 'Failed to process password reset request' });
+  }
+});
+
+// Reset password - validate token and update password
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+      return res.status(400).json({ error: 'Token and password are required' });
+    }
+
+    // Validate password strength
+    if (password.length < 12) {
+      return res.status(400).json({ 
+        error: 'Password must be at least 12 characters long' 
+      });
+    }
+
+    // Hash the token to compare with stored hash
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    // Find user with valid reset token
+    const user = await User.findOne({
+      passwordResetToken: hashedToken,
+      passwordResetExpires: { $gt: new Date() }
+    }).select('+passwordResetToken +passwordResetExpires');
+
+    if (!user) {
+      return res.status(400).json({ 
+        error: 'Invalid or expired reset token' 
+      });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Update user password and clear reset token
+    user.password = hashedPassword;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();
+
+    console.log(`✅ Password reset successful for: ${user.email}`);
+
+    res.json({ message: 'Password has been reset successfully' });
+
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ error: 'Failed to reset password' });
+  }
+});
+
 export default router;
+
 
 
 

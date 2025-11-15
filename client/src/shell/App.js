@@ -20,6 +20,8 @@ import Security from '../pages/Security'
 import Privacy from '../pages/Privacy'
 import Terms from '../pages/Terms'
 import Login from '../pages/Login'
+import ForgotPassword from '../pages/ForgotPassword'
+import ResetPassword from '../pages/ResetPassword'
 
 import OnbWelcome from '../app/js/OnbWelcome'
 import Onb1 from '../app/js/Onb1'
@@ -81,6 +83,8 @@ export default function App(){
           <Route path="/auth/sign-in" element={<SignIn />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signin" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
           <Route path="/app/checkout" element={<Checkout />} />
           <Route path="/app/checkout/success" element={<CheckoutSuccess />} />

@@ -2,42 +2,43 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Login.css';
 
-function Login() {
+function ForgotPassword() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setMessage('');
     setLoading(true);
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Login failed');
+        throw new Error(data.error || 'Failed to send reset email');
       }
 
-      // Store token in localStorage
-      localStorage.setItem('authToken', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-
-      // Redirect to dashboard
-      navigate('/dashboard');
+      setMessage(data.message || 'If an account with that email exists, a password reset link has been sent.');
+      
+      // Redirect to login after 3 seconds
+      setTimeout(() => {
+        navigate('/login');
+      }, 3000);
 
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Forgot password error:', error);
       setError(error.message);
       setLoading(false);
     }
@@ -52,15 +53,29 @@ function Login() {
           <p className="login-tagline">Precision Matches. Faster Results.</p>
         </div>
 
-        {/* Login Form */}
+        {/* Forgot Password Form */}
         <form onSubmit={handleSubmit} className="login-form">
-          <h2>Sign In</h2>
-          <p className="login-subtitle">Access your job search dashboard</p>
+          <h2>Reset Password</h2>
+          <p className="login-subtitle">Enter your email address and we'll send you a link to reset your password.</p>
 
           {error && (
             <div className="login-error">
               <span className="error-icon">⚠️</span>
               {error}
+            </div>
+          )}
+
+          {message && (
+            <div className="login-success" style={{ 
+              background: '#d1fae5', 
+              border: '1px solid #10b981', 
+              borderRadius: '8px', 
+              padding: '12px', 
+              marginBottom: '20px',
+              color: '#065f46'
+            }}>
+              <span className="error-icon">✓</span>
+              {message}
             </div>
           )}
 
@@ -73,43 +88,26 @@ function Login() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               required
-              disabled={loading}
+              disabled={loading || !!message}
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              required
-              disabled={loading}
-            />
-          </div>
-
-          <div className="form-options">
-            <label className="remember-me">
-              <input type="checkbox" />
-              <span>Remember me</span>
-            </label>
-            <a href="/forgot-password" className="forgot-password">
-              Forgot password?
-            </a>
-          </div>
-
-          <button type="submit" className="btn-login" disabled={loading}>
+          <button type="submit" className="btn-login" disabled={loading || !!message}>
             {loading ? (
               <>
                 <span className="loading-spinner"></span>
-                Signing in...
+                Sending...
               </>
             ) : (
-              'Sign In'
+              'Send Reset Link'
             )}
           </button>
+
+          <div style={{ textAlign: 'center', marginTop: '20px' }}>
+            <a href="/login" className="forgot-password" style={{ fontSize: '14px' }}>
+              ← Back to Sign In
+            </a>
+          </div>
         </form>
 
         {/* Security Note */}
@@ -128,9 +126,5 @@ function Login() {
   );
 }
 
-export default Login;
-
-
-
-
+export default ForgotPassword;
 

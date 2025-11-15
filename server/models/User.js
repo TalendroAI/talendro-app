@@ -85,6 +85,14 @@ const UserSchema = new mongoose.Schema({
         smsNotifications: { type: Boolean, default: true },
         weeklyReport: { type: Boolean, default: true }
     },
+    passwordResetToken: {
+        type: String,
+        select: false
+    },
+    passwordResetExpires: {
+        type: Date,
+        select: false
+    },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
     lastLoginAt: Date
