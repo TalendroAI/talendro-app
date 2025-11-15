@@ -475,7 +475,14 @@ const Onb3 = () => {
       return;
     }
     
-    // Data is already auto-saved, just navigate
+    // Save step3Data to localStorage before navigating
+    const step3Data = {
+      ...formData,
+      residences: residences
+    };
+    localStorage.setItem('step3Data', JSON.stringify(step3Data));
+    
+    // Navigate to next step
     navigate('/app/onboarding/step-4');
   };
 

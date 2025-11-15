@@ -75,6 +75,15 @@ export default function Onb2() {
 
       localStorage.setItem('resumeData', JSON.stringify(payload));
       localStorage.setItem('resumeParsed', 'true');
+      
+      // Save step2Data (resume parsing result) to localStorage
+      const step2Data = {
+        resumeParsed: true,
+        resumeFileName: file.name,
+        resumeFileSize: file.size,
+        parseResult: payload
+      };
+      localStorage.setItem('step2Data', JSON.stringify(step2Data));
 
       console.log('✅ Resume data saved, navigating to step-2...');
 
