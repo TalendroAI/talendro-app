@@ -136,18 +136,26 @@ export default function Onb2() {
             }
           />
         </div>
-        <div className="mt-4 flex gap-3">
-          <button 
-            type="button" 
-            className="btn btn-primary" 
-            onClick={handleCreateProfileClick}
-            disabled={busy}
-          >
-            {busy ? 'Parsing…' : 'Create Profile'}
-          </button>
-        </div>
         {error && <div className="mt-3 text-sm text-red-600">{error}</div>}
       </form>
+      
+      <div className="flex gap-3 mt-6">
+        <button 
+          type="button" 
+          onClick={() => window.location.href = '/app/onboarding/welcome'}
+          className="btn btn-secondary"
+        >
+          ← Back
+        </button>
+        <button 
+          type="button" 
+          className="btn btn-primary flex-1" 
+          onClick={handleCreateProfileClick}
+          disabled={busy}
+        >
+          {busy ? 'Parsing…' : 'Continue to Create Profile →'}
+        </button>
+      </div>
       
       {showWarning && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
