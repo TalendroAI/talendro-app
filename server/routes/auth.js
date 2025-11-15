@@ -20,8 +20,27 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
+    // Check if JWT_SECRET is configured
+    if (!process.env.JWT_SECRET) {
+      console.error('❌ JWT_SECRET is not configured');
+      return res.status(500).json({ error: 'Server configuration error' });
+    }
+
+    // Check MongoDB connection
+    const mongoose = (await import('mongoose')).default;
+    if (mongoose.connection.readyState !== 1) {
+      console.error('❌ MongoDB not connected. ReadyState:', mongoose.connection.readyState);
+      return res.status(500).json({ error: 'Database connection error' });
+    }
+
     // Find user (include password field)
-    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+    let user;
+    try {
+      user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+    } catch (dbError) {
+      console.error('❌ Database query error:', dbError);
+      return res.status(500).json({ error: 'Database error', details: dbError.message });
+    }
 
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' });
@@ -36,7 +55,13 @@ router.post('/login', async (req, res) => {
     }
 
     // Compare password
-    const isMatch = await bcrypt.compare(password, user.password);
+    let isMatch;
+    try {
+      isMatch = await bcrypt.compare(password, user.password);
+    } catch (bcryptError) {
+      console.error('❌ Password comparison error:', bcryptError);
+      return res.status(500).json({ error: 'Password verification error' });
+    }
 
     if (!isMatch) {
       return res.status(401).json({ error: 'Invalid email or password' });
@@ -51,15 +76,21 @@ router.post('/login', async (req, res) => {
     }
 
     // Generate JWT token
-    const token = jwt.sign(
-      { 
-        userId: user._id,
-        email: user.email,
-        plan: user.plan
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    let token;
+    try {
+      token = jwt.sign(
+        { 
+          userId: user._id,
+          email: user.email,
+          plan: user.plan
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+    } catch (jwtError) {
+      console.error('❌ JWT signing error:', jwtError);
+      return res.status(500).json({ error: 'Token generation error' });
+    }
 
     // Return token and user info
     res.json({
@@ -75,8 +106,13 @@ router.post('/login', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ error: 'Login failed' });
+    console.error('❌ Login error:', error);
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      error: 'Login failed',
+      message: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
