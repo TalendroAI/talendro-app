@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import User from '../models/User.js';
+import { sendPasswordResetEmail } from '../utils/emailService.js';
 
 const router = express.Router();
 
@@ -193,15 +194,8 @@ router.post('/forgot-password', async (req, res) => {
     // Generate reset URL
     const resetUrl = `${process.env.FRONTEND_URL || 'https://talendro-app-1.onrender.com'}/reset-password?token=${resetToken}`;
 
-    // Send email (for now, log it - can be connected to SendGrid later)
-    console.log('📧 Password Reset Email:');
-    console.log(`To: ${user.email}`);
-    console.log(`Subject: Reset Your Talendro Password`);
-    console.log(`Reset Link: ${resetUrl}`);
-    console.log('---');
-    
-    // TODO: Integrate with SendGrid or email service
-    // await sendPasswordResetEmail(user.email, resetUrl);
+    // Send password reset email
+    await sendPasswordResetEmail(user.email, resetUrl);
 
     res.json({ 
       message: 'If an account with that email exists, a password reset link has been sent.' 

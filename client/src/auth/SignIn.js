@@ -70,7 +70,7 @@ export default function SignIn() {
 
             <div className="flex items-center justify-between">
               <div className="text-sm">
-                <a href="#" className="text-talBlue hover:underline">
+                <a href="/forgot-password" className="text-talBlue hover:underline">
                   Forgot your password?
                 </a>
               </div>
