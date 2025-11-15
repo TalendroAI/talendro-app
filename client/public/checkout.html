@@ -12,14 +12,17 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f8f9fa;
-            padding: 20px;
+            font-family: 'Inter', sans-serif;
+            background: white;
+            color: #2C2F38;
+            margin: 0;
+            padding: 0;
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 72rem;
             margin: 0 auto;
+            padding: 2.5rem 1rem;
         }
         
         .tagline {
@@ -570,7 +573,7 @@
         </div>
     </nav>
     
-    <div class="container" style="max-width: 72rem; margin: 0 auto; padding: 2.5rem 1rem;">
+    <main class="container">
         <section>
             <!-- Back Navigation -->
             <div style="margin-bottom: 1.5rem;">
@@ -941,7 +944,7 @@
         // Go back to plan selection
         function goBack() {
             document.getElementById('paymentSection').classList.remove('active');
-            document.querySelector('.header').scrollIntoView({ behavior: 'smooth' });
+            document.querySelector('h1').scrollIntoView({ behavior: 'smooth' });
         }
         
         // Form submission
