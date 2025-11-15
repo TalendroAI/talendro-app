@@ -112,9 +112,9 @@ const Home = () => {
           <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {/* Benefit 1 */}
             <div className="bg-white rounded-xl p-6 shadow-md text-center">
-              <div className="text-4xl mb-4">⏰</div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
-                Time-Efficient & Fully Autonomous
+              <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center justify-center gap-2">
+                <span className="text-4xl">⏰</span>
+                <span>Time-Efficient & Fully Autonomous</span>
               </h3>
               <p className="text-gray-700 text-sm">
                 Focus on your current role while our AI handles your entire job search. 
@@ -124,9 +124,9 @@ const Home = () => {
             
             {/* Benefit 2 */}
             <div className="bg-white rounded-xl p-6 shadow-md text-center">
-              <div className="text-4xl mb-4">🎯</div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
-                Quality Over Quantity
+              <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center justify-center gap-2">
+                <span className="text-4xl">🎯</span>
+                <span>Quality Over Quantity</span>
               </h3>
               <p className="text-gray-700 text-sm">
                 Smart 75%+ match threshold ensures you only apply to roles where 
@@ -136,9 +136,9 @@ const Home = () => {
             
             {/* Benefit 3 */}
             <div className="bg-white rounded-xl p-6 shadow-md text-center">
-              <div className="text-4xl mb-4">💼</div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
-                Built for Experienced Professionals
+              <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center justify-center gap-2">
+                <span className="text-4xl">💼</span>
+                <span>Built for Experienced Professionals</span>
               </h3>
               <p className="text-gray-700 text-sm">
                 Designed specifically for professionals with 5+ years of experience. 
@@ -148,9 +148,9 @@ const Home = () => {
             
             {/* Benefit 4 */}
             <div className="bg-white rounded-xl p-6 shadow-md text-center">
-              <div className="text-4xl mb-4">🏆</div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
-                Recruiter-Built Technology
+              <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center justify-center gap-2">
+                <span className="text-4xl">🏆</span>
+                <span>Recruiter-Built Technology</span>
               </h3>
               <p className="text-gray-700 text-sm">
                 Created by recruitment industry veterans with 20+ years of experience. 
