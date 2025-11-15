@@ -109,10 +109,10 @@ const Home = () => {
             Built by recruitment veterans specifically for mid-to-late career professionals
           </p>
           
-          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
             {/* Benefit 1 */}
-            <div className="bg-white rounded-xl p-6 shadow-md">
-              <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+            <div className="bg-white rounded-xl p-5 shadow-md">
+              <h3 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
                 <span className="text-4xl">⏰</span>
                 <span>Time-Efficient & Fully Autonomous</span>
               </h3>
@@ -123,8 +123,8 @@ const Home = () => {
             </div>
             
             {/* Benefit 2 */}
-            <div className="bg-white rounded-xl p-6 shadow-md">
-              <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+            <div className="bg-white rounded-xl p-5 shadow-md">
+              <h3 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
                 <span className="text-4xl">🎯</span>
                 <span>Quality Over Quantity</span>
               </h3>
@@ -135,8 +135,8 @@ const Home = () => {
             </div>
             
             {/* Benefit 3 */}
-            <div className="bg-white rounded-xl p-6 shadow-md">
-              <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+            <div className="bg-white rounded-xl p-5 shadow-md">
+              <h3 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
                 <span className="text-4xl">💼</span>
                 <span>Built for Experienced Professionals</span>
               </h3>
@@ -147,8 +147,8 @@ const Home = () => {
             </div>
             
             {/* Benefit 4 */}
-            <div className="bg-white rounded-xl p-6 shadow-md">
-              <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+            <div className="bg-white rounded-xl p-5 shadow-md">
+              <h3 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
                 <span className="text-4xl">🏆</span>
                 <span>Recruiter-Built Technology</span>
               </h3>
