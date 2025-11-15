@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Choose Your Plan - Talendro™</title>
     <script src="https://js.stripe.com/v3/"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
@@ -25,27 +28,31 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             padding: 40px;
             margin-bottom: 30px;
-            text-align: center;
+            text-align: left;
         }
         
         .header h1 {
-            color: #2563eb;
-            font-size: 48px;
-            margin-bottom: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 3rem;
+            font-weight: 700;
+            color: #2F6DF6;
+            margin: 0 0 8px 0;
             text-align: left;
         }
         
         .tagline {
-            color: #00bcd4;
-            font-size: 20px;
+            font-family: 'DM Serif Display', serif;
             font-style: italic;
-            margin-bottom: 30px;
+            font-size: 1.125rem;
+            color: #00C4CC;
+            margin: 8px 0 30px 0;
             text-align: left;
         }
         
         .subtitle {
-            color: #374151;
-            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+            color: #2C2F38;
+            font-size: 1rem;
             margin-bottom: 20px;
             text-align: left;
         }
