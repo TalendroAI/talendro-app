@@ -2,6 +2,7 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import mongoose from 'mongoose';
 import User from '../models/User.js';
 import { sendPasswordResetEmail } from '../utils/emailService.js';
 
@@ -27,10 +28,9 @@ router.post('/login', async (req, res) => {
     }
 
     // Check MongoDB connection
-    const mongoose = (await import('mongoose')).default;
     if (mongoose.connection.readyState !== 1) {
       console.error('❌ MongoDB not connected. ReadyState:', mongoose.connection.readyState);
-      return res.status(500).json({ error: 'Database connection error' });
+      return res.status(500).json({ error: 'Database connection error', readyState: mongoose.connection.readyState });
     }
 
     // Find user (include password field)
