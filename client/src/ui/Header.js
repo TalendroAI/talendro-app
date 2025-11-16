@@ -136,25 +136,68 @@ const Header = () => {
   const isActive = (path) => location.pathname === path;
   
   const handleLogout = () => {
-    // Clear authentication data
+    // Clear all authentication data
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
+    
+    // Clear all onboarding step data
+    localStorage.removeItem('step1Data');
+    localStorage.removeItem('step2Data');
+    localStorage.removeItem('step3Data');
+    localStorage.removeItem('step4Data');
+    
+    // Clear any other onboarding-related data
+    localStorage.removeItem('onboarding_step1');
+    localStorage.removeItem('onboarding_step3');
+    localStorage.removeItem('onboarding_step3_residences');
+    localStorage.removeItem('onboarding_step4_form');
+    localStorage.removeItem('onboarding_step4_employment');
+    localStorage.removeItem('onboarding_step4_education');
+    localStorage.removeItem('onboarding_step4_licenses');
+    localStorage.removeItem('onboarding_step4_certifications');
+    localStorage.removeItem('onboarding_step4_references');
+    
+    // Update state
     setUser(null);
     setIsAuthenticated(false);
-    // Dispatch custom event to update other components
+    
+    // Dispatch custom event to update other components (navbar, etc.)
     window.dispatchEvent(new Event('authChange'));
+    
+    // Redirect to home page
     navigate('/');
   };
 
   const handleSignOut = () => {
-    // Clear any stored data
+    // Clear all authentication data
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
+    
+    // Clear all onboarding step data
+    localStorage.removeItem('step1Data');
+    localStorage.removeItem('step2Data');
+    localStorage.removeItem('step3Data');
+    localStorage.removeItem('step4Data');
+    
+    // Clear any other onboarding-related data
+    localStorage.removeItem('onboarding_step1');
+    localStorage.removeItem('onboarding_step3');
+    localStorage.removeItem('onboarding_step3_residences');
+    localStorage.removeItem('onboarding_step4_form');
+    localStorage.removeItem('onboarding_step4_employment');
+    localStorage.removeItem('onboarding_step4_education');
+    localStorage.removeItem('onboarding_step4_licenses');
+    localStorage.removeItem('onboarding_step4_certifications');
+    localStorage.removeItem('onboarding_step4_references');
+    
+    // Update state
     setUser(null);
     setIsAuthenticated(false);
-    // Dispatch custom event to update other components
+    
+    // Dispatch custom event to update other components (navbar, etc.)
     window.dispatchEvent(new Event('authChange'));
-    // Redirect to home
+    
+    // Redirect to home page
     window.location.href = '/';
   };
 
