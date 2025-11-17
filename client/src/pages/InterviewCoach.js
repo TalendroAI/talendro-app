@@ -5,7 +5,7 @@ const InterviewCoach = () => {
   return (
     <div className="min-h-screen -mx-4 -my-10">
       {/* Hero Section */}
-      <section className="bg-gray-50 pt-12 pb-16 px-4">
+      <section className="bg-gray-50 py-16 px-4">
         <div className="max-w-5xl mx-auto">
           <h1 className="h1 mb-4" style={{ fontSize: '3.5rem', lineHeight: '1.1' }}>
             Talendro™ Interview Coach
@@ -51,10 +51,10 @@ const InterviewCoach = () => {
       {/* Pricing Section */}
       <section id="pricing" className="py-16 bg-white px-4">
         <div className="max-w-6xl mx-auto">
-          <h2 className="h2 text-center mb-4">
+          <h2 className="h2 mb-4">
             Choose your prep level
           </h2>
-          <p className="body text-center text-gray-600 mb-12 max-w-3xl mx-auto">
+          <p className="body text-gray-600 mb-12 max-w-3xl">
             All options use your résumé, JD, and company website for tailored questions.
           </p>
           
@@ -180,10 +180,10 @@ const InterviewCoach = () => {
       {/* How It Works Section */}
       <section className="py-16 bg-gradient-to-b from-gray-50 to-white px-4">
         <div className="max-w-6xl mx-auto">
-          <h2 className="h2 text-center mb-4">
+          <h2 className="h2 mb-4">
             How Talendro™ Interview Coach works
           </h2>
-          <p className="body text-center text-gray-600 mb-12 max-w-3xl mx-auto">
+          <p className="body text-gray-600 mb-12 max-w-3xl">
             We keep it simple: pay securely, receive your access email, and start practicing with a coach that already understands your background and target role.
           </p>
           
@@ -236,7 +236,7 @@ const InterviewCoach = () => {
       {/* FAQs Section */}
       <section className="py-16 bg-white px-4">
         <div className="max-w-4xl mx-auto">
-          <h2 className="h2 text-center mb-12">
+          <h2 className="h2 mb-12">
             FAQs & quick notes
           </h2>
           
@@ -286,7 +286,7 @@ const InterviewCoach = () => {
 
       {/* Final CTA */}
       <section className="py-16 bg-white px-4">
-        <div className="max-w-4xl mx-auto text-center">
+        <div className="max-w-4xl mx-auto">
           <h2 className="h2 mb-4">
             Ready to ace your next interview?
           </h2>
@@ -294,7 +294,7 @@ const InterviewCoach = () => {
             Get personalized interview prep tailored to your background and target role.
           </p>
           
-          <div className="flex gap-4 justify-center">
+          <div className="flex gap-4">
             <Link to="#pricing">
               <button className="btn btn-primary px-8 py-3 text-base">
                 Choose Your Plan
