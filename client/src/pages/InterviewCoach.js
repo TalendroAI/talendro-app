@@ -6,7 +6,7 @@ const InterviewCoach = () => {
     <div className="min-h-screen -mx-4 -my-10">
       {/* Hero Section */}
       <section className="bg-gray-50 pt-12 pb-16 px-4">
-        <div className="max-w-5xl mx-auto text-center">
+        <div className="max-w-5xl mx-auto">
           <h1 className="h1 mb-4" style={{ fontSize: '3.5rem', lineHeight: '1.1' }}>
             Talendro™ Interview Coach
           </h1>
@@ -23,7 +23,7 @@ const InterviewCoach = () => {
             Built on Talendro's autonomous job search & apply engine • Optimized for mid-career & senior roles
           </p>
           
-          <div className="flex gap-4 justify-center">
+          <div className="flex gap-4 mb-8">
             <Link to="#pricing">
               <button className="btn btn-primary px-8 py-3 text-base">
                 View Plans & Pricing
