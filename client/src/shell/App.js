@@ -41,14 +41,11 @@ import Applications from '../app/Applications'
 import Billing from '../app/Billing'
 
 export default function App(){
-  const location = useLocation();
-  const isInterviewCoachPage = location.pathname === '/interview-coach';
-  
   return (
     <>
       <ScrollToTop />
-      {!isInterviewCoachPage && <Header />}
-      <main className={isInterviewCoachPage ? "" : "container py-10"}>
+      <Header />
+      <main className="container py-10">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/how-it-works" element={<How />} />
