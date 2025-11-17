@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom';
 
 const InterviewCoach = () => {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen -mx-4 -my-10">
       {/* Hero Section */}
-      <section className="bg-gray-50 pt-12 pb-16">
-        <div className="max-w-5xl mx-auto px-4 text-center">
+      <section className="bg-gray-50 pt-12 pb-16 px-4">
+        <div className="max-w-5xl mx-auto text-center">
           <h1 className="h1 mb-4" style={{ fontSize: '3.5rem', lineHeight: '1.1' }}>
             Talendro™ Interview Coach
           </h1>
@@ -39,8 +39,8 @@ const InterviewCoach = () => {
       </section>
 
       {/* Info Banner */}
-      <section className="bg-talBlue text-white py-4">
-        <div className="max-w-5xl mx-auto px-4 text-center">
+      <section className="bg-talBlue text-white py-4 px-4">
+        <div className="max-w-5xl mx-auto text-center">
           <p className="body text-sm">
             <strong>When you purchase, you'll receive an email</strong> with your Interview Coach link and simple instructions: 
             <strong> upload résumé + job description + company URL</strong>, then select your plan.
@@ -49,8 +49,8 @@ const InterviewCoach = () => {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-16 bg-white">
-        <div className="max-w-6xl mx-auto px-4">
+      <section id="pricing" className="py-16 bg-white px-4">
+        <div className="max-w-6xl mx-auto">
           <h2 className="h2 text-center mb-4" style={{ color: '#1f2937' }}>
             Choose your prep level
           </h2>
@@ -178,8 +178,8 @@ const InterviewCoach = () => {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-16 bg-gradient-to-b from-gray-50 to-white">
-        <div className="max-w-6xl mx-auto px-4">
+      <section className="py-16 bg-gradient-to-b from-gray-50 to-white px-4">
+        <div className="max-w-6xl mx-auto">
           <h2 className="h2 text-center mb-4" style={{ color: '#1f2937' }}>
             How Talendro™ Interview Coach works
           </h2>
@@ -234,8 +234,8 @@ const InterviewCoach = () => {
       </section>
 
       {/* FAQs Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-4xl mx-auto px-4">
+      <section className="py-16 bg-white px-4">
+        <div className="max-w-4xl mx-auto">
           <h2 className="h2 text-center mb-12" style={{ color: '#1f2937' }}>
             FAQs & quick notes
           </h2>
@@ -285,8 +285,8 @@ const InterviewCoach = () => {
       </section>
 
       {/* Final CTA */}
-      <section className="py-16 bg-white">
-        <div className="max-w-4xl mx-auto px-4 text-center">
+      <section className="py-16 bg-white px-4">
+        <div className="max-w-4xl mx-auto text-center">
           <h2 className="h2 mb-4" style={{ color: '#1f2937' }}>
             Ready to ace your next interview?
           </h2>

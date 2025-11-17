@@ -370,6 +370,10 @@ footer {
 .max-w-2xl { max-width: 42rem; }
 .ml-5 { margin-left: 1.25rem; }
 
+/* Negative margins for breaking out of container */
+.-mx-4 { margin-left: -1rem; margin-right: -1rem; }
+.-my-10 { margin-top: -2.5rem; margin-bottom: -2.5rem; }
+
 /* Gradient backgrounds */
 .bg-gradient-to-br { background-image: linear-gradient(to bottom right, var(--tw-gradient-stops)); }
 
