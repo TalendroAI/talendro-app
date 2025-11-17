@@ -52,7 +52,6 @@ export default function App(){
           <Route path="/services" element={<Services />} />
           <Route path="/services/navigator" element={<Navigator />} />
           <Route path="/services/optional" element={<Optional />} />
-          <Route path="/interview-coach" element={<InterviewCoach />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/about" element={<About />} />
           <Route path="/about/our-story" element={<Story />} />
