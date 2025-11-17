@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.css'
-import { BrowserRouter, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import App from './shell/App'
 import InterviewCoach from './pages/InterviewCoach'
 
@@ -11,7 +11,11 @@ function AppWrapper() {
   
   // If Interview Coach route, render standalone without Header/Footer
   if (location.pathname === '/interview-coach') {
-    return <InterviewCoach />;
+    return (
+      <Routes>
+        <Route path="/interview-coach" element={<InterviewCoach />} />
+      </Routes>
+    );
   }
   
   // Otherwise render normal App with Header/Footer
