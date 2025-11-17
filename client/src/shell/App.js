@@ -44,11 +44,21 @@ export default function App(){
   const location = useLocation();
   const isInterviewCoachPage = location.pathname === '/interview-coach';
   
+  // For Interview Coach page, render without Header/Footer
+  if (isInterviewCoachPage) {
+    return (
+      <>
+        <ScrollToTop />
+        <InterviewCoach />
+      </>
+    );
+  }
+  
   return (
     <>
       <ScrollToTop />
-      {!isInterviewCoachPage && <Header />}
-      <main className={isInterviewCoachPage ? "" : "container py-10"}>
+      <Header />
+      <main className="container py-10">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/how-it-works" element={<How />} />
@@ -93,7 +103,7 @@ export default function App(){
           <Route path="/app/billing" element={<Billing />} />
         </Routes>
       </main>
-      {!isInterviewCoachPage && <Footer />}
+      <Footer />
     </>
   )
 }
