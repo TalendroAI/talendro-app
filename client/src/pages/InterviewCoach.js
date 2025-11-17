@@ -39,11 +39,11 @@ const InterviewCoach = () => {
       </section>
 
       {/* Info Banner */}
-      <section className="bg-talBlue text-white py-4 px-4">
+      <section className="bg-talBlue py-4 px-4">
         <div className="max-w-5xl mx-auto text-center">
-          <p className="body text-sm">
-            <strong>When you purchase, you'll receive an email</strong> with your Interview Coach link and simple instructions: 
-            <strong> upload résumé + job description + company URL</strong>, then select your plan.
+          <p className="body text-sm" style={{ color: '#ffffff' }}>
+            <strong style={{ color: '#ffffff' }}>When you purchase, you'll receive an email</strong> with your Interview Coach link and simple instructions: 
+            <strong style={{ color: '#ffffff' }}> upload résumé + job description + company URL</strong>, then select your plan.
           </p>
         </div>
       </section>
@@ -51,7 +51,7 @@ const InterviewCoach = () => {
       {/* Pricing Section */}
       <section id="pricing" className="py-16 bg-white px-4">
         <div className="max-w-6xl mx-auto">
-          <h2 className="h2 text-center mb-4" style={{ color: '#1f2937' }}>
+          <h2 className="h2 text-center mb-4">
             Choose your prep level
           </h2>
           <p className="body text-center text-gray-600 mb-12 max-w-3xl mx-auto">
@@ -62,7 +62,7 @@ const InterviewCoach = () => {
             {/* Starter Plan */}
             <div className="card">
               <div className="text-center mb-6">
-                <h3 className="h3 mb-2" style={{ color: '#1f2937' }}>Starter</h3>
+                <h3 className="h3 mb-2">Starter</h3>
                 <p className="body text-sm text-gray-600 mb-4">Quick Prep Interview</p>
                 <div className="mb-4">
                   <span className="text-4xl font-bold text-talBlue">$12</span>
@@ -102,7 +102,7 @@ const InterviewCoach = () => {
               </div>
               
               <div className="text-center mb-6 mt-4">
-                <h3 className="h3 mb-2" style={{ color: '#1f2937' }}>Full Mock Interview (Text)</h3>
+                <h3 className="h3 mb-2">Full Mock Interview (Text)</h3>
                 <div className="mb-4">
                   <span className="text-4xl font-bold text-talBlue">$29</span>
                 </div>
@@ -135,7 +135,7 @@ const InterviewCoach = () => {
             {/* Premium Plan */}
             <div className="card">
               <div className="text-center mb-6">
-                <h3 className="h3 mb-2" style={{ color: '#1f2937' }}>Premium</h3>
+                <h3 className="h3 mb-2">Premium</h3>
                 <p className="body text-sm text-gray-600 mb-4">Premium Audio Mock Interview</p>
                 <div className="mb-4">
                   <span className="text-4xl font-bold text-talBlue">$49</span>
@@ -180,7 +180,7 @@ const InterviewCoach = () => {
       {/* How It Works Section */}
       <section className="py-16 bg-gradient-to-b from-gray-50 to-white px-4">
         <div className="max-w-6xl mx-auto">
-          <h2 className="h2 text-center mb-4" style={{ color: '#1f2937' }}>
+          <h2 className="h2 text-center mb-4">
             How Talendro™ Interview Coach works
           </h2>
           <p className="body text-center text-gray-600 mb-12 max-w-3xl mx-auto">
@@ -193,7 +193,7 @@ const InterviewCoach = () => {
               <div className="w-16 h-16 bg-talBlue text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">
                 1
               </div>
-              <h3 className="h3 mb-4" style={{ color: '#1f2937' }}>
+              <h3 className="h3 mb-4">
                 Pick your prep level & pay via Stripe
               </h3>
               <p className="body text-gray-700">
@@ -207,7 +207,7 @@ const InterviewCoach = () => {
               <div className="w-16 h-16 bg-talBlue text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">
                 2
               </div>
-              <h3 className="h3 mb-4" style={{ color: '#1f2937' }}>
+              <h3 className="h3 mb-4">
                 Upload résumé, JD, and company URL
               </h3>
               <p className="body text-gray-700">
@@ -221,7 +221,7 @@ const InterviewCoach = () => {
               <div className="w-16 h-16 bg-talBlue text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">
                 3
               </div>
-              <h3 className="h3 mb-4" style={{ color: '#1f2937' }}>
+              <h3 className="h3 mb-4">
                 Run your session and review the report
               </h3>
               <p className="body text-gray-700">
@@ -236,13 +236,13 @@ const InterviewCoach = () => {
       {/* FAQs Section */}
       <section className="py-16 bg-white px-4">
         <div className="max-w-4xl mx-auto">
-          <h2 className="h2 text-center mb-12" style={{ color: '#1f2937' }}>
+          <h2 className="h2 text-center mb-12">
             FAQs & quick notes
           </h2>
           
           <div className="space-y-8">
             <div className="card">
-              <h3 className="h3 mb-3" style={{ color: '#1f2937' }}>
+              <h3 className="h3 mb-3">
                 How do I access the actual Interview Coach?
               </h3>
               <p className="body text-gray-700">
@@ -252,7 +252,7 @@ const InterviewCoach = () => {
             </div>
             
             <div className="card">
-              <h3 className="h3 mb-3" style={{ color: '#1f2937' }}>
+              <h3 className="h3 mb-3">
                 Can I upgrade after I purchase?
               </h3>
               <p className="body text-gray-700">
@@ -262,7 +262,7 @@ const InterviewCoach = () => {
             </div>
             
             <div className="card">
-              <h3 className="h3 mb-3" style={{ color: '#1f2937' }}>
+              <h3 className="h3 mb-3">
                 What do I need ready before I start?
               </h3>
               <p className="body text-gray-700">
@@ -272,7 +272,7 @@ const InterviewCoach = () => {
             </div>
             
             <div className="card">
-              <h3 className="h3 mb-3" style={{ color: '#1f2937' }}>
+              <h3 className="h3 mb-3">
                 Is this part of the full Talendro™ platform?
               </h3>
               <p className="body text-gray-700">
@@ -287,7 +287,7 @@ const InterviewCoach = () => {
       {/* Final CTA */}
       <section className="py-16 bg-white px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="h2 mb-4" style={{ color: '#1f2937' }}>
+          <h2 className="h2 mb-4">
             Ready to ace your next interview?
           </h2>
           <p className="body text-lg text-gray-700 mb-8">
