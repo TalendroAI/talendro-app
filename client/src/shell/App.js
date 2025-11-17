@@ -9,7 +9,7 @@ import Services from '../pages/Services'
 import Navigator from '../pages/Navigator'
 import Optional from '../pages/Optional'
 import Pricing from '../pages/Pricing'
-import PricingRestored from '../pages/PricingRestored'
+import InterviewCoach from '../pages/InterviewCoach'
 import About from '../pages/About'
 import Story from '../pages/Story'
 import Team from '../pages/Team'
@@ -19,9 +19,6 @@ import Veterans from '../pages/Veterans'
 import Security from '../pages/Security'
 import Privacy from '../pages/Privacy'
 import Terms from '../pages/Terms'
-import Login from '../pages/Login'
-import ForgotPassword from '../pages/ForgotPassword'
-import ResetPassword from '../pages/ResetPassword'
 
 import OnbWelcome from '../app/js/OnbWelcome'
 import Onb1 from '../app/js/Onb1'
@@ -37,8 +34,7 @@ import CheckoutSuccess from '../app/CheckoutSuccess'
 import CheckoutError from '../app/CheckoutError'
 import PaymentSuccess from '../app/PaymentSuccess'
 
-import Dashboard from '../app/Dashboard'
-import DashboardOld from '../app/js/Dashboard'
+import Dashboard from '../pages/app/Dashboard'
 import Profile from '../app/Profile'
 import Agents from '../app/Agents'
 import Applications from '../app/Applications'
@@ -56,8 +52,8 @@ export default function App(){
           <Route path="/services" element={<Services />} />
           <Route path="/services/navigator" element={<Navigator />} />
           <Route path="/services/optional" element={<Optional />} />
+          <Route path="/interview-coach" element={<InterviewCoach />} />
           <Route path="/pricing" element={<Pricing />} />
-          <Route path="/pricing-new" element={<PricingRestored />} />
           <Route path="/about" element={<About />} />
           <Route path="/about/our-story" element={<Story />} />
           <Route path="/about/our-team" element={<Team />} />
@@ -81,22 +77,16 @@ export default function App(){
           <Route path="/app/onboarding/review" element={<OnbReview />} />
           
           <Route path="/auth/sign-in" element={<SignIn />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signin" element={<Login />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
 
           <Route path="/app/checkout" element={<Checkout />} />
           <Route path="/app/checkout/success" element={<CheckoutSuccess />} />
           <Route path="/app/checkout/error" element={<CheckoutError />} />
           <Route path="/app/payment/success" element={<PaymentSuccess />} />
 
-          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/app/dashboard" element={<Dashboard />} />
           <Route path="/app/profile" element={<Profile />} />
           <Route path="/app/agents" element={<Agents />} />
           <Route path="/app/applications" element={<Applications />} />
-          <Route path="/app/analytics" element={<Applications />} />
           <Route path="/app/billing" element={<Billing />} />
         </Routes>
       </main>
