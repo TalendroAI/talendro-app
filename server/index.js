@@ -235,17 +235,12 @@ const app = express()
 // ============================================
 // DATABASE CONNECTION
 // ============================================
-// MongoDB connection - make it optional for deployment
-if (process.env.MONGODB_URI && !process.env.MONGODB_URI.includes('railway.internal')) {
-  mongoose.connect(process.env.MONGODB_URI, {
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/talendro', {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-  })
-  .then(() => console.log('✅ MongoDB connected'))
-  .catch(err => console.error('❌ MongoDB connection error:', err));
-} else {
-  console.warn('⚠️  MongoDB URI not configured or using Railway internal hostname. App will run without database.');
-}
+})
+.then(() => console.log('✅ MongoDB connected'))
+.catch(err => console.error('❌ MongoDB connection error:', err));
 
 // CORS Configuration - Allow requests from frontend
 app.use(cors({
@@ -264,11 +259,10 @@ app.use(cors({
       process.env.DOMAIN, // Or set this
     ].filter(Boolean); // Remove undefined values
     
-    // In production, allow Railway domains, Render.com domains, and custom domains
+    // In production, allow Railway domains and custom domains
     const isRailwayDomain = origin.includes('.up.railway.app');
-    const isRenderDomain = origin.includes('.onrender.com');
     const isLocalhost = origin.includes('localhost') || origin.includes('127.0.0.1');
-    const isAllowed = allowedOrigins.includes(origin) || isRailwayDomain || isRenderDomain;
+    const isAllowed = allowedOrigins.includes(origin) || isRailwayDomain;
     
     if (isAllowed || isLocalhost || process.env.NODE_ENV !== 'production') {
       callback(null, true);

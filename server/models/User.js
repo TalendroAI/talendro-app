@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const UserSchema = new mongoose.Schema({
     email: {
@@ -13,11 +13,6 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true,
         trim: true
-    },
-    password: {
-        type: String,
-        required: false,  // Password is set during onboarding, not at account creation
-        select: false  // Don't return password in queries by default
     },
     phone: {
         type: String,
@@ -74,8 +69,7 @@ const UserSchema = new mongoose.Schema({
         applicationsThisMonth: { type: Number, default: 0 },
         lastJobSearchRun: Date,
         totalJobsDiscovered: { type: Number, default: 0 },
-        matchRate: { type: Number, default: 0 },
-        tailoredMatchRate: { type: Number, default: 0 }
+        matchRate: { type: Number, default: 0 }
     },
     isActive: { type: Boolean, default: true },
     isEmailVerified: { type: Boolean, default: false },
@@ -84,14 +78,6 @@ const UserSchema = new mongoose.Schema({
         emailNotifications: { type: Boolean, default: true },
         smsNotifications: { type: Boolean, default: true },
         weeklyReport: { type: Boolean, default: true }
-    },
-    passwordResetToken: {
-        type: String,
-        select: false
-    },
-    passwordResetExpires: {
-        type: Date,
-        select: false
     },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
@@ -116,4 +102,4 @@ UserSchema.pre('save', function(next) {
     next();
 });
 
-export default mongoose.model('User', UserSchema);
+module.exports = mongoose.model('User', UserSchema);

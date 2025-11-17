@@ -40,8 +40,8 @@ export default function Onb2() {
       const result = await resp.json();
       console.log('📄 Parse result:', result);
 
+      // Accept either { success:true, data:{...} } or the flat shape we used earlier
       const successLike = result?.success === true || result?.status === 'complete';
-
       if (!successLike) throw new Error('Parser did not report success/complete');
 
       const payload = result?.data?.prefill
@@ -56,6 +56,7 @@ export default function Onb2() {
 
       console.log('💾 Saving payload to localStorage:', payload);
 
+      // FORCE CLEAR bad education data before storing
       if (payload?.prefill?.step3) {
         payload.prefill.step3.majorFieldOfStudy = ''
         payload.prefill.step3.highestDegree = ''
@@ -70,24 +71,19 @@ export default function Onb2() {
         console.log('🔍 Onb2 - FORCED CLEAR of bad education data')
       }
       
+      // NUCLEAR OPTION: Clear ALL localStorage first
       localStorage.clear()
       console.log('🔍 Onb2 - NUCLEAR OPTION: Cleared ALL localStorage')
 
+      // Persist for Steps 3–6
       localStorage.setItem('resumeData', JSON.stringify(payload));
       localStorage.setItem('resumeParsed', 'true');
-      
-      // Save step2Data (resume parsing result) to localStorage
-      const step2Data = {
-        resumeParsed: true,
-        resumeFileName: file.name,
-        resumeFileSize: file.size,
-        parseResult: payload
-      };
-      localStorage.setItem('step2Data', JSON.stringify(step2Data));
 
-      console.log('✅ Resume data saved, navigating to step-2...');
+      console.log('✅ Resume data saved, navigating to step-1...');
 
+      // Add a small delay to ensure the user can see the Create Profile page
       setTimeout(() => {
+        // Jump to Step 1 (Basic Registration) after resume upload
         jumped.current = true;
         try { 
           navigate('/app/onboarding/step-2', { replace: true }); 
@@ -98,13 +94,14 @@ export default function Onb2() {
           window.location.replace('/app/onboarding/step-2'); 
         }
 
+        // Safety: if Router fails silently, hard jump
         setTimeout(() => {
           if (location.pathname !== '/app/onboarding/step-2') {
             console.log('🔄 Safety navigation triggered');
             window.location.assign('/app/onboarding/step-2');
           }
         }, 100);
-      }, 500);
+      }, 500); // 500ms delay to ensure user sees the Create Profile page
     } catch (e) {
       console.error('❌ Parse error:', e);
       setError('We had trouble parsing your résumé. You can continue manually—Talendro will backfill as parsing completes.');
@@ -123,50 +120,31 @@ export default function Onb2() {
       <h1 className="h1">Upload Résumé</h1>
       <p className="body mt-2">We'll parse your résumé to pre-fill your profile.</p>
 
-      <form className="card mt-6" style={{ maxWidth: '350px' }} onSubmit={(e)=>{ 
+      <form className="card mt-6 max-w-xl" onSubmit={(e)=>{ 
         console.log('📝 Form submitted!'); 
         e.preventDefault(); 
         parseAndGo(); 
       }}>
-        <div>
-          <input 
-            type="file" 
-            accept=".pdf,.doc,.docx,.txt" 
-            onChange={e => {
-              const selectedFile = e.target.files?.[0] || null;
-              console.log('📁 File selected:', selectedFile?.name, selectedFile?.size);
-              setFile(selectedFile);
-            }}
-            className="w-full px-3 py-2 border-2 rounded-xl transition"
-            style={
-              file 
-                ? { borderColor: '#9ca3af', backgroundColor: 'white' }
-                : { borderColor: '#ef4444', backgroundColor: '#fef2f2', boxShadow: '0 0 0 2px rgba(254, 202, 202, 0.5)' }
-            }
-          />
+        <input type="file" accept=".pdf,.doc,.docx,.txt" onChange={e => {
+          const selectedFile = e.target.files?.[0] || null;
+          console.log('📁 File selected:', selectedFile?.name, selectedFile?.size);
+          setFile(selectedFile);
+        }} />
+        <div className="mt-4 flex gap-3">
+          <button 
+            type="button" 
+            className="btn btn-primary" 
+            onClick={handleCreateProfileClick}
+            disabled={busy}
+          >
+            {busy ? 'Parsing…' : 'Create Profile'}
+          </button>
         </div>
         {error && <div className="mt-3 text-sm text-red-600">{error}</div>}
       </form>
       
-      <div className="flex gap-3 mt-6">
-        <button 
-          type="button" 
-          onClick={() => window.location.href = '/app/onboarding/welcome'}
-          className="btn btn-secondary"
-        >
-          ← Back
-        </button>
-        <button 
-          type="button" 
-          className="btn btn-primary flex-1" 
-          onClick={handleCreateProfileClick}
-          disabled={busy}
-        >
-          {busy ? 'Parsing…' : 'Continue to Create Profile →'}
-        </button>
-      </div>
-      
-      {showWarning && (
+        {/* Warning Popup - Updated 2025-01-27-15:45 */}
+        {showWarning && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md mx-4 shadow-lg">
             <div className="flex items-center mb-4">

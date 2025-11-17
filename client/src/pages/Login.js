@@ -33,9 +33,6 @@ function Login() {
       localStorage.setItem('authToken', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
 
-      // Dispatch auth change event to update header
-      window.dispatchEvent(new Event('authChange'));
-
       // Redirect to dashboard
       navigate('/dashboard');
 
@@ -114,6 +111,16 @@ function Login() {
             )}
           </button>
         </form>
+
+        {/* Sign Up Link */}
+        <div className="login-footer">
+          <p>
+            Don't have an account?{' '}
+            <a href="/signup" className="signup-link">
+              Start your free trial
+            </a>
+          </p>
+        </div>
 
         {/* Security Note */}
         <div className="security-note">

@@ -46,8 +46,6 @@ function Dashboard() {
           // Clear invalid token
           localStorage.removeItem('authToken');
           localStorage.removeItem('user');
-          // Dispatch auth change event to update header
-          window.dispatchEvent(new Event('authChange'));
           navigate('/login');
           return;
         }
@@ -64,8 +62,6 @@ function Dashboard() {
       if (error.response?.status === 401 || error.message.includes('401')) {
         localStorage.removeItem('authToken');
         localStorage.removeItem('user');
-        // Dispatch auth change event to update header
-        window.dispatchEvent(new Event('authChange'));
         navigate('/login');
       } else {
         setLoading(false);

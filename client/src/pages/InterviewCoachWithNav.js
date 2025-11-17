@@ -1,6 +1,7 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
-const InterviewCoach = () => {
+const InterviewCoachWithNav = () => {
   return (
     <div className="min-h-screen -mx-4 -my-10">
       {/* Hero Section */}
@@ -23,11 +24,16 @@ const InterviewCoach = () => {
           </p>
           
           <div className="flex gap-4 mb-8">
-            <a href="#pricing">
+            <Link to="#pricing">
               <button className="btn btn-primary px-8 py-3 text-base">
                 View Plans & Pricing
               </button>
-            </a>
+            </Link>
+            <Link to="/how-it-works">
+              <button className="btn btn-secondary px-8 py-3 text-base">
+                See How It Works
+              </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -82,16 +88,9 @@ const InterviewCoach = () => {
                 </li>
               </ul>
               
-              <a 
-                href="https://buy.stripe.com/6oUcN4vtes2bdvfB9cV201" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="block w-full"
-              >
-                <button className="btn btn-primary w-full">
-                  Start Quick Prep – $12
-                </button>
-              </a>
+              <button className="btn btn-primary w-full">
+                Start Quick Prep – $12
+              </button>
             </div>
 
             {/* Full Mock Plan - Most Popular */}
@@ -128,16 +127,9 @@ const InterviewCoach = () => {
                 </li>
               </ul>
               
-              <a 
-                href="https://buy.stripe.com/5kQaEWlYX0Bc1C0gfcV200" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="block w-full"
-              >
-                <button className="btn btn-primary w-full">
-                  Book Full Mock – $29
-                </button>
-              </a>
+              <button className="btn btn-primary w-full">
+                Book Full Mock – $29
+              </button>
             </div>
 
             {/* Premium Plan */}
@@ -169,16 +161,9 @@ const InterviewCoach = () => {
                 </li>
               </ul>
               
-              <a 
-                href="https://buy.stripe.com/28E3culYX97147PbYkCV202" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="block w-full"
-              >
-                <button className="btn btn-primary w-full">
-                  Upgrade to Premium Audio – $49
-                </button>
-              </a>
+              <button className="btn btn-primary w-full">
+                Upgrade to Premium Audio – $49
+              </button>
             </div>
           </div>
 
@@ -310,11 +295,16 @@ const InterviewCoach = () => {
           </p>
           
           <div className="flex gap-4">
-            <a href="#pricing">
+            <Link to="#pricing">
               <button className="btn btn-primary px-8 py-3 text-base">
                 Choose Your Plan
               </button>
-            </a>
+            </Link>
+            <Link to="/how-it-works">
+              <button className="btn btn-secondary px-8 py-3 text-base">
+                Learn More
+              </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -322,5 +312,5 @@ const InterviewCoach = () => {
   );
 };
 
-export default InterviewCoach;
+export default InterviewCoachWithNav;
 

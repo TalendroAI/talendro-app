@@ -5,80 +5,22 @@
  * Place this file in: /server/routes/stripe.js
  */
 
-import express from 'express';
+const express = require('express');
 const router = express.Router();
-import Stripe from 'stripe';
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-import mongoose from 'mongoose';
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 // Import models (you'll create these next)
-import User from '../models/User.js';
-
-// ============================================
-// PLAN MAPPING FUNCTION
-// ============================================
-
-function mapPlanToDatabase(frontendPlan) {
-    const planMapping = {
-        'starter': 'basic',
-        'professional': 'pro',
-        'premium': 'premium',
-        'basic': 'basic',
-        'pro': 'pro'
-    };
-    return planMapping[frontendPlan] || frontendPlan;
-}
+const User = require('../models/User');
 
 // ============================================
 // PRICING CONFIGURATION
 // ============================================
 
 const PLANS = {
-    // Frontend plan names (from checkout.html)
-    starter: {
-        name: 'Starter',
-        price: 29,
-        priceId: process.env.STRIPE_PRICE_ID_STARTER || process.env.STRIPE_PRICE_ID_BASIC, // Stripe Price ID
-        features: [
-            'Daily job searches',
-            '50 auto-applications/month',
-            'AI-powered matching',
-            'Resume auto-tailoring',
-            'SMS + Email notifications',
-            'Basic analytics'
-        ]
-    },
-    professional: {
-        name: 'Professional',
-        price: 59,
-        priceId: process.env.STRIPE_PRICE_ID_PROFESSIONAL || process.env.STRIPE_PRICE_ID_PRO,
-        features: [
-            'Hourly job searches',
-            'Unlimited auto-applications',
-            'Priority auto-apply',
-            'Advanced AI matching',
-            'Detailed analytics',
-            'Everything in Starter'
-        ]
-    },
-    premium: {
-        name: 'Premium',
-        price: 99,
-        priceId: process.env.STRIPE_PRICE_ID_PREMIUM,
-        features: [
-            'Real-time alerts',
-            'Dedicated success manager',
-            'Interview preparation',
-            'Salary negotiation support',
-            'Priority support',
-            'Everything in Professional'
-        ]
-    },
-    // Legacy plan names (for backward compatibility)
     basic: {
         name: 'Basic',
         price: 29,
-        priceId: process.env.STRIPE_PRICE_ID_BASIC,
+        priceId: process.env.STRIPE_PRICE_ID_BASIC, // Stripe Price ID
         features: [
             'Daily job searches',
             '50 auto-applications/month',
@@ -99,6 +41,19 @@ const PLANS = {
             'Advanced AI matching',
             'Detailed analytics',
             'Everything in Basic'
+        ]
+    },
+    premium: {
+        name: 'Premium',
+        price: 99,
+        priceId: process.env.STRIPE_PRICE_ID_PREMIUM,
+        features: [
+            'Real-time alerts',
+            'Dedicated success manager',
+            'Interview preparation',
+            'Salary negotiation support',
+            'Priority support',
+            'Everything in Pro'
         ]
     }
 };
@@ -126,29 +81,15 @@ router.post('/create-subscription', async (req, res) => {
         }
         
         const selectedPlan = PLANS[plan];
-        const dbPlanName = mapPlanToDatabase(plan);
         
-        // Check if MongoDB is connected
-        const isMongoConnected = mongoose.connection.readyState === 1;
+        // Check if user already exists
+        let user = await User.findOne({ email });
         
-        // Check if user already exists (only if MongoDB is connected)
-        let user = null;
-        if (isMongoConnected) {
-            try {
-                user = await User.findOne({ email: email.toLowerCase().trim() });
-                
-                if (user) {
-                    return res.status(400).json({ 
-                        success: false, 
-                        message: 'An account with this email already exists' 
-                    });
-                }
-            } catch (dbError) {
-                console.error('⚠️ Database error checking user:', dbError.message);
-                // Continue without database check - allow Stripe subscription to proceed
-            }
-        } else {
-            console.log('⚠️ MongoDB not connected - skipping user existence check');
+        if (user) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'An account with this email already exists' 
+            });
         }
         
         // Create Stripe customer
@@ -183,93 +124,29 @@ router.post('/create-subscription', async (req, res) => {
         const trialEnd = new Date();
         trialEnd.setDate(trialEnd.getDate() + TRIAL_DAYS);
         
-        // Get client secret from payment intent
-        // If not in subscription response, retrieve invoice separately
-        let clientSecret = null;
-        if (subscription.latest_invoice) {
-            const invoice = typeof subscription.latest_invoice === 'string' 
-                ? await stripe.invoices.retrieve(subscription.latest_invoice, { expand: ['payment_intent'] })
-                : subscription.latest_invoice;
-            
-            if (invoice.payment_intent) {
-                const paymentIntent = typeof invoice.payment_intent === 'string'
-                    ? await stripe.paymentIntents.retrieve(invoice.payment_intent)
-                    : invoice.payment_intent;
-                if (paymentIntent && paymentIntent.client_secret) {
-                    clientSecret = paymentIntent.client_secret;
-                }
-            }
-        }
+        // Create user in database
+        user = await User.create({
+            email,
+            name,
+            stripeCustomerId: customer.id,
+            stripeSubscriptionId: subscription.id,
+            plan: plan,
+            subscriptionStatus: 'trialing',
+            trialEndsAt: trialEnd,
+            onboardingData: onboardingData,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        });
         
-        if (!clientSecret) {
-            console.log('⚠️ No payment intent found - creating setup intent for payment method collection');
-            try {
-                // Create a setup intent to collect payment method
-                const setupIntent = await stripe.setupIntents.create({
-                    customer: customer.id,
-                    payment_method: paymentMethodId,
-                });
-                if (setupIntent && setupIntent.client_secret) {
-                    clientSecret = setupIntent.client_secret;
-                } else {
-                    console.log('⚠️ Setup intent created but no client_secret returned');
-                }
-            } catch (setupError) {
-                console.error('❌ Error creating setup intent:', setupError);
-                // For trial subscriptions, we can proceed without client_secret
-                // The payment method is already attached to the customer
-            }
-        }
-        
-        // Create user in database (only if MongoDB is connected)
-        let userId = null;
-        if (isMongoConnected) {
-            try {
-                // Extract and hash password from onboardingData if available
-                let hashedPassword = null;
-                if (onboardingData?.step1?.password) {
-                    const bcrypt = (await import('bcryptjs')).default;
-                    hashedPassword = await bcrypt.hash(onboardingData.step1.password, 10);
-                }
-                
-                const userData = {
-                    email: email.toLowerCase().trim(),
-                    name: name || email.split('@')[0],
-                    stripeCustomerId: customer.id,
-                    stripeSubscriptionId: subscription.id,
-                    plan: dbPlanName,
-                    subscriptionStatus: 'trialing',
-                    trialEndsAt: trialEnd,
-                    onboardingData: onboardingData,
-                    createdAt: new Date(),
-                    updatedAt: new Date()
-                };
-                
-                // Add password if available
-                if (hashedPassword) {
-                    userData.password = hashedPassword;
-                }
-                
-                user = await User.create(userData);
-                userId = user._id;
-                console.log(`✅ New user created in database: ${email} (${plan} plan, trial until ${trialEnd.toLocaleDateString()})${hashedPassword ? ' with password' : ' (password to be set later)'}`);
-            } catch (dbError) {
-                console.error('⚠️ Database error creating user:', dbError.message);
-                console.log('⚠️ Continuing without database user - Stripe subscription created successfully');
-                // Continue - Stripe subscription is still valid
-            }
-        } else {
-            console.log(`⚠️ MongoDB not connected - skipping user creation. Stripe subscription created: ${subscription.id}`);
-        }
+        console.log(`✅ New user created: ${email} (${plan} plan, trial until ${trialEnd.toLocaleDateString()})`);
         
         res.json({
             success: true,
             subscriptionId: subscription.id,
-            clientSecret: clientSecret,
+            clientSecret: subscription.latest_invoice.payment_intent.client_secret,
             customerId: customer.id,
-            userId: userId,
-            trialEnd: trialEnd,
-            message: isMongoConnected ? 'User created successfully' : 'Subscription created (database not available)'
+            userId: user._id,
+            trialEnd: trialEnd
         });
         
     } catch (error) {
@@ -674,40 +551,4 @@ router.post('/change-plan', async (req, res) => {
     }
 });
 
-// ============================================
-// CUSTOMER PORTAL
-// ============================================
-
-// Create Stripe Customer Portal Session
-router.post('/create-portal-session', async (req, res) => {
-  try {
-    const { customerId } = req.body;
-
-    if (!customerId) {
-      return res.status(400).json({ error: 'Customer ID is required' });
-    }
-
-    // Create portal session
-    const session = await stripe.billingPortal.sessions.create({
-      customer: customerId,
-      return_url: `${process.env.CLIENT_URL || 'http://localhost:3000'}/dashboard`,
-    });
-
-    res.json({ url: session.url });
-
-  } catch (error) {
-    console.error('❌ Error creating portal session:', error);
-    console.error('Error details:', {
-      message: error.message,
-      type: error.type,
-      code: error.code,
-      customerId: customerId
-    });
-    res.status(500).json({ 
-      error: 'Failed to create portal session',
-      details: error.message 
-    });
-  }
-});
-
-export default router;
+module.exports = router;

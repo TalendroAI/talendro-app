@@ -5,40 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Choose Your Plan - Talendro™</title>
     <script src="https://js.stripe.com/v3/"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body {
-            font-family: 'Inter', sans-serif;
-            background: white;
-            color: #2C2F38;
-            margin: 0;
-            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
         }
         
         .container {
-            max-width: 72rem;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 2.5rem 1rem;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 40px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            color: #2563eb;
+            font-size: 48px;
+            margin-bottom: 8px;
         }
         
         .tagline {
-            font-family: 'DM Serif Display', serif;
+            color: #00bcd4;
+            font-size: 20px;
             font-style: italic;
-            font-size: 1.125rem;
-            color: #00C4CC;
+            margin-bottom: 30px;
         }
         
-        /* Navigation hover effects */
-        header nav a:hover {
-            color: #2F6DF6;
+        .subtitle {
+            color: #374151;
+            font-size: 16px;
+            margin-bottom: 20px;
         }
         
-        header a[href="/"]:hover {
-            color: #1e4a8e;
+        .progress-bar {
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            margin-bottom: 20px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, #2563eb, #00bcd4);
+            width: 100%;
+            border-radius: 3px;
         }
         
         .trial-notice {
@@ -95,68 +115,6 @@
             color: #10b981;
             font-weight: bold;
             font-size: 18px;
-        }
-        
-        .billing-toggle {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-        
-        .billing-label {
-            color: #6b7280;
-            font-weight: 400;
-            font-size: 1rem;
-            transition: all 0.3s;
-        }
-        
-        .billing-label.active {
-            color: #2563eb;
-            font-weight: 600;
-        }
-        
-        .billing-switch {
-            width: 56px;
-            height: 32px;
-            border-radius: 16px;
-            border: none;
-            background-color: #d1d5db;
-            cursor: pointer;
-            position: relative;
-            transition: background-color 0.3s;
-            outline: none;
-        }
-        
-        .billing-switch.annual {
-            background-color: #2563eb;
-        }
-        
-        .billing-switch-slider {
-            position: absolute;
-            top: 4px;
-            left: 4px;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background-color: white;
-            transition: left 0.3s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        
-        .billing-switch.annual .billing-switch-slider {
-            left: 28px;
-        }
-        
-        .savings-badge {
-            background-color: #dcfce7;
-            color: #16a34a;
-            padding: 0.25rem 0.75rem;
-            border-radius: 0.5rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-            margin-left: 0.5rem;
         }
         
         .pricing-cards {
@@ -225,20 +183,6 @@
             font-size: 18px;
             font-weight: 400;
             color: #6b7280;
-        }
-        
-        .plan-price-annual {
-            font-size: 0.875rem;
-            color: #6b7280;
-            display: block;
-            margin-top: 0.25rem;
-        }
-        
-        .plan-savings {
-            font-size: 0.875rem;
-            color: #16a34a;
-            font-weight: 600;
-            margin-bottom: 1rem;
         }
         
         .plan-description {
@@ -452,53 +396,47 @@
         
         .btn-group {
             display: flex;
-            gap: 12px;
-            margin-top: 24px;
+            gap: 16px;
+            margin-top: 32px;
         }
         
-        .flex-1 {
-            flex: 1;
-        }
-        
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 0.75rem;
-            padding: 0.75rem 1.25rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            transition: all 0.2s;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            text-decoration: none;
-            border: none;
+        .btn-primary, .btn-secondary {
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 700;
             cursor: pointer;
+            border: none;
+            transition: all 0.2s;
         }
         
         .btn-primary {
-            background-color: #2F6DF6;
+            background: linear-gradient(135deg, #10b981, #059669);
             color: white;
             flex: 1;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         }
         
         .btn-primary:hover:not(:disabled) {
-            filter: brightness(0.95);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
         }
         
         .btn-primary:disabled {
             background: #9ca3af;
             cursor: not-allowed;
-            filter: none;
+            transform: none;
+            box-shadow: none;
         }
         
         .btn-secondary {
-            border: 2px solid #2F6DF6;
-            color: #2F6DF6;
-            background: transparent;
+            background: white;
+            color: #6b7280;
+            border: 2px solid #d1d5db;
         }
         
         .btn-secondary:hover {
-            background-color: rgb(239 246 255);
+            background: #f9fafb;
         }
         
         .loading {
@@ -558,59 +496,20 @@
             .btn-group {
                 flex-direction: column;
             }
-            
-            .billing-toggle {
-                flex-wrap: wrap;
-                gap: 0.75rem;
-            }
-            
-            .savings-badge {
-                width: 100%;
-                text-align: center;
-                margin-left: 0;
-                margin-top: 0.5rem;
-            }
         }
     </style>
 </head>
 <body>
-    <!-- Top Navigation -->
-    <header style="background: white; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 50; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-        <div style="max-width: 80rem; margin: 0 auto; padding: 0 1rem; display: flex; justify-content: space-between; align-items: center; height: 4rem;">
-            <!-- Logo -->
-            <a href="/" style="font-size: 1.5rem; font-weight: 700; color: #2F6DF6; text-decoration: none; transition: color 0.2s;">Talendro™</a>
-            
-            <!-- Desktop Navigation -->
-            <nav style="display: flex; align-items: center; gap: 2rem;">
-                <a href="/how-it-works" style="font-size: 0.875rem; font-weight: 500; color: #374151; text-decoration: none; transition: color 0.2s;">How It Works</a>
-                <a href="/services" style="font-size: 0.875rem; font-weight: 500; color: #374151; text-decoration: none; transition: color 0.2s;">Services</a>
-                <a href="/pricing" style="font-size: 0.875rem; font-weight: 500; color: #374151; text-decoration: none; transition: color 0.2s;">Pricing</a>
-                <a href="/about" style="font-size: 0.875rem; font-weight: 500; color: #374151; text-decoration: none; transition: color 0.2s;">About</a>
-                <a href="/about/our-story" style="font-size: 0.875rem; font-weight: 500; color: #374151; text-decoration: none; transition: color 0.2s;">Our Story</a>
-                <a href="/contact" style="font-size: 0.875rem; font-weight: 500; color: #374151; text-decoration: none; transition: color 0.2s;">Contact</a>
-            </nav>
-            
-            <!-- Right Side Actions -->
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <a href="/signin" style="font-size: 0.875rem; font-weight: 500; color: #374151; text-decoration: none; transition: color 0.2s;">Sign In</a>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Pricing</h1>
+            <p class="tagline">Precision Matches. Faster Results.</p>
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
             </div>
+            <p class="subtitle">Choose the plan that matches your job search intensity.</p>
         </div>
-    </header>
-    
-    <main class="container">
-        <section>
-            <!-- Back Navigation -->
-            <div style="margin-bottom: 1.5rem;">
-                <a href="/app/onboarding/review" style="color: #2F6DF6; text-decoration: none; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 8px;">
-                    ← Back to Final Review
-                </a>
-            </div>
-            
-            <!-- Header -->
-            <h1 style="font-family: 'Montserrat', sans-serif; font-size: 3rem; font-weight: 700; color: #2F6DF6; margin: 0;">Choose Your Plan</h1>
-            <p style="font-family: 'DM Serif Display', serif; font-style: italic; font-size: 1.125rem; color: #00C4CC; margin-top: 0.5rem; margin-bottom: 0;">Select your subscription and complete payment</p>
-            <p style="font-family: 'Inter', sans-serif; color: #2C2F38; font-size: 1rem; line-height: 1.6; margin-top: 0.5rem; margin-bottom: 1.5rem;">Choose the plan that matches your job search intensity.</p>
-        </section>
         
         <!-- Trial Notice -->
         <div class="trial-notice">
@@ -626,30 +525,16 @@
             </p>
         </div>
         
-        <!-- Billing Toggle -->
-        <div class="billing-toggle">
-            <span class="billing-label active" id="monthlyLabel">Monthly</span>
-            <button class="billing-switch" id="billingSwitch" aria-label="Toggle billing period">
-                <span class="billing-switch-slider"></span>
-            </button>
-            <span class="billing-label" id="annualLabel">Annual</span>
-            <span class="savings-badge" id="savingsBadge" style="display: none;">Save up to $240/year</span>
-        </div>
-        
         <!-- Pricing Cards -->
         <div class="pricing-cards">
-            <!-- Starter Plan -->
-            <div class="pricing-card" data-plan="starter" data-monthly="29" data-annual="23">
-                <div class="plan-name">Starter</div>
-                <div class="plan-price">
-                    $<span id="starter-price">29</span><span>/month</span>
-                    <span class="plan-price-annual" id="starter-annual" style="display: none;">billed annually</span>
-                </div>
-                <div class="plan-savings" id="starter-savings" style="display: none;">Save $72/year</div>
+            <!-- Basic Plan -->
+            <div class="pricing-card" data-plan="basic" data-price="29">
+                <div class="plan-name">Basic</div>
+                <div class="plan-price">$29<span>/month</span></div>
                 <div class="plan-description">Perfect for passive job seekers</div>
                 
                 <ul class="plan-features">
-                    <li>Daily job searches</li>
+                    <li>Daily job searches (AI runs once per day)</li>
                     <li>Up to 50 auto-applications/month</li>
                     <li>AI-powered matching & scoring</li>
                     <li>Resume auto-tailored for each job</li>
@@ -657,52 +542,44 @@
                     <li>Basic analytics dashboard</li>
                 </ul>
                 
-                <button class="select-plan-btn">Get Started</button>
+                <button class="select-plan-btn">Select Basic</button>
             </div>
             
-            <!-- Professional Plan (Most Popular) -->
-            <div class="pricing-card popular" data-plan="professional" data-monthly="59" data-annual="47">
+            <!-- Pro Plan (Most Popular) -->
+            <div class="pricing-card popular" data-plan="pro" data-price="49">
                 <div class="popular-badge">Most Popular</div>
-                <div class="plan-name">Professional</div>
-                <div class="plan-price">
-                    $<span id="professional-price">59</span><span>/month</span>
-                    <span class="plan-price-annual" id="professional-annual" style="display: none;">billed annually</span>
-                </div>
-                <div class="plan-savings" id="professional-savings" style="display: none;">Save $144/year</div>
+                <div class="plan-name">Pro</div>
+                <div class="plan-price">$49<span>/month</span></div>
                 <div class="plan-description">For active job seekers</div>
                 
                 <ul class="plan-features">
-                    <li>Hourly job searches (24x per day)</li>
+                    <li>Hourly job searches (AI runs 24x per day)</li>
                     <li><strong>Unlimited auto-applications</strong></li>
                     <li>Priority auto-apply (first to submit)</li>
                     <li>Advanced AI matching algorithms</li>
                     <li>Detailed analytics & insights</li>
-                    <li>Everything in Starter</li>
+                    <li>Everything in Basic</li>
                 </ul>
                 
-                <button class="select-plan-btn">Get Started</button>
+                <button class="select-plan-btn">Select Pro</button>
             </div>
             
             <!-- Premium Plan -->
-            <div class="pricing-card" data-plan="premium" data-monthly="99" data-annual="79">
+            <div class="pricing-card" data-plan="premium" data-price="99">
                 <div class="plan-name">Premium</div>
-                <div class="plan-price">
-                    $<span id="premium-price">99</span><span>/month</span>
-                    <span class="plan-price-annual" id="premium-annual" style="display: none;">billed annually</span>
-                </div>
-                <div class="plan-savings" id="premium-savings" style="display: none;">Save $240/year</div>
+                <div class="plan-price">$99<span>/month</span></div>
                 <div class="plan-description">Maximum results & support</div>
                 
                 <ul class="plan-features">
-                    <li>Real-time alerts (every 30 min)</li>
+                    <li>Real-time alerts (AI runs every 30 min)</li>
                     <li>Dedicated success manager</li>
                     <li>Interview preparation resources</li>
                     <li>Salary negotiation support</li>
                     <li>Priority customer support</li>
-                    <li>Everything in Professional</li>
+                    <li>Everything in Pro</li>
                 </ul>
                 
-                <button class="select-plan-btn">Get Started</button>
+                <button class="select-plan-btn">Select Premium</button>
             </div>
         </div>
         
@@ -773,8 +650,8 @@
                 
                 <!-- Buttons -->
                 <div class="btn-group">
-                    <button type="button" class="btn btn-secondary" onclick="goBack()">← Back</button>
-                    <button type="submit" class="btn btn-primary flex-1" id="submitBtn">
+                    <button type="button" class="btn-secondary" onclick="goBack()">← Back to Plans</button>
+                    <button type="submit" class="btn-primary" id="submitBtn">
                         Start 7-Day Free Trial →
                     </button>
                 </div>
@@ -788,13 +665,12 @@
             <p>Your trial has started. We're setting up your account now...</p>
             <div class="loading"></div>
         </div>
-    </main>
+    </div>
 
     <script>
         // Configuration
         const STRIPE_PUBLISHABLE_KEY = 'pk_test_51SQk2qECvCuCTIlIzi5wkfLJnUSIwEooPJeVfeu6TCBDgfyJ7tSWiBuy1OIH9mU60JGCgbELqZpuu2YC3oOAp6dO00wvUC4SJI'; // Replace with your Stripe key
-        // Use current hostname for API (works for both localhost and production)
-        const API_BASE_URL = window.location.origin + '/api';
+        const API_BASE_URL = 'http://localhost:5001/api'; // Your backend URL
         
         // Initialize Stripe
         const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
@@ -828,84 +704,6 @@
         
         // State
         let selectedPlan = null;
-        let billingPeriod = 'monthly'; // 'monthly' or 'annual'
-        
-        // Plans configuration
-        const plans = {
-            starter: { name: 'Starter', monthly: 29, annual: 23 },
-            professional: { name: 'Professional', monthly: 59, annual: 47 },
-            premium: { name: 'Premium', monthly: 99, annual: 79 }
-        };
-        
-        // Calculate savings for annual billing
-        function calculateSavings(planKey) {
-            const plan = plans[planKey];
-            const monthlyTotal = plan.monthly * 12;
-            const annualTotal = plan.annual * 12;
-            return monthlyTotal - annualTotal;
-        }
-        
-        // Billing toggle handler
-        const billingSwitch = document.getElementById('billingSwitch');
-        const monthlyLabel = document.getElementById('monthlyLabel');
-        const annualLabel = document.getElementById('annualLabel');
-        const savingsBadge = document.getElementById('savingsBadge');
-        
-        billingSwitch.addEventListener('click', function() {
-            billingPeriod = billingPeriod === 'monthly' ? 'annual' : 'monthly';
-            updateBillingToggle();
-            updatePrices();
-        });
-        
-        function updateBillingToggle() {
-            if (billingPeriod === 'annual') {
-                billingSwitch.classList.add('annual');
-                monthlyLabel.classList.remove('active');
-                annualLabel.classList.add('active');
-                savingsBadge.style.display = 'inline-block';
-                savingsBadge.textContent = `Save up to $${calculateSavings('premium')}/year`;
-            } else {
-                billingSwitch.classList.remove('annual');
-                monthlyLabel.classList.add('active');
-                annualLabel.classList.remove('active');
-                savingsBadge.style.display = 'none';
-            }
-        }
-        
-        function updatePrices() {
-            document.querySelectorAll('.pricing-card').forEach(card => {
-                const planKey = card.dataset.plan;
-                const plan = plans[planKey];
-                const price = billingPeriod === 'monthly' ? plan.monthly : plan.annual;
-                const savings = calculateSavings(planKey);
-                
-                // Update price
-                const priceElement = card.querySelector(`#${planKey}-price`);
-                if (priceElement) {
-                    priceElement.textContent = price;
-                }
-                
-                // Update annual billing text
-                const annualText = card.querySelector(`#${planKey}-annual`);
-                if (annualText) {
-                    annualText.style.display = billingPeriod === 'annual' ? 'block' : 'none';
-                }
-                
-                // Update savings text
-                const savingsElement = card.querySelector(`#${planKey}-savings`);
-                if (savingsElement) {
-                    if (billingPeriod === 'annual') {
-                        savingsElement.style.display = 'block';
-                        savingsElement.textContent = `Save $${savings}/year`;
-                    } else {
-                        savingsElement.style.display = 'none';
-                    }
-                }
-                
-                // Update data-price attribute for payment processing
-                card.dataset.price = price;
-            });
-        }
         
         // Plan selection
         document.querySelectorAll('.pricing-card').forEach(card => {
@@ -917,15 +715,10 @@
                 this.classList.add('selected');
                 
                 // Store selected plan
-                const planKey = this.dataset.plan;
-                const plan = plans[planKey];
-                const price = billingPeriod === 'monthly' ? plan.monthly : plan.annual;
-                
                 selectedPlan = {
-                    name: planKey,
-                    price: price,
-                    billing: billingPeriod,
-                    displayName: plan.name
+                    name: this.dataset.plan,
+                    price: parseInt(this.dataset.price),
+                    displayName: this.querySelector('.plan-name').textContent
                 };
                 
                 // Update payment section
@@ -968,7 +761,7 @@
         // Go back to plan selection
         function goBack() {
             document.getElementById('paymentSection').classList.remove('active');
-            document.querySelector('h1').scrollIntoView({ behavior: 'smooth' });
+            document.querySelector('.header').scrollIntoView({ behavior: 'smooth' });
         }
         
         // Form submission
@@ -1009,45 +802,28 @@
                 }
                 
                 // Create subscription on backend
-                const apiUrl = `${API_BASE_URL}/stripe/create-subscription`;
-                console.log('Calling API:', apiUrl);
-                
-                let response;
-                try {
-                    response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            paymentMethodId: paymentMethod.id,
-                            plan: selectedPlan.name,
-                            billing: selectedPlan.billing,
-                            email: step1Data.email || step2Data.email,
-                            name: step2Data.fullLegalName || `${step1Data.firstName} ${step1Data.lastName}`,
-                            onboardingData: {
-                                step1: step1Data,
-                                step2: step2Data,
-                                step3: step3Data,
-                                step4: step4Data
-                            }
-                        })
-                    });
-                } catch (fetchError) {
-                    console.error('Network error:', fetchError);
-                    throw new Error(`Network error: ${fetchError.message}. Please check your connection and try again.`);
-                }
+                const response = await fetch(`${API_BASE_URL}/stripe/create-subscription`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        paymentMethodId: paymentMethod.id,
+                        plan: selectedPlan.name,
+                        email: step1Data.email || step2Data.email,
+                        name: step2Data.fullLegalName || `${step1Data.firstName} ${step1Data.lastName}`,
+                        onboardingData: {
+                            step1: step1Data,
+                            step2: step2Data,
+                            step3: step3Data,
+                            step4: step4Data
+                        }
+                    })
+                });
                 
                 if (!response.ok) {
-                    let errorMessage = `Server error (${response.status})`;
-                    try {
-                        const errorData = await response.json();
-                        errorMessage = errorData.message || errorData.error || errorMessage;
-                    } catch (parseError) {
-                        const text = await response.text();
-                        errorMessage = text || errorMessage;
-                    }
-                    throw new Error(errorMessage);
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Payment failed');
                 }
                 
                 const result = await response.json();
@@ -1065,7 +841,7 @@
                 
                 // Redirect to dashboard after 3 seconds
                 setTimeout(() => {
-                    window.location.href = '/app/dashboard';  // Or wherever your dashboard is
+                    window.location.href = '/dashboard';
                 }, 3000);
                 
             } catch (error) {
@@ -1078,7 +854,7 @@
             }
         });
         
-        // Initialize on load
+        // Auto-select Pro plan on load (recommended)
         window.addEventListener('load', () => {
             // Pre-fill cardholder name if available
             const step1Data = JSON.parse(localStorage.getItem('step1Data') || '{}');
@@ -1089,10 +865,6 @@
             } else if (step1Data.firstName && step1Data.lastName) {
                 document.getElementById('cardholderName').value = `${step1Data.firstName} ${step1Data.lastName}`;
             }
-            
-            // Initialize billing toggle
-            updateBillingToggle();
-            updatePrices();
         });
     </script>
 </body>

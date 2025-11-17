@@ -2,42 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './Header.css';
 
-// Helper function to decode JWT token (without verification - just to check expiration)
-const decodeJWT = (token) => {
-  try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
-    );
-    return JSON.parse(jsonPayload);
-  } catch (error) {
-    return null;
-  }
-};
-
-// Helper function to validate JWT token
-const isTokenValid = (token) => {
-  if (!token) return false;
-  
-  try {
-    const decoded = decodeJWT(token);
-    if (!decoded) return false;
-    
-    // Check if token is expired
-    if (decoded.exp && decoded.exp * 1000 < Date.now()) {
-      return false;
-    }
-    
-    return true;
-  } catch (error) {
-    return false;
-  }
-};
-
 const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -45,90 +9,34 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [user, setUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   
-  // Function to check authentication and update user state
-  const checkAuthentication = () => {
+  // Check if user is authenticated from localStorage
+  useEffect(() => {
     const token = localStorage.getItem('authToken');
     const storedUser = localStorage.getItem('user');
     
-    // Validate token
-    if (token && isTokenValid(token) && storedUser) {
+    if (token && storedUser) {
       try {
         const userData = JSON.parse(storedUser);
         setUser({
           firstName: userData.name?.split(' ')[0] || 'User',
           lastName: userData.name?.split(' ').slice(1).join(' ') || '',
           email: userData.email,
-          plan: userData.plan || 'Pro',
-          subscriptionStatus: userData.subscriptionStatus || 'trialing',
-          fullName: userData.name || 'User'
+          plan: userData.plan || 'Pro'
         });
-        setIsAuthenticated(true);
       } catch (error) {
         console.error('Error parsing user data:', error);
         setUser(null);
-        setIsAuthenticated(false);
-        // Clear invalid data
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('user');
       }
     } else {
-      // Token is invalid or missing
       setUser(null);
-      setIsAuthenticated(false);
-      // Clear invalid token
-      if (token) {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('user');
-      }
     }
-  };
-  
-  // Check authentication on mount and route changes
-  useEffect(() => {
-    checkAuthentication();
   }, [location]);
-  
-  // Listen for storage changes (when user logs in/out in another tab)
-  useEffect(() => {
-    const handleStorageChange = (e) => {
-      if (e.key === 'authToken' || e.key === 'user') {
-        checkAuthentication();
-      }
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    
-    // Also listen for custom events (for same-tab login/logout)
-    const handleAuthChange = () => {
-      checkAuthentication();
-    };
-    
-    window.addEventListener('authChange', handleAuthChange);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('authChange', handleAuthChange);
-    };
-  }, []);
-  
-  // Periodically check token validity (every 5 minutes)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      checkAuthentication();
-    }, 5 * 60 * 1000); // 5 minutes
-    
-    return () => clearInterval(interval);
-  }, []);
   
   // TODO: Replace with actual auth context
   // For now, determine if user is authenticated based on route
   // Exclude onboarding pages from showing profile button
   const isOnboardingRoute = location.pathname.startsWith('/app/onboarding/');
-  const isWelcomePage = location.pathname === '/app/onboarding/welcome';
-  const isCheckoutRoute = location.pathname === '/checkout.html' || location.pathname.includes('/checkout');
-  const isOnboardingOrCheckout = isOnboardingRoute || isCheckoutRoute;
   const isDashboardRoute = location.pathname === '/dashboard' || location.pathname === '/app/dashboard';
   const isAuthenticatedRoute = (location.pathname.startsWith('/app/') && !isOnboardingRoute) || user !== null;
   const shouldShowProfileButton = isAuthenticatedRoute && !isDashboardRoute;
@@ -136,68 +44,17 @@ const Header = () => {
   const isActive = (path) => location.pathname === path;
   
   const handleLogout = () => {
-    // Clear all authentication data
+    // Clear authentication data
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
-    
-    // Clear all onboarding step data
-    localStorage.removeItem('step1Data');
-    localStorage.removeItem('step2Data');
-    localStorage.removeItem('step3Data');
-    localStorage.removeItem('step4Data');
-    
-    // Clear any other onboarding-related data
-    localStorage.removeItem('onboarding_step1');
-    localStorage.removeItem('onboarding_step3');
-    localStorage.removeItem('onboarding_step3_residences');
-    localStorage.removeItem('onboarding_step4_form');
-    localStorage.removeItem('onboarding_step4_employment');
-    localStorage.removeItem('onboarding_step4_education');
-    localStorage.removeItem('onboarding_step4_licenses');
-    localStorage.removeItem('onboarding_step4_certifications');
-    localStorage.removeItem('onboarding_step4_references');
-    
-    // Update state
     setUser(null);
-    setIsAuthenticated(false);
-    
-    // Dispatch custom event to update other components (navbar, etc.)
-    window.dispatchEvent(new Event('authChange'));
-    
-    // Redirect to home page
     navigate('/');
   };
 
   const handleSignOut = () => {
-    // Clear all authentication data
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
-    
-    // Clear all onboarding step data
-    localStorage.removeItem('step1Data');
-    localStorage.removeItem('step2Data');
-    localStorage.removeItem('step3Data');
-    localStorage.removeItem('step4Data');
-    
-    // Clear any other onboarding-related data
-    localStorage.removeItem('onboarding_step1');
-    localStorage.removeItem('onboarding_step3');
-    localStorage.removeItem('onboarding_step3_residences');
-    localStorage.removeItem('onboarding_step4_form');
-    localStorage.removeItem('onboarding_step4_employment');
-    localStorage.removeItem('onboarding_step4_education');
-    localStorage.removeItem('onboarding_step4_licenses');
-    localStorage.removeItem('onboarding_step4_certifications');
-    localStorage.removeItem('onboarding_step4_references');
-    
-    // Update state
-    setUser(null);
-    setIsAuthenticated(false);
-    
-    // Dispatch custom event to update other components (navbar, etc.)
-    window.dispatchEvent(new Event('authChange'));
-    
-    // Redirect to home page
+    // Clear any stored data
+    localStorage.clear();
+    // Redirect to home
     window.location.href = '/';
   };
 
@@ -283,9 +140,6 @@ const Header = () => {
                 <Link to="/about" className="text-sm font-medium text-gray-700 hover:text-talBlue transition">
                   About
                 </Link>
-                <Link to="/about/our-story" className="text-sm font-medium text-gray-700 hover:text-talBlue transition">
-                  Our Story
-                </Link>
                 <Link to="/contact" className="text-sm font-medium text-gray-700 hover:text-talBlue transition">
                   Contact
                 </Link>
@@ -295,8 +149,8 @@ const Header = () => {
           
           {/* Right Side Actions */}
           <div className="flex items-center gap-4">
-            {isDashboardRoute && isAuthenticated && user ? (
-              // User Menu - Only show on dashboard pages when authenticated
+            {isDashboardRoute && user ? (
+              // User Menu - Only show on dashboard pages
               <div className="nav-right">
                 {/* Notifications */}
                 <button className="nav-notification">
@@ -312,10 +166,8 @@ const Header = () => {
                     className="user-menu-trigger"
                     onClick={() => setDropdownOpen(!dropdownOpen)}
                   >
-                    <div className="user-avatar">
-                      {user.firstName?.[0] || ''}{user.lastName?.[0] || ''}
-                    </div>
-                    <span className="user-name">{user.firstName || 'User'}</span>
+                    <div className="user-avatar">KJ</div>
+                    <span className="user-name">Kenneth</span>
                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd"/>
                     </svg>
@@ -325,10 +177,8 @@ const Header = () => {
                     <div className="user-dropdown">
                       <div className="dropdown-header">
                         <div className="dropdown-user-info">
-                          <div className="dropdown-name">{user.fullName || `${user.firstName} ${user.lastName}`.trim() || 'User'}</div>
-                          <div className="dropdown-plan">
-                            {user.plan || 'Pro'} Plan • {user.subscriptionStatus === 'trialing' ? 'Trial' : user.subscriptionStatus === 'active' ? 'Active' : 'Inactive'}
-                          </div>
+                          <div className="dropdown-name">Kenneth Jackson</div>
+                          <div className="dropdown-plan">Pro Plan • Trial</div>
                         </div>
                       </div>
                       
@@ -366,7 +216,7 @@ const Header = () => {
                   )}
                 </div>
               </div>
-            ) : isAuthenticated && user && shouldShowProfileButton ? (
+            ) : user && shouldShowProfileButton ? (
               // User Menu (Authenticated) - but not on dashboard
               <div className="relative">
                 <button
@@ -374,10 +224,10 @@ const Header = () => {
                   className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition"
                 >
                   <div className="w-8 h-8 bg-talBlue rounded-full flex items-center justify-center text-white font-bold text-sm">
-                    {(user.firstName?.[0] || '') + (user.lastName?.[0] || '') || 'U'}
+                    {user.firstName[0]}{user.lastName[0]}
                   </div>
                   <span className="hidden md:block text-sm font-medium text-gray-700">
-                    {user.firstName || 'User'}
+                    {user.firstName}
                   </span>
                   <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -396,12 +246,10 @@ const Header = () => {
                     {/* Menu */}
                     <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-20">
                       <div className="px-4 py-3 border-b border-gray-200">
-                        <p className="text-sm font-semibold text-gray-900">
-                          {user.fullName || `${user.firstName} ${user.lastName}`.trim() || 'User'}
-                        </p>
+                        <p className="text-sm font-semibold text-gray-900">{user.firstName} {user.lastName}</p>
                         <p className="text-xs text-gray-600 mt-1">{user.email}</p>
                         <p className="text-xs text-talBlue font-semibold mt-2 bg-blue-50 px-2 py-1 rounded inline-block">
-                          {user.plan || 'Pro'} Plan
+                          {user.plan} Plan
                         </p>
                       </div>
                       
@@ -443,29 +291,24 @@ const Header = () => {
                 )}
               </div>
             ) : (
-              // Public Actions (Not Authenticated) - Show Login button
+              // Public Actions (Not Authenticated)
               <>
                 <Link 
-                  to="/login" 
+                  to="/signin" 
                   className="text-sm font-medium text-gray-700 hover:text-talBlue transition"
                 >
-                  Login
+                  Sign In
                 </Link>
-                {isWelcomePage ? (
-                  // Welcome page: Show "Upload Resume" button
-                  <Link to="/app/onboarding/step-1">
-                    <button className="px-6 py-2 bg-talBlue text-white rounded-lg font-semibold hover:bg-blue-700 transition shadow-md" style={{ border: 'none' }}>
-                      Upload Resume
-                    </button>
-                  </Link>
-                ) : !isOnboardingOrCheckout ? (
-                  // Other public pages: Show "Get Started" button
-                  <Link to="/app/onboarding/welcome">
-                    <button className="px-6 py-2 bg-talBlue text-white rounded-lg font-semibold hover:bg-blue-700 transition shadow-md" style={{ border: 'none' }}>
-                      Get Started
-                    </button>
-                  </Link>
-                ) : null}
+                <Link to="/pricing">
+                  <button className="px-6 py-2 bg-white text-talBlue border-2 border-talBlue rounded-lg font-semibold hover:bg-blue-50 transition">
+                    View Pricing
+                  </button>
+                </Link>
+                <Link to="/app/onboarding/step-1">
+                  <button className="px-6 py-2 bg-talBlue text-white rounded-lg font-semibold hover:bg-blue-700 transition shadow-md" style={{ border: 'none' }}>
+                    Get Started
+                  </button>
+                </Link>
               </>
             )}
             
@@ -488,7 +331,7 @@ const Header = () => {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-gray-200">
-            {isAuthenticated && user ? (
+            {user ? (
               // Authenticated Mobile Menu
               <>
                 <Link 
@@ -550,13 +393,6 @@ const Header = () => {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   About
-                </Link>
-                <Link 
-                  to="/about/our-story" 
-                  className="block py-2 text-sm font-medium text-gray-700 hover:text-talBlue transition"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Our Story
                 </Link>
                 <Link 
                   to="/contact" 

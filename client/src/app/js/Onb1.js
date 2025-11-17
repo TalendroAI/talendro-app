@@ -218,10 +218,7 @@ const Page = () => {
       }
     }
     
-    // Save step1Data to localStorage before navigating
-    localStorage.setItem('step1Data', JSON.stringify(formData));
-    
-    // Navigate to next step
+    // Data is already auto-saved, just navigate
     navigate('/app/onboarding/step-3');
   };
 

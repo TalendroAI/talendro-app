@@ -10,7 +10,7 @@ export default function Page(){
         <div className="grid gap-8 md:grid-cols-2">
           <div className="card border-2 border-talBlue bg-gradient-to-br from-blue-50 to-white">
             <h3 className="h2 text-talBlue mb-4">Talendro™ Navigator</h3>
-            <p className="body mb-6">Fully autonomous job search platform. Choose from three plans designed for different job search timelines and needs.</p>
+            <p className="body mb-6">All-in-one job search automation platform. Everything you need included in one simple subscription.</p>
             
             <div className="space-y-3 mb-6">
               <div className="flex items-center">
@@ -35,26 +35,7 @@ export default function Page(){
               </div>
             </div>
             
-            <div className="mb-6">
-              <p className="h3 mb-4">Starting at $29/month</p>
-              <div className="bg-blue-50 rounded-lg p-4 border border-talBlue">
-                <p className="body text-sm mb-3"><strong>Three plans to fit your needs:</strong></p>
-                <ul className="space-y-2">
-                  <li className="body text-sm flex items-start">
-                    <span className="text-talAqua mr-3">●</span>
-                    <span><strong>Basic ($29/mo):</strong> Daily searches, 50 applications/month</span>
-                  </li>
-                  <li className="body text-sm flex items-start">
-                    <span className="text-talAqua mr-3">●</span>
-                    <span><strong>Pro ($49/mo):</strong> Hourly searches, unlimited applications</span>
-                  </li>
-                  <li className="body text-sm flex items-start">
-                    <span className="text-talAqua mr-3">●</span>
-                    <span><strong>Premium ($99/mo):</strong> Real-time alerts every 30 min, dedicated support</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
+            <p className="text-2xl font-bold text-talSlate mb-4">$39/month</p>
             <a href='/services/navigator'><button className='btn btn-primary w-full'>Explore Navigator</button></a>
           </div>
           
@@ -102,17 +83,15 @@ export default function Page(){
               <p className="body text-sm">Built by recruitment industry veterans with 20+ years of experience placing top talent.</p>
             </div>
             <div>
-              <h4 className="font-medium mb-2">True Autonomous AI</h4>
-              <p className="body text-sm">Our comprehensive onboarding—collecting 10 years of work history, education, certifications, and references—enables 
-                <strong> autonomous submission for 90% of applications</strong>. Set it up once, then the AI works 24/7 on your behalf 
-                with zero ongoing effort required. Wake up to "Applied to 47 jobs overnight."</p>
+              <h4 className="font-medium mb-2">Complete Automation</h4>
+              <p className="body text-sm">Set it up once, then let our AI work around the clock to advance your career while you focus on what matters.</p>
             </div>
           </div>
         </div>
       </div>
       
-      <div className='mt-8 flex flex-wrap gap-3'>
-        <a href='/app/onboarding/welcome'><button className='btn btn-primary mr-3'>Get Started</button></a>
+      <div className='mt-8 flex flex-wrap gap-3 justify-center'>
+        <a href='/app/onboarding/welcome'><button className='btn btn-primary mr-3'>Get Started Now</button></a>
         <a href='/pricing'><button className='btn btn-secondary mr-3'>View Pricing</button></a>
       </div>
     </section>

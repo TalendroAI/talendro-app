@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import Header from '../ui/Header'
 import Footer from '../ui/Footer'
 import ScrollToTop from '../ui/ScrollToTop'
@@ -41,11 +41,14 @@ import Applications from '../app/Applications'
 import Billing from '../app/Billing'
 
 export default function App(){
+  const location = useLocation();
+  const isInterviewCoachPage = location.pathname === '/interview-coach';
+  
   return (
     <>
       <ScrollToTop />
-      <Header />
-      <main className="container py-10">
+      {!isInterviewCoachPage && <Header />}
+      <main className={isInterviewCoachPage ? "" : "container py-10"}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/how-it-works" element={<How />} />
@@ -90,7 +93,7 @@ export default function App(){
           <Route path="/app/billing" element={<Billing />} />
         </Routes>
       </main>
-      <Footer />
+      {!isInterviewCoachPage && <Footer />}
     </>
   )
 }

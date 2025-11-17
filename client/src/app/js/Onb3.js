@@ -1,211 +1,54 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAutoSave, loadSavedData, mergeWithResumeData } from '../../hooks/useAutoSave';
-
-// All 50 US States
-const US_STATES = [
-  { value: 'AL', label: 'Alabama' },
-  { value: 'AK', label: 'Alaska' },
-  { value: 'AZ', label: 'Arizona' },
-  { value: 'AR', label: 'Arkansas' },
-  { value: 'CA', label: 'California' },
-  { value: 'CO', label: 'Colorado' },
-  { value: 'CT', label: 'Connecticut' },
-  { value: 'DE', label: 'Delaware' },
-  { value: 'FL', label: 'Florida' },
-  { value: 'GA', label: 'Georgia' },
-  { value: 'HI', label: 'Hawaii' },
-  { value: 'ID', label: 'Idaho' },
-  { value: 'IL', label: 'Illinois' },
-  { value: 'IN', label: 'Indiana' },
-  { value: 'IA', label: 'Iowa' },
-  { value: 'KS', label: 'Kansas' },
-  { value: 'KY', label: 'Kentucky' },
-  { value: 'LA', label: 'Louisiana' },
-  { value: 'ME', label: 'Maine' },
-  { value: 'MD', label: 'Maryland' },
-  { value: 'MA', label: 'Massachusetts' },
-  { value: 'MI', label: 'Michigan' },
-  { value: 'MN', label: 'Minnesota' },
-  { value: 'MS', label: 'Mississippi' },
-  { value: 'MO', label: 'Missouri' },
-  { value: 'MT', label: 'Montana' },
-  { value: 'NE', label: 'Nebraska' },
-  { value: 'NV', label: 'Nevada' },
-  { value: 'NH', label: 'New Hampshire' },
-  { value: 'NJ', label: 'New Jersey' },
-  { value: 'NM', label: 'New Mexico' },
-  { value: 'NY', label: 'New York' },
-  { value: 'NC', label: 'North Carolina' },
-  { value: 'ND', label: 'North Dakota' },
-  { value: 'OH', label: 'Ohio' },
-  { value: 'OK', label: 'Oklahoma' },
-  { value: 'OR', label: 'Oregon' },
-  { value: 'PA', label: 'Pennsylvania' },
-  { value: 'RI', label: 'Rhode Island' },
-  { value: 'SC', label: 'South Carolina' },
-  { value: 'SD', label: 'South Dakota' },
-  { value: 'TN', label: 'Tennessee' },
-  { value: 'TX', label: 'Texas' },
-  { value: 'UT', label: 'Utah' },
-  { value: 'VT', label: 'Vermont' },
-  { value: 'VA', label: 'Virginia' },
-  { value: 'WA', label: 'Washington' },
-  { value: 'WV', label: 'West Virginia' },
-  { value: 'WI', label: 'Wisconsin' },
-  { value: 'WY', label: 'Wyoming' }
-];
 
 const Onb3 = () => {
   console.log('Onb3');
   const navigate = useNavigate();
   
-  // Load saved data with defaults
-  const [formData, setFormData] = useState(() => 
-    loadSavedData('onboarding_step3', {
-      fullLegalName: '',
-      preferredFirstName: '',
-      maidenName: '',
-      previousNames: '',
-      email: '',
-      phone: '',
-      linkedinUrl: '',
-      website: '',
-      streetAddress: '',
-      city: '',
-      state: '',
-      postalCode: '',
-      county: '',
-      country: 'US',
-      emergencyName: '',
-      emergencyRelationship: '',
-      emergencyPhone: '',
-      emergencyPhoneAlt: '',
-      dlNumber: '',
-      dlState: '',
-      dateOfBirth: '',
-      ssnLast4: ''
-    })
-  );
-
-  // Load saved residences or use default
-  const [residences, setResidences] = useState(() => {
-    const saved = loadSavedData('onboarding_step3_residences', []);
-    return saved.length > 0 ? saved : [
-      { id: 1, street: '', city: '', state: '', zip: '', fromDate: '', toDate: '', current: false, autoAdded: false }
-    ];
+  const [formData, setFormData] = useState({
+    fullLegalName: '',
+    preferredFirstName: '',
+    maidenName: '',
+    previousNames: '',
+    email: '',
+    phone: '',
+    linkedinUrl: '',
+    website: '',
+    streetAddress: '',
+    city: '',
+    state: '',
+    postalCode: '',
+    county: '',
+    country: 'US',
+    emergencyName: '',
+    emergencyRelationship: '',
+    emergencyPhone: '',
+    emergencyPhoneAlt: '',
+    dlNumber: '',
+    dlState: '',
+    dateOfBirth: '',
+    ssnLast4: ''
   });
 
-  // Residential history duration tracking
-  const [residentialYears, setResidentialYears] = useState(0);
-  const REQUIRED_RESIDENTIAL_YEARS = 7;
+  const [residences, setResidences] = useState([
+    { id: 1, street: '', city: '', state: '', zip: '', fromDate: '', toDate: '', current: false }
+  ]);
 
-  // Auto-save formData on every change
-  useAutoSave('onboarding_step3', formData);
-  
-  // Auto-save residences on every change
-  useAutoSave('onboarding_step3_residences', residences);
-
-  // Merge with parsed resume data on mount
   useEffect(() => {
+    // Auto-fill from localStorage if available
     const resumeData = JSON.parse(localStorage.getItem('resumeData') || 'null');
-    const prefill = resumeData?.prefill;
-    
-    if (prefill?.step2) {
-      const step2 = prefill.step2;
-      
-      // Populate fields only if they're currently empty (initial load)
-      setFormData(prev => {
-        const updates = {};
-        
-        // Only populate if field is currently empty (hasn't been edited)
-        if (!prev.fullLegalName) updates.fullLegalName = step2.fullLegalName || '';
-        if (!prev.preferredFirstName) updates.preferredFirstName = step2.preferredFirstName || '';
-        if (!prev.maidenName) updates.maidenName = step2.maidenName || '';
-        if (!prev.previousNames) updates.previousNames = step2.previousNames || '';
-        if (!prev.email) updates.email = step2.email || '';
-        if (!prev.phone) updates.phone = step2.phone || '';
-        if (!prev.linkedinUrl) updates.linkedinUrl = step2.linkedinUrl || '';
-        if (!prev.website) updates.website = step2.website || '';
-        if (!prev.streetAddress) updates.streetAddress = step2.streetAddress || '';
-        if (!prev.city) updates.city = step2.city || '';
-        if (!prev.state) updates.state = step2.state || '';
-        if (!prev.postalCode) updates.postalCode = step2.postalCode || '';
-        if (!prev.county) updates.county = step2.county || '';
-        if (!prev.country) updates.country = step2.country || 'US';
-        if (!prev.emergencyName) updates.emergencyName = step2.emergencyName || '';
-        if (!prev.emergencyRelationship) updates.emergencyRelationship = step2.emergencyRelationship || '';
-        if (!prev.emergencyPhone) updates.emergencyPhone = step2.emergencyPhone || '';
-        if (!prev.emergencyPhoneAlt) updates.emergencyPhoneAlt = step2.emergencyPhoneAlt || '';
-        if (!prev.dlNumber) updates.dlNumber = step2.dlNumber || '';
-        if (!prev.dlState) updates.dlState = step2.dlState || '';
-        if (!prev.dateOfBirth) updates.dateOfBirth = step2.dateOfBirth || '';
-        
-        // SSN should always start empty
-        updates.ssnLast4 = '';
-        
-        return { ...prev, ...updates };
-      });
-      
-      // Populate residential history (only if empty)
-      if (step2.residentialHistory && step2.residentialHistory.length > 0 && residences.length === 1 && !residences[0].fromDate) {
-        const mappedResidences = step2.residentialHistory.map((residence, index) => ({
-          id: index + 1,
-          street: residence.streetAddress || '',
-          city: residence.city || '',
-          state: residence.state || '',
-          zip: residence.postalCode || '',
-          fromDate: residence.fromDate || '',
-          toDate: residence.isCurrent ? '' : (residence.toDate || ''),
-          current: residence.isCurrent || false,
-          autoAdded: false // Pre-filled from resume are not auto-added
-        }));
-        setResidences(mappedResidences);
-      }
+    if (resumeData?.data?.prefill?.step3) {
+      setFormData(prev => ({...prev, ...resumeData.data.prefill.step3}));
     }
-  }, []); // Only run once on mount
+  }, []);
 
   const handleChange = (e) => {
     const { id, value } = e.target;
-    
-    // Special handling for SSN Last 4 - only allow digits and limit to 4
-    if (id === 'ssnLast4') {
-      const digitsOnly = value.replace(/\D/g, '').slice(0, 4);
-      setFormData(prev => ({...prev, [id]: digitsOnly}));
-      return;
-    }
-    
     setFormData(prev => ({...prev, [id]: value}));
   };
 
   const setNA = (fieldId) => {
     setFormData(prev => ({...prev, [fieldId]: 'N/A'}));
-  };
-
-  // Calculate total years of residential history
-  const calculateResidentialYears = (addresses) => {
-    let totalMonths = 0;
-    
-    addresses.forEach(addr => {
-      if (!addr.fromDate) return;
-      
-      const startDate = new Date(addr.fromDate);
-      let endDate;
-      
-      if (addr.current || !addr.toDate) {
-        endDate = new Date(); // Current date if still living there
-      } else {
-        endDate = new Date(addr.toDate);
-      }
-      
-      // Calculate difference in months
-      const months = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
-                     (endDate.getMonth() - startDate.getMonth());
-      
-      totalMonths += Math.max(0, months);
-    });
-    
-    return (totalMonths / 12).toFixed(2); // Convert to years with 2 decimals
   };
 
   const addResidence = () => {
@@ -218,8 +61,7 @@ const Onb3 = () => {
       zip: '',
       fromDate: '',
       toDate: '',
-      current: false,
-      autoAdded: false // Manually added by user
+      current: false
     }]);
   };
 
@@ -234,817 +76,596 @@ const Onb3 = () => {
   };
 
   const toggleCurrentResidence = (id) => {
-    setResidences(residences.map(res => {
-      if (res.id === id) {
-        const newCurrent = !res.current;
-        // If checking "Current", clear toDate; if unchecking, keep existing toDate
-        return {
-          ...res,
-          current: newCurrent,
-          toDate: newCurrent ? '' : res.toDate
-        };
-      }
-      return res;
-    }));
+    setResidences(residences.map(res =>
+      res.id === id ? {...res, current: !res.current, toDate: res.current ? res.toDate : ''} : res
+    ));
   };
-
-  // Calculate duration of a single residence in years
-  const calculateResidenceYears = (res) => {
-    if (!res.fromDate) return 0;
-    
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const startDate = new Date(res.fromDate);
-    startDate.setHours(0, 0, 0, 0);
-    
-    let endDate;
-    if (res.current) {
-      endDate = today;
-    } else if (res.toDate) {
-      endDate = new Date(res.toDate);
-      endDate.setHours(0, 0, 0, 0);
-    } else {
-      return 0; // No end date and not current
-    }
-    
-    const daysDiff = Math.max(0, Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)));
-    return daysDiff / 365.25; // Convert to years
-  };
-
-  // Calculate total years covered by residential history
-  const residentialHistoryCoverage = useMemo(() => {
-    const REQUIRED_YEARS = 7;
-    
-    if (!residences || residences.length === 0) {
-      return {
-        totalYears: 0,
-        remainingYears: REQUIRED_YEARS,
-        isComplete: false
-      };
-    }
-    
-    let totalDays = 0;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    residences.forEach(res => {
-      if (!res.fromDate) return; // Skip if no start date
-      
-      const startDate = new Date(res.fromDate);
-      startDate.setHours(0, 0, 0, 0);
-      
-      let endDate;
-      if (res.current) {
-        // For current residence, use today as end date
-        endDate = today;
-      } else if (res.toDate) {
-        endDate = new Date(res.toDate);
-        endDate.setHours(0, 0, 0, 0);
-      } else {
-        // Skip if no end date and not current
-        return;
-      }
-      
-      // Calculate days difference
-      const daysDiff = Math.max(0, Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)));
-      totalDays += daysDiff;
-    });
-    
-    // Convert days to years (approximate - 365.25 days per year to account for leap years)
-    const totalYears = totalDays / 365.25;
-    const remainingYears = Math.max(0, REQUIRED_YEARS - totalYears);
-    const isComplete = totalYears >= REQUIRED_YEARS;
-    
-    return {
-      totalYears: Math.round(totalYears * 100) / 100, // Round to 2 decimal places
-      remainingYears: Math.round(remainingYears * 100) / 100,
-      isComplete
-    };
-  }, [residences]);
-
-  // Dynamically add/remove residence entries based on manually-added residences' coverage
-  useEffect(() => {
-    const REQUIRED_YEARS = 7;
-    
-    // Separate manually-added from auto-added residences
-    const manuallyAdded = residences.filter(r => !r.autoAdded);
-    const autoAdded = residences.filter(r => r.autoAdded);
-    
-    // Only proceed if we have at least one manually-added residence with complete dates
-    if (manuallyAdded.length === 0) return;
-    
-    // Calculate total years covered by manually-added residences with valid dates
-    let totalDays = 0;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    let hasCompleteResidence = false;
-    
-    manuallyAdded.forEach(res => {
-      if (!res.fromDate) return; // Skip if no start date
-      
-      // Check if this residence has complete date information
-      const hasEndDate = res.current || res.toDate;
-      if (!hasEndDate) return; // Skip if no end date and not current
-      
-      hasCompleteResidence = true;
-      
-      const startDate = new Date(res.fromDate);
-      startDate.setHours(0, 0, 0, 0);
-      
-      let endDate;
-      if (res.current) {
-        endDate = today;
-      } else {
-        endDate = new Date(res.toDate);
-        endDate.setHours(0, 0, 0, 0);
-      }
-      
-      const daysDiff = Math.max(0, Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)));
-      totalDays += daysDiff;
-    });
-    
-    // Don't do anything until at least one manually-added residence has complete dates
-    if (!hasCompleteResidence) {
-      // If we have auto-added residences but no complete manually-added ones, remove them
-      if (autoAdded.length > 0) {
-        setResidences(manuallyAdded);
-      }
-      return;
-    }
-    
-    const totalYears = totalDays / 365.25;
-    const remainingYears = Math.max(0, REQUIRED_YEARS - totalYears);
-    const isComplete = totalYears >= REQUIRED_YEARS;
-    
-    // If coverage is complete, remove all auto-added residences
-    if (isComplete && autoAdded.length > 0) {
-      setResidences(manuallyAdded);
-      return;
-    }
-    
-    // If coverage is incomplete, ensure we have enough auto-added residences
-    if (!isComplete && remainingYears > 0.5) {
-      // Calculate how many auto-added residences we should have
-      // Assume each residence might cover 2-4 years, so roughly one per 3 years needed
-      const estimatedEntriesNeeded = Math.ceil(remainingYears / 3);
-      const entriesNeeded = Math.min(estimatedEntriesNeeded, 4); // Max 4 auto-added
-      
-      // If we don't have enough auto-added residences, add more
-      if (autoAdded.length < entriesNeeded) {
-        const toAdd = entriesNeeded - autoAdded.length;
-        const newAutoAdded = [];
-        const maxId = Math.max(...residences.map(r => r.id), 0);
-        
-        for (let i = 0; i < toAdd; i++) {
-          newAutoAdded.push({
-            id: maxId + i + 1,
-            street: '',
-            city: '',
-            state: '',
-            zip: '',
-            fromDate: '',
-            toDate: '',
-            current: false,
-            autoAdded: true
-          });
-        }
-        
-        setResidences([...manuallyAdded, ...autoAdded, ...newAutoAdded]);
-      }
-      // If we have too many auto-added residences, remove excess
-      else if (autoAdded.length > entriesNeeded) {
-        const toKeep = autoAdded.slice(0, entriesNeeded);
-        setResidences([...manuallyAdded, ...toKeep]);
-      }
-    }
-    // If we have auto-added residences but they're no longer needed
-    else if (remainingYears <= 0.5 && autoAdded.length > 0) {
-      setResidences(manuallyAdded);
-    }
-    
-    // Only run this effect when residence dates change (create a dependency string from all dates)
-  }, [residences.map(r => `${r.id}-${r.fromDate}-${r.toDate}-${r.current}`).join('|')]);
-
-  // Recalculate residential years whenever addresses change
-  useEffect(() => {
-    const years = calculateResidentialYears(residences);
-    setResidentialYears(parseFloat(years));
-    
-    // Check if all current addresses are filled
-    const allFilled = residences.every(addr => 
-      addr.street && addr.city && addr.state && addr.zip && addr.fromDate
-    );
-    
-    // AUTO-ADD: If under 7 years and all addresses are filled
-    if (parseFloat(years) < REQUIRED_RESIDENTIAL_YEARS && allFilled && residences.length > 0) {
-      const lastAddress = residences[residences.length - 1];
-      if (lastAddress && !lastAddress.current) {
-        // Don't auto-add more than 10 addresses
-        if (residences.length < 10) {
-          addResidence();
-        }
-      }
-    }
-    
-    // AUTO-REMOVE: If 7+ years reached, remove empty auto-added addresses
-    if (parseFloat(years) >= REQUIRED_RESIDENTIAL_YEARS && residences.length > 1) {
-      // Find empty addresses (likely auto-added)
-      const emptyAddresses = residences.filter(addr => 
-        !addr.street && !addr.city && !addr.state && !addr.zip && !addr.fromDate
-      );
-      
-      // Remove empty addresses, but keep at least 1 address
-      if (emptyAddresses.length > 0 && residences.length - emptyAddresses.length >= 1) {
-        setResidences(prev => 
-          prev.filter(addr => 
-            addr.street || addr.city || addr.state || addr.zip || addr.fromDate
-          )
-        );
-      }
-    }
-  }, [residences]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Validate residential history
-    if (residentialYears < REQUIRED_RESIDENTIAL_YEARS) {
-      alert(`You must provide ${REQUIRED_RESIDENTIAL_YEARS} years of residential history. You currently have ${residentialYears.toFixed(2)} years. Please add additional addresses.`);
-      document.getElementById('residentialHistory')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      return;
-    }
-    
-    // Save step3Data to localStorage before navigating
-    const step3Data = {
+    // Save data to localStorage
+    const completeData = {
       ...formData,
-      residences: residences
+      residences
     };
-    localStorage.setItem('step3Data', JSON.stringify(step3Data));
+    localStorage.setItem('step2Data', JSON.stringify(completeData));
     
     // Navigate to next step
     navigate('/app/onboarding/step-4');
   };
 
-  const getInputStyle = (value) => {
-    const isEmpty = !value || (typeof value === 'string' && value.trim() === '') || value === '';
-    const baseClass = 'w-full h-10 px-3 py-2 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-talAqua transition';
-    if (isEmpty) {
-      return {
-        className: baseClass,
-        style: {
-          borderColor: '#ef4444',
-          backgroundColor: '#fef2f2',
-          boxShadow: '0 0 0 2px rgba(254, 202, 202, 0.5)'
-        }
-      };
-    }
-    return {
-      className: `${baseClass} border-gray-300 bg-white`,
-      style: {}
-    };
-  };
-
-  const getResidenceInputStyle = (value) => {
-    const isEmpty = !value || (typeof value === 'string' && value.trim() === '') || value === '';
-    const baseClass = 'w-full h-10 px-3 py-2 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-talAqua transition';
-    if (isEmpty) {
-      return {
-        className: baseClass,
-        style: {
-          borderColor: '#ef4444',
-          backgroundColor: '#fef2f2',
-          boxShadow: '0 0 0 2px rgba(254, 202, 202, 0.5)'
-        }
-      };
-    }
-    return {
-      className: `${baseClass} border-gray-300 bg-white`,
-      style: {}
-    };
-  };
-
   return (
-    <section>
-      <div className="mb-6">
-        <a href="/app/onboarding/step-2" className="text-talBlue hover:underline flex items-center gap-2">
-          ← Back to Create Profile
-        </a>
-      </div>
-      
-      <h1 className="h1">Personal Information</h1>
-      <p className="body mt-2 text-talGray">Please complete all fields</p>
-      
-      {/* Progress Bar */}
-      <div className="mt-6 mb-6 h-2 bg-gray-200 rounded-full overflow-hidden">
-        <div className="h-full bg-gradient-to-r from-talBlue to-talAqua transition-all duration-300" style={{width: '40%'}}></div>
-      </div>
-
-      {/* Alert */}
-      <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6 rounded-md">
-        <p className="body text-sm text-red-800">
-          Please review all parsed data and complete any missing information, indicated by <strong className="font-bold" style={{color: '#dc2626'}}>red highlighting</strong>.
-        </p>
-      </div>
-      
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Contact Information */}
-        <div className="card">
-          <h2 className="h3 mb-4 pb-2 border-b border-gray-200">Contact Information</h2>
-          
-          <div className="form-grid-2col">
-            <div>
-              <label className="block body mb-2">
-                Full Legal Name <span className="text-red-600">*</span>
-              </label>
-              <input
-                type="text"
-                id="fullLegalName"
-                value={formData.fullLegalName}
-                onChange={handleChange}
-                required
-                 {...getInputStyle(formData.fullLegalName)}
-              />
-            </div>
-
-            <div>
-              <label className="block body mb-2">
-                Preferred First Name <span className="text-red-600">*</span>
-              </label>
-              <input
-                type="text"
-                id="preferredFirstName"
-                value={formData.preferredFirstName}
-                onChange={handleChange}
-                required
-                 {...getInputStyle(formData.preferredFirstName)}
-              />
-            </div>
-          </div>
-          
-          <div className="form-grid-2col">
-            <div>
-              <label className="block body mb-2">Full Legal Maiden Name</label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  id="maidenName"
-                  value={formData.maidenName}
-                  onChange={handleChange}
-                   {...getInputStyle(formData.maidenName)}
-                />
-                <button 
-                  type="button" 
-                  onClick={() => setNA('maidenName')} 
-                  className="px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-200 transition"
-                >
-                  N/A
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className="block body mb-2">Previously Used Names</label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  id="previousNames"
-                  value={formData.previousNames}
-                  onChange={handleChange}
-                   {...getInputStyle(formData.previousNames)}
-                />
-                <button 
-                  type="button" 
-                  onClick={() => setNA('previousNames')} 
-                  className="px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-200 transition"
-                >
-                  N/A
-                </button>
-              </div>
-            </div>
-          </div>
-          
-          <div className="form-grid-2col">
-            <div>
-              <label className="block body mb-2">
-                Email <span className="text-red-600">*</span>
-              </label>
-              <input
-                type="email"
-                id="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                 {...getInputStyle(formData.email)}
-              />
-            </div>
-
-            <div>
-              <label className="block body mb-2">
-                Phone <span className="text-red-600">*</span>
-              </label>
-              <input
-                type="tel"
-                id="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                required
-                 {...getInputStyle(formData.phone)}
-              />
-            </div>
-          </div>
+    <div style={styles.body}>
+      <div style={styles.container}>
+        <div style={styles.header}>
+          <h1 style={styles.h1}>Personal Information</h1>
+          <p style={styles.subheader}>Please complete all fields</p>
         </div>
         
-        {/* Current Address */}
-        <div className="card">
-          <h2 className="h3 mb-4 pb-2 border-b border-gray-200">Current Address</h2>
-          
-          <div className="mt-4">
-            <label className="block body mb-2">
-              Street Address <span className="text-red-600">*</span>
-            </label>
-            <input
-              type="text"
-              id="streetAddress"
-              value={formData.streetAddress}
-              onChange={handleChange}
-              required
-               {...getInputStyle(formData.streetAddress)}
-            />
-          </div>
-          
-          <div className="form-grid-3col">
-            <div>
-              <label className="block body mb-2">
-                City <span className="text-red-600">*</span>
-              </label>
-              <input
-                type="text"
-                id="city"
-                value={formData.city}
-                onChange={handleChange}
-                required
-                 {...getInputStyle(formData.city)}
-              />
-            </div>
-
-            <div>
-              <label className="block body mb-2">
-                State <span className="text-red-600">*</span>
-              </label>
-              <select
-                id="state"
-                value={formData.state}
-                onChange={handleChange}
-                required
-                 {...getInputStyle(formData.state)}
-              >
-                <option value="">Select</option>
-                {US_STATES.map(state => (
-                  <option key={state.value} value={state.value}>{state.label}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block body mb-2">
-                ZIP Code <span className="text-red-600">*</span>
-              </label>
-              <input
-                type="text"
-                id="postalCode"
-                value={formData.postalCode}
-                onChange={handleChange}
-                required
-                 {...getInputStyle(formData.postalCode)}
-              />
-            </div>
-          </div>
+        <div style={styles.progressBar}>
+          <div style={{...styles.progressFill, width: '40%'}}></div>
         </div>
         
-        {/* Emergency Contact */}
-        <div className="card">
-          <h2 className="h3 mb-4 pb-2 border-b border-gray-200">Emergency Contact</h2>
-          
-          <div className="form-grid-2col">
-            <div>
-              <label className="block body mb-2">
-                Emergency Contact Name <span className="text-red-600">*</span>
-              </label>
-              <input
-                type="text"
-                id="emergencyName"
-                value={formData.emergencyName}
-                onChange={handleChange}
-                required
-                 {...getInputStyle(formData.emergencyName)}
-              />
+        <div style={styles.alert}>
+          <p style={styles.alertText}>
+            Please review all parsed data and complete any missing information, indicated by <strong style={{color: '#dc2626'}}>red highlighting</strong>.
+          </p>
+        </div>
+        
+        <form onSubmit={handleSubmit}>
+          {/* Contact Information */}
+          <div style={styles.section}>
+            <h2 style={styles.sectionHeader}>Contact Information</h2>
+            
+            <div style={styles.formRow}>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Full Legal Name <span style={styles.required}>*</span></label>
+                <input
+                  type="text"
+                  id="fullLegalName"
+                  value={formData.fullLegalName}
+                  onChange={handleChange}
+                  required
+                  style={{...styles.input, ...(formData.fullLegalName ? styles.inputFilled : {})}}
+                />
+              </div>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Preferred First Name <span style={styles.required}>*</span></label>
+                <input
+                  type="text"
+                  id="preferredFirstName"
+                  value={formData.preferredFirstName}
+                  onChange={handleChange}
+                  required
+                  style={{...styles.input, ...(formData.preferredFirstName ? styles.inputFilled : {})}}
+                />
+              </div>
             </div>
-
-            <div>
-              <label className="block body mb-2">
-                Relationship <span className="text-red-600">*</span>
-              </label>
-              <select
-                id="emergencyRelationship"
-                value={formData.emergencyRelationship}
-                onChange={handleChange}
-                required
-                 {...getInputStyle(formData.emergencyRelationship)}
-              >
-                <option value="">Select</option>
-                <option value="spouse">Spouse</option>
-                <option value="parent">Parent</option>
-                <option value="sibling">Sibling</option>
-                <option value="child">Child</option>
-                <option value="friend">Friend</option>
-              </select>
+            
+            <div style={styles.formRow}>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Full Legal Maiden Name</label>
+                <div style={styles.naButtonGroup}>
+                  <input
+                    type="text"
+                    id="maidenName"
+                    value={formData.maidenName}
+                    onChange={handleChange}
+                    style={{...styles.input, ...(formData.maidenName ? styles.inputFilled : {})}}
+                  />
+                  <button type="button" onClick={() => setNA('maidenName')} style={styles.naBtn}>N/A</button>
+                </div>
+              </div>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Previously Used Names</label>
+                <div style={styles.naButtonGroup}>
+                  <input
+                    type="text"
+                    id="previousNames"
+                    value={formData.previousNames}
+                    onChange={handleChange}
+                    style={{...styles.input, ...(formData.previousNames ? styles.inputFilled : {})}}
+                  />
+                  <button type="button" onClick={() => setNA('previousNames')} style={styles.naBtn}>N/A</button>
+                </div>
+              </div>
+            </div>
+            
+            <div style={styles.formRow}>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Email <span style={styles.required}>*</span></label>
+                <input
+                  type="email"
+                  id="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  style={{...styles.input, ...(formData.email ? styles.inputFilled : {})}}
+                />
+              </div>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Phone <span style={styles.required}>*</span></label>
+                <input
+                  type="tel"
+                  id="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  required
+                  style={{...styles.input, ...(formData.phone ? styles.inputFilled : {})}}
+                />
+              </div>
             </div>
           </div>
           
-          <div className="form-grid-2col">
-            <div>
-              <label className="block body mb-2">
-                Emergency Contact Phone <span className="text-red-600">*</span>
-              </label>
+          {/* Current Address */}
+          <div style={styles.section}>
+            <h2 style={styles.sectionHeader}>Current Address</h2>
+            
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Street Address <span style={styles.required}>*</span></label>
               <input
-                type="tel"
-                id="emergencyPhone"
-                value={formData.emergencyPhone}
+                type="text"
+                id="streetAddress"
+                value={formData.streetAddress}
                 onChange={handleChange}
                 required
-                 {...getInputStyle(formData.emergencyPhone)}
+                style={{...styles.input, ...(formData.streetAddress ? styles.inputFilled : {})}}
               />
             </div>
-
-            <div>
-              <label className="block body mb-2">Alternate Phone</label>
-              <div className="flex gap-2">
+            
+            <div style={styles.formRow}>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>City <span style={styles.required}>*</span></label>
+                <input
+                  type="text"
+                  id="city"
+                  value={formData.city}
+                  onChange={handleChange}
+                  required
+                  style={{...styles.input, ...(formData.city ? styles.inputFilled : {})}}
+                />
+              </div>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>State <span style={styles.required}>*</span></label>
+                <select
+                  id="state"
+                  value={formData.state}
+                  onChange={handleChange}
+                  required
+                  style={{...styles.input, ...(formData.state ? styles.inputFilled : {})}}
+                >
+                  <option value="">Select</option>
+                  <option value="FL">Florida</option>
+                  <option value="CA">California</option>
+                  <option value="NY">New York</option>
+                  <option value="TX">Texas</option>
+                </select>
+              </div>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>ZIP Code <span style={styles.required}>*</span></label>
+                <input
+                  type="text"
+                  id="postalCode"
+                  value={formData.postalCode}
+                  onChange={handleChange}
+                  required
+                  style={{...styles.input, ...(formData.postalCode ? styles.inputFilled : {})}}
+                />
+              </div>
+            </div>
+          </div>
+          
+          {/* Emergency Contact */}
+          <div style={styles.section}>
+            <h2 style={styles.sectionHeader}>Emergency Contact</h2>
+            
+            <div style={styles.formRow}>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Emergency Contact Name <span style={styles.required}>*</span></label>
+                <input
+                  type="text"
+                  id="emergencyName"
+                  value={formData.emergencyName}
+                  onChange={handleChange}
+                  required
+                  style={{...styles.input, ...(formData.emergencyName ? styles.inputFilled : {})}}
+                />
+              </div>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Relationship <span style={styles.required}>*</span></label>
+                <select
+                  id="emergencyRelationship"
+                  value={formData.emergencyRelationship}
+                  onChange={handleChange}
+                  required
+                  style={{...styles.input, ...(formData.emergencyRelationship ? styles.inputFilled : {})}}
+                >
+                  <option value="">Select</option>
+                  <option value="spouse">Spouse</option>
+                  <option value="parent">Parent</option>
+                  <option value="sibling">Sibling</option>
+                  <option value="child">Child</option>
+                  <option value="friend">Friend</option>
+                </select>
+              </div>
+            </div>
+            
+            <div style={styles.formRow}>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Emergency Contact Phone <span style={styles.required}>*</span></label>
+                <input
+                  type="tel"
+                  id="emergencyPhone"
+                  value={formData.emergencyPhone}
+                  onChange={handleChange}
+                  required
+                  style={{...styles.input, ...(formData.emergencyPhone ? styles.inputFilled : {})}}
+                />
+              </div>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Alternate Phone</label>
                 <input
                   type="tel"
                   id="emergencyPhoneAlt"
                   value={formData.emergencyPhoneAlt}
                   onChange={handleChange}
-                   {...getInputStyle(formData.emergencyPhoneAlt)}
+                  style={{...styles.input, ...(formData.emergencyPhoneAlt ? styles.inputFilled : {})}}
                 />
-                <button 
-                  type="button" 
-                  onClick={() => setNA('emergencyPhoneAlt')} 
-                  className="px-4 py-2 bg-gray-100 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-200 transition"
-                >
-                  N/A
-                </button>
               </div>
             </div>
           </div>
-        </div>
-        
-        {/* Sensitive Information */}
-        <div className="card">
-          <h2 className="h3 mb-4 pb-2 border-b border-gray-200">Sensitive Personal Information</h2>
-          <p className="body text-sm text-talGray mb-4">This information is encrypted and only used for background checks</p>
           
-          <div className="form-grid-2col">
-            <div>
-              <label className="block body mb-2">
-                Driver's License Number <span className="text-red-600">*</span>
-              </label>
-              <input
-                type="text"
-                id="dlNumber"
-                value={formData.dlNumber}
-                onChange={handleChange}
-                required
-                 {...getInputStyle(formData.dlNumber)}
-              />
-            </div>
-
-            <div>
-              <label className="block body mb-2">
-                Driver's License State <span className="text-red-600">*</span>
-              </label>
-              <select
-                id="dlState"
-                value={formData.dlState}
-                onChange={handleChange}
-                required
-                 {...getInputStyle(formData.dlState)}
-              >
-                <option value="">Select</option>
-                {US_STATES.map(state => (
-                  <option key={state.value} value={state.value}>{state.label}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-          
-          <div className="form-grid-2col">
-            <div>
-              <label className="block body mb-2">
-                Date of Birth <span className="text-red-600">*</span>
-              </label>
-              <input
-                type="date"
-                id="dateOfBirth"
-                value={formData.dateOfBirth}
-                onChange={handleChange}
-                required
-                 {...getInputStyle(formData.dateOfBirth)}
-              />
-            </div>
-
-            <div>
-              <label className="block body mb-2">
-                SSN Last 4 Digits <span className="text-red-600">*</span>
-              </label>
-              <input
-                type="text"
-                id="ssnLast4"
-                name="ssnLast4"
-                maxLength="4"
-                value={formData.ssnLast4 || ''}
-                onChange={handleChange}
-                required
-                autoComplete="off"
-                data-lpignore="true"
-                data-form-type="other"
-                className="w-full h-10 px-3 py-2 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-talAqua transition [&::placeholder]:opacity-0 [&::placeholder]:text-transparent"
-                style={{
-                  ...(!formData.ssnLast4 || formData.ssnLast4.length < 4
-                    ? {
-                        borderColor: '#ef4444',
-                        backgroundColor: '#fef2f2',
-                        boxShadow: '0 0 0 2px rgba(254, 202, 202, 0.5)'
-                      }
-                    : {
-                        borderColor: '#9ca3af',
-                        backgroundColor: 'white'
-                      })
-                }}
-              />
-            </div>
-          </div>
-        </div>
-        
-        {/* Residential History */}
-        <div className="card">
-          <div className="mb-4 pb-2 border-b border-gray-200">
-            <div className="flex justify-between items-center mb-2">
-              <h2 className="h3">Residential History (7 Years Required)</h2>
-              <div className={`text-sm font-semibold px-4 py-2 rounded-lg ${
-                residentialYears >= REQUIRED_RESIDENTIAL_YEARS 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-yellow-100 text-yellow-800'
-              }`}>
-                {residentialYears.toFixed(2)} / {REQUIRED_RESIDENTIAL_YEARS}.00 years
-                {residentialYears < REQUIRED_RESIDENTIAL_YEARS && (
-                  <span className="ml-2">• {(REQUIRED_RESIDENTIAL_YEARS - residentialYears).toFixed(2)} years remaining</span>
-                )}
-              </div>
-            </div>
-            <p className="body text-gray-600 mb-4">
-              Required for background checks. If you're still at an address, check "Current" and leave end date blank.
-            </p>
+          {/* Sensitive Information */}
+          <div style={styles.section}>
+            <h2 style={styles.sectionHeader}>Sensitive Personal Information</h2>
+            <p style={styles.helpText}>This information is encrypted and only used for background checks</p>
             
-            {residentialYears < REQUIRED_RESIDENTIAL_YEARS && residences.length > 0 && (
-              <div className="mb-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 rounded">
-                <p className="text-sm text-yellow-800">
-                  ⚠️ You need to provide <strong>{(REQUIRED_RESIDENTIAL_YEARS - residentialYears).toFixed(2)} more years</strong> of residential history. Add additional addresses below.
-                </p>
-              </div>
-            )}
-          </div>
-          
-          <div id="residentialHistory">
-          {residences.map((res, index) => (
-            <div key={res.id} className="border-2 border-gray-200 rounded-xl p-5 bg-white mb-4">
-              <div className="flex justify-between items-center mb-4">
-                <span className="body font-semibold text-talSlate">Address #{index + 1}</span>
-              </div>
-              
-              <div className="mt-4">
-                <label className="block body mb-2">
-                  Street Address <span className="text-red-600">*</span>
-                </label>
+            <div style={styles.formRow}>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Driver's License Number <span style={styles.required}>*</span></label>
                 <input
                   type="text"
-                  value={res.street}
-                  onChange={(e) => updateResidence(res.id, 'street', e.target.value)}
+                  id="dlNumber"
+                  value={formData.dlNumber}
+                  onChange={handleChange}
                   required
-                   {...getResidenceInputStyle(res.street)}
+                  style={{...styles.input, ...(formData.dlNumber ? styles.inputFilled : {})}}
                 />
               </div>
-              
-              <div className="form-grid-3col">
-                <div>
-                  <label className="block body mb-2">
-                    City <span className="text-red-600">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={res.city}
-                    onChange={(e) => updateResidence(res.id, 'city', e.target.value)}
-                    required
-                     {...getResidenceInputStyle(res.city)}
-                  />
-                </div>
-
-                <div>
-                  <label className="block body mb-2">
-                    State <span className="text-red-600">*</span>
-                  </label>
-                  <select
-                    value={res.state}
-                    onChange={(e) => updateResidence(res.id, 'state', e.target.value)}
-                    required
-                     {...getResidenceInputStyle(res.state)}
-                  >
-                    <option value="">Select</option>
-                    {US_STATES.map(state => (
-                      <option key={state.value} value={state.value}>{state.label}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block body mb-2">
-                    ZIP Code <span className="text-red-600">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={res.zip}
-                    onChange={(e) => updateResidence(res.id, 'zip', e.target.value)}
-                    required
-                     {...getResidenceInputStyle(res.zip)}
-                  />
-                </div>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Driver's License State <span style={styles.required}>*</span></label>
+                <select
+                  id="dlState"
+                  value={formData.dlState}
+                  onChange={handleChange}
+                  required
+                  style={{...styles.input, ...(formData.dlState ? styles.inputFilled : {})}}
+                >
+                  <option value="">Select</option>
+                  <option value="FL">Florida</option>
+                  <option value="CA">California</option>
+                </select>
               </div>
-              
-              <div className="form-grid-2col">
-                <div>
-                  <label className="block body mb-2">
-                    From Date <span className="text-red-600">*</span>
-                  </label>
+            </div>
+            
+            <div style={styles.formRow}>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Date of Birth <span style={styles.required}>*</span></label>
+                <input
+                  type="date"
+                  id="dateOfBirth"
+                  value={formData.dateOfBirth}
+                  onChange={handleChange}
+                  required
+                  style={{...styles.input, ...(formData.dateOfBirth ? styles.inputFilled : {})}}
+                />
+              </div>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>SSN Last 4 Digits <span style={styles.required}>*</span></label>
+                <input
+                  type="text"
+                  id="ssnLast4"
+                  maxLength="4"
+                  value={formData.ssnLast4}
+                  onChange={handleChange}
+                  required
+                  style={{...styles.input, ...(formData.ssnLast4 ? styles.inputFilled : {})}}
+                />
+              </div>
+            </div>
+          </div>
+          
+          {/* Residential History */}
+          <div style={styles.section}>
+            <h2 style={styles.sectionHeader}>Residential History (7 Years Required)</h2>
+            
+            {residences.map((res, index) => (
+              <div key={res.id} style={styles.collectionItem}>
+                <div style={styles.collectionHeader}>
+                  <span style={styles.collectionTitle}>Address #{index + 1}</span>
+                  {residences.length > 1 && (
+                    <button type="button" onClick={() => removeResidence(res.id)} style={styles.removeBtn}>
+                      Remove
+                    </button>
+                  )}
+                </div>
+                
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Street Address <span style={styles.required}>*</span></label>
                   <input
-                    type="date"
-                    value={res.fromDate}
-                    onChange={(e) => updateResidence(res.id, 'fromDate', e.target.value)}
+                    type="text"
+                    value={res.street}
+                    onChange={(e) => updateResidence(res.id, 'street', e.target.value)}
                     required
-                     {...getResidenceInputStyle(res.fromDate)}
+                    style={{...styles.input, ...(res.street ? styles.inputFilled : {})}}
                   />
                 </div>
-                <div className="w-full">
-                  <label className="block body mb-2">End Date</label>
-                  <div className="flex gap-3 items-center">
+                
+                <div style={styles.formRow}>
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>City <span style={styles.required}>*</span></label>
+                    <input
+                      type="text"
+                      value={res.city}
+                      onChange={(e) => updateResidence(res.id, 'city', e.target.value)}
+                      required
+                      style={{...styles.input, ...(res.city ? styles.inputFilled : {})}}
+                    />
+                  </div>
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>State <span style={styles.required}>*</span></label>
+                    <select
+                      value={res.state}
+                      onChange={(e) => updateResidence(res.id, 'state', e.target.value)}
+                      required
+                      style={{...styles.input, ...(res.state ? styles.inputFilled : {})}}
+                    >
+                      <option value="">Select</option>
+                      <option value="FL">Florida</option>
+                    </select>
+                  </div>
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>ZIP Code <span style={styles.required}>*</span></label>
+                    <input
+                      type="text"
+                      value={res.zip}
+                      onChange={(e) => updateResidence(res.id, 'zip', e.target.value)}
+                      required
+                      style={{...styles.input, ...(res.zip ? styles.inputFilled : {})}}
+                    />
+                  </div>
+                </div>
+                
+                <div style={styles.formRow}>
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>From Date <span style={styles.required}>*</span></label>
                     <input
                       type="date"
-                      value={res.toDate}
-                      onChange={(e) => updateResidence(res.id, 'toDate', e.target.value)}
-                       {...getResidenceInputStyle(res.toDate || res.current)}
+                      value={res.fromDate}
+                      onChange={(e) => updateResidence(res.id, 'fromDate', e.target.value)}
+                      required
+                      style={{...styles.input, ...(res.fromDate ? styles.inputFilled : {})}}
                     />
-                    <label className="flex items-center gap-2 body text-sm cursor-pointer">
+                  </div>
+                  <div style={styles.formGroup}>
+                    <label style={styles.label}>End Date</label>
+                    <div style={{display: 'flex', gap: '12px', alignItems: 'center'}}>
                       <input
-                        type="checkbox"
-                        checked={res.current}
-                        onChange={() => toggleCurrentResidence(res.id)}
-                        className="rounded border-gray-400 text-talBlue focus:ring-talAqua"
+                        type="date"
+                        value={res.toDate}
+                        onChange={(e) => updateResidence(res.id, 'toDate', e.target.value)}
+                        disabled={res.current}
+                        style={{...styles.input, ...(res.toDate || res.current ? styles.inputFilled : {})}}
                       />
-                      <span>Current</span>
-                    </label>
+                      <label style={{margin: 0, display: 'flex', alignItems: 'center', gap: '6px'}}>
+                        <input
+                          type="checkbox"
+                          checked={res.current}
+                          onChange={() => toggleCurrentResidence(res.id)}
+                        />
+                        <span>Current</span>
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
             ))}
-          </div>
-          
-          {/* Only show "Add Another Address" button if requirement is met */}
-          {residentialYears >= REQUIRED_RESIDENTIAL_YEARS && (
-            <button 
-              type="button" 
-              onClick={addResidence}
-              className="mt-4 px-4 py-2 bg-white text-talBlue border-2 border-talBlue rounded-lg font-medium hover:bg-blue-50 transition"
-            >
-              + Add Another Address (Optional)
+            
+            <button type="button" onClick={addResidence} style={styles.addBtn}>
+              + Add Another Address
             </button>
-          )}
           </div>
           
-          <div className="flex gap-3 mt-6">
-          <button 
-            type="button" 
-            onClick={() => navigate('/app/onboarding/step-2')} 
-            className="btn btn-secondary"
-          >
-            ← Back
-          </button>
-          <button type="submit" className="btn btn-primary flex-1">
-            Continue to Professional Information →
-          </button>
-        </div>
-      </form>
-    </section>
+          <div style={styles.btnGroup}>
+            <button type="button" onClick={() => navigate('/app/onboarding/step-2')} style={styles.btnSecondary}>
+              ← Back
+            </button>
+            <button type="submit" style={styles.btnPrimary}>
+              Continue to Professional Information →
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
+};
+
+const styles = {
+  body: {
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    background: '#f8f9fa',
+    padding: '20px',
+    minHeight: '100vh'
+  },
+  container: {
+    maxWidth: '1000px',
+    margin: '0 auto',
+    background: 'white',
+    borderRadius: '12px',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    padding: '40px'
+  },
+  header: {
+    marginBottom: '30px'
+  },
+  h1: {
+    color: '#2563eb',
+    fontSize: '32px',
+    marginBottom: '8px'
+  },
+  subheader: {
+    color: '#6b7280',
+    fontSize: '14px'
+  },
+  progressBar: {
+    height: '6px',
+    background: '#e5e7eb',
+    borderRadius: '3px',
+    marginBottom: '30px'
+  },
+  progressFill: {
+    height: '100%',
+    background: 'linear-gradient(to right, #2563eb, #00bcd4)'
+  },
+  alert: {
+    background: '#fef2f2',
+    borderLeft: '4px solid #ef4444',
+    padding: '16px',
+    marginBottom: '24px',
+    borderRadius: '6px'
+  },
+  alertText: {
+    color: '#991b1b',
+    fontSize: '14px'
+  },
+  section: {
+    background: '#fafafa',
+    border: '1px solid #e5e7eb',
+    borderRadius: '8px',
+    padding: '24px',
+    marginBottom: '24px'
+  },
+  sectionHeader: {
+    fontSize: '18px',
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: '16px',
+    paddingBottom: '8px',
+    borderBottom: '2px solid #e5e7eb'
+  },
+  formRow: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gap: '20px',
+    marginBottom: '20px'
+  },
+  formGroup: {
+    marginBottom: '20px'
+  },
+  label: {
+    display: 'block',
+    fontSize: '13px',
+    fontWeight: '500',
+    color: '#374151',
+    marginBottom: '6px'
+  },
+  required: {
+    color: '#dc2626'
+  },
+  input: {
+    width: '100%',
+    padding: '10px 12px',
+    border: '2px solid #fca5a5',
+    background: '#fef2f2',
+    borderRadius: '6px',
+    fontSize: '14px',
+    fontFamily: 'inherit'
+  },
+  inputFilled: {
+    borderColor: '#d1d5db',
+    background: 'white'
+  },
+  helpText: {
+    fontSize: '12px',
+    color: '#6b7280',
+    marginTop: '4px'
+  },
+  naButtonGroup: {
+    display: 'flex',
+    gap: '8px'
+  },
+  naBtn: {
+    padding: '10px 16px',
+    background: '#f3f4f6',
+    border: '2px solid #d1d5db',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontSize: '14px'
+  },
+  collectionItem: {
+    background: 'white',
+    border: '2px solid #e5e7eb',
+    borderRadius: '8px',
+    padding: '20px',
+    marginBottom: '16px'
+  },
+  collectionHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '16px'
+  },
+  collectionTitle: {
+    fontWeight: '600',
+    color: '#111827'
+  },
+  removeBtn: {
+    background: '#fef2f2',
+    color: '#dc2626',
+    border: '1px solid #fca5a5',
+    padding: '6px 12px',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '13px'
+  },
+  addBtn: {
+    background: 'white',
+    color: '#2563eb',
+    border: '2px solid #2563eb',
+    padding: '10px 20px',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '500',
+    marginTop: '12px'
+  },
+  btnGroup: {
+    display: 'flex',
+    gap: '12px',
+    marginTop: '32px'
+  },
+  btnPrimary: {
+    background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+    color: 'white',
+    border: 'none',
+    padding: '14px 32px',
+    borderRadius: '6px',
+    fontSize: '16px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    flex: 1
+  },
+  btnSecondary: {
+    background: 'white',
+    color: '#6b7280',
+    border: '2px solid #d1d5db',
+    padding: '14px 32px',
+    borderRadius: '6px',
+    fontSize: '16px',
+    fontWeight: '600',
+    cursor: 'pointer'
+  }
 };
 
 export default Onb3;
