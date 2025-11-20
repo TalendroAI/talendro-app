@@ -3,9 +3,9 @@ import ReactDOM from 'react-dom/client'
 import './index.css'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import App from './shell/App'
-import InterviewCoach from './pages/InterviewCoach'
+import InterviewCoachLanding from './components/InterviewCoachLanding'
 
-// Wrapper to conditionally render InterviewCoach without App.js structure
+// Wrapper to conditionally render InterviewCoachLanding without App.js structure
 function AppWrapper() {
   const location = useLocation();
   
@@ -13,7 +13,7 @@ function AppWrapper() {
   if (location.pathname === '/interview-coach') {
     return (
       <Routes>
-        <Route path="/interview-coach" element={<InterviewCoach />} />
+        <Route path="/interview-coach" element={<InterviewCoachLanding />} />
       </Routes>
     );
   }

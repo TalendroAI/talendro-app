@@ -10,6 +10,8 @@ import Navigator from '../pages/Navigator'
 import Optional from '../pages/Optional'
 import Pricing from '../pages/Pricing'
 import InterviewCoach from '../pages/InterviewCoach'
+import InterviewCoachWithNav from '../pages/InterviewCoachWithNav'
+import InterviewCoachLanding from '../components/InterviewCoachLanding'
 import About from '../pages/About'
 import Story from '../pages/Story'
 import Team from '../pages/Team'
@@ -41,6 +43,20 @@ import Applications from '../app/Applications'
 import Billing from '../app/Billing'
 
 export default function App(){
+  const location = useLocation();
+  const isInterviewCoach = location.pathname.includes('interview-coach');
+
+  // Early return: NO global layout for interview-coach pages
+  if (isInterviewCoach) {
+    return (
+      <Routes>
+        <Route path="/interview-coach" element={<InterviewCoachLanding />} />
+        <Route path="/interview-coach-future" element={<InterviewCoachWithNav />} />
+      </Routes>
+    );
+  }
+
+  // Normal layout for all other pages
   return (
     <>
       <ScrollToTop />
@@ -53,6 +69,7 @@ export default function App(){
           <Route path="/services/navigator" element={<Navigator />} />
           <Route path="/services/optional" element={<Optional />} />
           <Route path="/pricing" element={<Pricing />} />
+          <Route path="/interview-coach-future" element={<InterviewCoachWithNav />} />
           <Route path="/about" element={<About />} />
           <Route path="/about/our-story" element={<Story />} />
           <Route path="/about/our-team" element={<Team />} />
