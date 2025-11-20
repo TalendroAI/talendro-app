@@ -5,12 +5,12 @@
  * Place this file in: /server/routes/stripe.js
  */
 
-const express = require('express');
-const router = express.Router();
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+import express from 'express';
+import Stripe from 'stripe';
+import User from '../models/User.js';
 
-// Import models (you'll create these next)
-const User = require('../models/User');
+const router = express.Router();
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // ============================================
 // PRICING CONFIGURATION
@@ -551,4 +551,4 @@ router.post('/change-plan', async (req, res) => {
     }
 });
 
-module.exports = router;
+export default router;
