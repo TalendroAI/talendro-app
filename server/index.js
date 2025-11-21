@@ -415,6 +415,15 @@ if (!fs.existsSync(clientBuildPath)) {
   console.log('✅ React build directory found at:', clientBuildPath)
   const buildFiles = fs.readdirSync(clientBuildPath)
   console.log('✅ Build files:', buildFiles.slice(0, 5).join(', '), '...')
+  
+  // Check static files to see what's actually being served
+  const staticPath = path.join(clientBuildPath, 'static')
+  if (fs.existsSync(staticPath)) {
+    const jsFiles = fs.readdirSync(staticPath).filter(f => f.endsWith('.js'))
+    const cssFiles = fs.readdirSync(staticPath).filter(f => f.endsWith('.css'))
+    console.log('🔍 JS FILES IN BUILD:', jsFiles.join(', '))
+    console.log('🔍 CSS FILES IN BUILD:', cssFiles.join(', '))
+  }
 }
 
 app.use(express.static(clientBuildPath))
