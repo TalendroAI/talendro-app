@@ -40,8 +40,10 @@ const InterviewCoachLanding = () => {
         top: 0,
         left: 0,
         width: '100%',
-        zIndex: 1000,
-        backgroundColor: '#f9fafb'
+        zIndex: 9999,
+        backgroundColor: 'red',
+        border: '10px solid yellow',
+        padding: '20px'
       }}>
         <section style={{ 
           backgroundColor: '#f9fafb', 
