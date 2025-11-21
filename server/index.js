@@ -415,14 +415,6 @@ if (!fs.existsSync(clientBuildPath)) {
   console.log('✅ React build directory found at:', clientBuildPath)
   const buildFiles = fs.readdirSync(clientBuildPath)
   console.log('✅ Build files:', buildFiles.slice(0, 5).join(', '), '...')
-  
-  // Check if InterviewCoachPublic is in the build
-  const staticPath = path.join(clientBuildPath, 'static')
-  if (fs.existsSync(staticPath)) {
-    const jsFiles = fs.readdirSync(staticPath).filter(f => f.endsWith('.js'))
-    console.log('✅ React JS bundles found:', jsFiles.slice(0, 3).join(', '), '...')
-    console.log('✅ Build timestamp check - if InterviewCoachPublic changes aren\'t showing, Railway may need a manual rebuild')
-  }
 }
 
 app.use(express.static(clientBuildPath))
