@@ -11,7 +11,6 @@ import Optional from '../pages/Optional'
 import Pricing from '../pages/Pricing'
 import InterviewCoach from '../pages/InterviewCoach'
 import InterviewCoachWithNav from '../pages/InterviewCoachWithNav'
-import InterviewCoachLanding from '../components/InterviewCoachLanding'
 import About from '../pages/About'
 import Story from '../pages/Story'
 import Team from '../pages/Team'
@@ -43,20 +42,7 @@ import Applications from '../app/Applications'
 import Billing from '../app/Billing'
 
 export default function App(){
-  const location = useLocation();
-  const isInterviewCoach = location.pathname.includes('interview-coach');
-
-  // Early return: NO global layout for interview-coach pages
-  if (isInterviewCoach) {
-    return (
-      <Routes>
-        <Route path="/interview-coach" element={<InterviewCoachLanding />} />
-        <Route path="/interview-coach-future" element={<InterviewCoachWithNav />} />
-      </Routes>
-    );
-  }
-
-  // Normal layout for all other pages
+  // Normal layout for all pages (interview-coach is handled in index.js)
   return (
     <>
       <ScrollToTop />
