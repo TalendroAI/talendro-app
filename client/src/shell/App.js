@@ -11,6 +11,7 @@ import Optional from '../pages/Optional'
 import Pricing from '../pages/Pricing'
 import InterviewCoach from '../pages/InterviewCoach'
 import InterviewCoachWithNav from '../pages/InterviewCoachWithNav'
+import InterviewCoachPublic from '../pages/InterviewCoachPublic'
 import About from '../pages/About'
 import Story from '../pages/Story'
 import Team from '../pages/Team'
@@ -42,13 +43,19 @@ import Applications from '../app/Applications'
 import Billing from '../app/Billing'
 
 export default function App(){
-  // Normal layout for all pages (interview-coach is handled in index.js)
+  const location = useLocation();
+  const isInterviewCoachPublic = location.pathname === '/interview-coach';
+  
   return (
     <>
       <ScrollToTop />
-      <Header />
-      <main className="container py-10">
+      {!isInterviewCoachPublic && <Header />}
+      <main className={isInterviewCoachPublic ? "" : "container py-10"}>
         <Routes>
+          {/* Public route - NO header/footer */}
+          <Route path="/interview-coach" element={<InterviewCoachPublic />} />
+          
+          {/* All other routes WITH header/footer */}
           <Route path="/" element={<Home />} />
           <Route path="/how-it-works" element={<How />} />
           <Route path="/services" element={<Services />} />
@@ -92,7 +99,7 @@ export default function App(){
           <Route path="/app/billing" element={<Billing />} />
         </Routes>
       </main>
-      <Footer />
+      {!isInterviewCoachPublic && <Footer />}
     </>
   )
 }
