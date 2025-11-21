@@ -34,53 +34,71 @@ const InterviewCoachLanding = () => {
       transform: 'translateY(-80px)'
     }}>
       
-      {/* Hero Section */}
-      <section style={{ backgroundColor: '#f9fafb', padding: '120px 20px 60px 20px', margin: 0, width: '100%', boxSizing: 'border-box' }}>
-        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-          <h1 style={{ 
-            fontSize: '3rem', 
-            fontWeight: '700', 
-            color: '#2F6DF6', 
-            marginBottom: '20px',
-            lineHeight: '1.2'
-          }}>
-            Talendro™ Interview Coach
-          </h1>
-          <p style={{ 
-            fontSize: '1.5rem', 
-            color: '#00C4CC', 
-            fontStyle: 'italic',
-            marginBottom: '20px',
-            lineHeight: '1.4'
-          }}>
-            Personalized, professional-grade interview preparation using your résumé, job description, and target company.
-          </p>
-          <p style={{ fontSize: '1.125rem', color: '#374151', marginBottom: '15px', lineHeight: '1.6' }}>
-            Choose the level of prep you need, pay securely, and start practicing in minutes.
-          </p>
-          <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '30px' }}>
-            Built on Talendro's autonomous job search & apply engine • Optimized for mid-career & senior roles
-          </p>
-          <button 
-            onClick={scrollToPricing}
-            style={{
-              backgroundColor: '#2F6DF6',
-              color: 'white',
-              padding: '14px 32px',
-              fontSize: '1rem',
-              fontWeight: '600',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              transition: 'all 0.2s'
-            }}
-            onMouseOver={(e) => e.target.style.backgroundColor = '#1e40af'}
-            onMouseOut={(e) => e.target.style.backgroundColor = '#2F6DF6'}
-          >
-            View Plans & Pricing
-          </button>
-        </div>
-      </section>
+      {/* Hero Section - Fixed Position */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        zIndex: 1000,
+        backgroundColor: '#f9fafb'
+      }}>
+        <section style={{ 
+          backgroundColor: '#f9fafb', 
+          padding: '60px 20px 40px 20px', 
+          margin: 0, 
+          width: '100%', 
+          boxSizing: 'border-box' 
+        }}>
+          <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+            <h1 style={{ 
+              fontSize: '3rem', 
+              fontWeight: '700', 
+              color: '#2F6DF6', 
+              marginBottom: '20px',
+              lineHeight: '1.2'
+            }}>
+              Talendro™ Interview Coach
+            </h1>
+            <p style={{ 
+              fontSize: '1.5rem', 
+              color: '#00C4CC', 
+              fontStyle: 'italic',
+              marginBottom: '20px',
+              lineHeight: '1.4'
+            }}>
+              Personalized, professional-grade interview preparation using your résumé, job description, and target company.
+            </p>
+            <p style={{ fontSize: '1.125rem', color: '#374151', marginBottom: '15px', lineHeight: '1.6' }}>
+              Choose the level of prep you need, pay securely, and start practicing in minutes.
+            </p>
+            <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '30px' }}>
+              Built on Talendro's autonomous job search & apply engine • Optimized for mid-career & senior roles
+            </p>
+            <button 
+              onClick={scrollToPricing}
+              style={{
+                backgroundColor: '#2F6DF6',
+                color: 'white',
+                padding: '14px 32px',
+                fontSize: '1rem',
+                fontWeight: '600',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+              onMouseOver={(e) => e.target.style.backgroundColor = '#1e40af'}
+              onMouseOut={(e) => e.target.style.backgroundColor = '#2F6DF6'}
+            >
+              View Plans & Pricing
+            </button>
+          </div>
+        </section>
+      </div>
+
+      {/* Spacer to prevent content overlap */}
+      <div style={{ height: '450px' }}></div>
 
       {/* Info Banner */}
       <section style={{ backgroundColor: '#2F6DF6', padding: '20px', textAlign: 'center' }}>
