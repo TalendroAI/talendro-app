@@ -2,13 +2,7 @@ import React from 'react';
 import TrustBadge from '../ui/TrustBadge';
 
 // Interview Coach Public Landing Page - Brand Standards Compliant
-// Version: 4.0 - FORCE RAILWAY REBUILD - $(date +%s)
 const InterviewCoachPublic = () => {
-  // Determine if we're on local or production
-  const isLocal = typeof window !== 'undefined' && 
-    (window.location.hostname.includes('localhost') || 
-     window.location.hostname.includes('127.0.0.1'));
-
   const scrollToPricing = (e) => {
     e.preventDefault();
     document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
@@ -28,29 +22,12 @@ const InterviewCoachPublic = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white" style={{ paddingTop: '60px' }}>
-      {/* Version Identifier - Shows which version you're viewing - FORCE REBUILD v2.3 */}
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        right: 0,
-        backgroundColor: isLocal ? 'red' : 'green',
-        color: 'white',
-        padding: '8px 12px',
-        fontSize: '12px',
-        fontWeight: 'bold',
-        zIndex: 99999,
-        fontFamily: 'monospace',
-        borderRadius: '0 0 0 4px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
-      }}>
-        {isLocal ? '🔴 LOCAL DEV - InterviewCoachPublic v3.0' : '🟢 PRODUCTION - InterviewCoachPublic v3.0 - FORCE DEPLOY'}
-      </div>
+    <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <section className="max-w-6xl mx-auto px-4" style={{ paddingTop: '6rem', paddingBottom: '4rem' }}>
         <div className="bg-gray-50 rounded-xl p-8">
           <h1 className="h1 mb-4">
-            🚀 NEW VERSION - Talendro™ Interview Coach - DEPLOYED FROM MACBOOK
+            ✅ RAILWAY DEPLOY TEST - Talendro™ Interview Coach
           </h1>
           <p className="tagline mb-6">
             Personalized, professional-grade interview preparation using your
@@ -378,4 +355,3 @@ const InterviewCoachPublic = () => {
 
 export default InterviewCoachPublic;
 
-// Build timestamp: Fri Nov 21 03:26:04 EST 2025
