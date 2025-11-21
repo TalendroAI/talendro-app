@@ -19,10 +19,18 @@ const InterviewCoachLanding = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#ffffff', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+    <div style={{ 
+      minHeight: '100vh', 
+      backgroundColor: '#ffffff', 
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      margin: 0,
+      padding: 0,
+      width: '100%',
+      boxSizing: 'border-box'
+    }}>
       
       {/* Hero Section */}
-      <section style={{ backgroundColor: '#f9fafb', padding: '80px 20px 60px 20px' }}>
+      <section style={{ backgroundColor: '#f9fafb', padding: '120px 20px 60px 20px', margin: 0, width: '100%', boxSizing: 'border-box' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <h1 style={{ 
             fontSize: '3rem', 
