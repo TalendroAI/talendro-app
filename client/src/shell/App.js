@@ -44,7 +44,7 @@ import Billing from '../app/Billing'
 
 export default function App(){
   const location = useLocation();
-  const isInterviewCoachPublic = location.pathname === '/interview-coach';
+  const isInterviewCoachPublic = location.pathname === '/interview-coach' || location.pathname === '/interview-coach-new';
   
   return (
     <>
