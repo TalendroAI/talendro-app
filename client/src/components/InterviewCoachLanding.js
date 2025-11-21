@@ -30,7 +30,8 @@ const InterviewCoachLanding = () => {
       padding: 0,
       width: '100%',
       boxSizing: 'border-box',
-      display: 'block'
+      display: 'block',
+      transform: 'translateY(-80px)'
     }}>
       
       {/* Hero Section */}
