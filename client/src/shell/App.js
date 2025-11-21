@@ -44,7 +44,7 @@ import Billing from '../app/Billing'
 
 export default function App(){
   const location = useLocation();
-  const isInterviewCoachPublic = location.pathname === '/interview-coach' || location.pathname === '/interview-coach-new';
+  const isInterviewCoachPublic = location.pathname === '/interview-coach' || location.pathname === '/interview-coach-new' || location.pathname === '/interview-coach-final';
   
   return (
     <>
@@ -55,6 +55,7 @@ export default function App(){
           {/* Interview Coach routes - NO header/footer */}
           <Route path="/interview-coach" element={<InterviewCoachPublic />} />
           <Route path="/interview-coach-new" element={<InterviewCoachPublic />} />
+          <Route path="/interview-coach-final" element={<InterviewCoachPublic />} />
           
           {/* All other routes WITH header/footer */}
           <Route path="/" element={<Home />} />
