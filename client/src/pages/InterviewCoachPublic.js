@@ -3,6 +3,11 @@ import TrustBadge from '../ui/TrustBadge';
 
 // Interview Coach Public Landing Page - Brand Standards Compliant
 const InterviewCoachPublic = () => {
+  // Determine if we're on local or production
+  const isLocal = typeof window !== 'undefined' && 
+    (window.location.hostname.includes('localhost') || 
+     window.location.hostname.includes('127.0.0.1'));
+
   const scrollToPricing = (e) => {
     e.preventDefault();
     document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
@@ -23,6 +28,23 @@ const InterviewCoachPublic = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Version Identifier - Shows which version you're viewing */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        right: 0,
+        backgroundColor: isLocal ? 'red' : 'green',
+        color: 'white',
+        padding: '8px 12px',
+        fontSize: '12px',
+        fontWeight: 'bold',
+        zIndex: 99999,
+        fontFamily: 'monospace',
+        borderRadius: '0 0 0 4px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+      }}>
+        {isLocal ? '🔴 LOCAL DEV - InterviewCoachPublic v2.0' : '🟢 PRODUCTION - InterviewCoachPublic v2.0'}
+      </div>
       {/* Hero Section */}
       <section className="max-w-6xl mx-auto px-4" style={{ paddingTop: '6rem', paddingBottom: '4rem' }}>
         <div className="bg-gray-50 rounded-xl p-8">
