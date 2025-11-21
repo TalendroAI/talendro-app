@@ -1,6 +1,7 @@
 import React from 'react';
 import TrustBadge from '../ui/TrustBadge';
 
+// Interview Coach Public Landing Page - Brand Standards Compliant
 const InterviewCoachPublic = () => {
   const scrollToPricing = (e) => {
     e.preventDefault();
