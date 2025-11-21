@@ -52,8 +52,9 @@ export default function App(){
       {!isInterviewCoachPublic && <Header />}
       <main className={isInterviewCoachPublic ? "" : "container py-10"}>
         <Routes>
-          {/* Public route - NO header/footer */}
+          {/* Interview Coach routes - NO header/footer */}
           <Route path="/interview-coach" element={<InterviewCoachPublic />} />
+          <Route path="/interview-coach-new" element={<InterviewCoachPublic />} />
           
           {/* All other routes WITH header/footer */}
           <Route path="/" element={<Home />} />
