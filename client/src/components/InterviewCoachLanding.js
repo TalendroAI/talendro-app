@@ -19,246 +19,374 @@ const InterviewCoachLanding = () => {
   };
 
   return (
-    <div className="min-h-screen">
+    <div style={{ minHeight: '100vh', backgroundColor: '#ffffff', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+      
       {/* Hero Section */}
-      <section className="bg-gray-50 py-16 px-4">
-        <div className="max-w-5xl mx-auto" style={{ paddingTop: '3rem' }}>
-          <h1 className="h1 mb-4">Talendro™ Interview Coach</h1>
-
-          <p className="tagline text-2xl mb-6">
-            Personalized, professional-grade interview preparation using your
-            résumé, job description, and target company.
+      <section style={{ backgroundColor: '#f9fafb', padding: '80px 20px 60px 20px' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+          <h1 style={{ 
+            fontSize: '3rem', 
+            fontWeight: '700', 
+            color: '#2F6DF6', 
+            marginBottom: '20px',
+            lineHeight: '1.2'
+          }}>
+            Talendro™ Interview Coach
+          </h1>
+          <p style={{ 
+            fontSize: '1.5rem', 
+            color: '#00C4CC', 
+            fontStyle: 'italic',
+            marginBottom: '20px',
+            lineHeight: '1.4'
+          }}>
+            Personalized, professional-grade interview preparation using your résumé, job description, and target company.
           </p>
-
-          <p className="body text-lg mb-4">
+          <p style={{ fontSize: '1.125rem', color: '#374151', marginBottom: '15px', lineHeight: '1.6' }}>
             Choose the level of prep you need, pay securely, and start practicing in minutes.
           </p>
-
-          <p className="body text-sm text-gray-600 mb-8">
-            Built on Talendro&apos;s autonomous job search &amp; apply engine • 
-            Optimized for mid-career &amp; senior roles
+          <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '30px' }}>
+            Built on Talendro's autonomous job search & apply engine • Optimized for mid-career & senior roles
           </p>
-
-          <button onClick={scrollToPricing} className="btn btn-primary px-8 py-3">
-            View Plans &amp; Pricing
+          <button 
+            onClick={scrollToPricing}
+            style={{
+              backgroundColor: '#2F6DF6',
+              color: 'white',
+              padding: '14px 32px',
+              fontSize: '1rem',
+              fontWeight: '600',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+            onMouseOver={(e) => e.target.style.backgroundColor = '#1e40af'}
+            onMouseOut={(e) => e.target.style.backgroundColor = '#2F6DF6'}
+          >
+            View Plans & Pricing
           </button>
         </div>
       </section>
 
       {/* Info Banner */}
-      <section className="bg-talBlue py-4 px-4">
-        <div className="max-w-5xl mx-auto text-center">
-          <p className="body text-sm text-white">
-            <strong>When you purchase, you&apos;ll receive an email</strong> with your 
-            Interview Coach link and simple instructions: <strong>upload résumé + job 
-            description + company URL</strong>, then select your plan.
+      <section style={{ backgroundColor: '#2F6DF6', padding: '20px', textAlign: 'center' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+          <p style={{ color: 'white', fontSize: '0.875rem', lineHeight: '1.6' }}>
+            <strong>When you purchase, you'll receive an email</strong> with your Interview Coach link and simple instructions: 
+            <strong> upload résumé + job description + company URL</strong>, then select your plan.
           </p>
         </div>
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-16 bg-white px-4">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="h2 mb-4">Choose your prep level</h2>
-          <p className="body text-gray-600 mb-12">
+      <section id="pricing" style={{ padding: '60px 20px', backgroundColor: 'white' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <h2 style={{ fontSize: '2rem', fontWeight: '700', color: '#111827', marginBottom: '15px', textAlign: 'center' }}>
+            Choose your prep level
+          </h2>
+          <p style={{ fontSize: '1rem', color: '#6b7280', marginBottom: '50px', textAlign: 'center', maxWidth: '800px', margin: '0 auto 50px auto' }}>
             All options use your résumé, JD, and company website for tailored questions.
           </p>
-          
-          <div className="grid md:grid-cols-3 gap-8">
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px', marginBottom: '40px' }}>
+            
             {/* Starter Plan */}
-            <div className="card">
-              <div className="text-center mb-6">
-                <h3 className="h3 mb-2">Starter</h3>
-                <p className="body text-sm text-gray-600 mb-4">Quick Prep Interview</p>
-                <div className="mb-4">
-                  <span className="text-4xl font-bold text-talBlue">$12</span>
+            <div style={{ 
+              backgroundColor: 'white', 
+              border: '2px solid #e5e7eb', 
+              borderRadius: '12px', 
+              padding: '30px',
+              boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+            }}>
+              <div style={{ textAlign: 'center', marginBottom: '25px' }}>
+                <h3 style={{ fontSize: '1.5rem', fontWeight: '600', color: '#111827', marginBottom: '8px' }}>Starter</h3>
+                <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '15px' }}>Quick Prep Interview</p>
+                <div style={{ marginBottom: '15px' }}>
+                  <span style={{ fontSize: '2.5rem', fontWeight: '700', color: '#2F6DF6' }}>$12</span>
                 </div>
               </div>
-
-              <p className="body text-sm mb-6">
+              <p style={{ fontSize: '0.875rem', color: '#374151', marginBottom: '20px', lineHeight: '1.6' }}>
                 A focused question set with model answers and feedback to sharpen your responses fast.
               </p>
-
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-start">
-                  <span className="text-talAqua mr-3">●</span>
-                  <span className="body text-sm">Targeted questions based on your résumé &amp; JD</span>
+              <ul style={{ listStyle: 'none', padding: 0, marginBottom: '25px' }}>
+                <li style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '12px' }}>
+                  <span style={{ color: '#00C4CC', marginRight: '10px', fontSize: '1.2rem' }}>●</span>
+                  <span style={{ fontSize: '0.875rem', color: '#374151' }}>Targeted questions based on your résumé & JD</span>
                 </li>
-                <li className="flex items-start">
-                  <span className="text-talAqua mr-3">●</span>
-                  <span className="body text-sm">Suggested talking points and improvement tips</span>
+                <li style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '12px' }}>
+                  <span style={{ color: '#00C4CC', marginRight: '10px', fontSize: '1.2rem' }}>●</span>
+                  <span style={{ fontSize: '0.875rem', color: '#374151' }}>Suggested talking points and improvement tips</span>
                 </li>
-                <li className="flex items-start">
-                  <span className="text-talAqua mr-3">●</span>
-                  <span className="body text-sm">Perfect for &quot;I&apos;ve got an interview tomorrow&quot; panic</span>
+                <li style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '12px' }}>
+                  <span style={{ color: '#00C4CC', marginRight: '10px', fontSize: '1.2rem' }}>●</span>
+                  <span style={{ fontSize: '0.875rem', color: '#374151' }}>Perfect for "I've got an interview tomorrow" panic</span>
                 </li>
               </ul>
-
-              <button onClick={handleStarterCheckout} className="btn btn-primary w-full">
+              <button 
+                onClick={handleStarterCheckout}
+                style={{
+                  width: '100%',
+                  backgroundColor: '#2F6DF6',
+                  color: 'white',
+                  padding: '12px',
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer'
+                }}
+              >
                 Start Quick Prep – $12
               </button>
             </div>
 
-            {/* Full Mock Plan */}
-            <div className="card relative" style={{ border: '2px solid #2F6DF6', transform: 'scale(1.05)' }}>
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <span className="bg-talBlue text-white px-4 py-1 rounded-full text-sm font-semibold">
-                  Most Popular
-                </span>
+            {/* Full Mock Plan - Most Popular */}
+            <div style={{ 
+              backgroundColor: 'white', 
+              border: '3px solid #2F6DF6', 
+              borderRadius: '12px', 
+              padding: '30px',
+              position: 'relative',
+              boxShadow: '0 6px 12px rgba(47,109,246,0.2)',
+              transform: 'scale(1.03)'
+            }}>
+              <div style={{
+                position: 'absolute',
+                top: '-15px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                backgroundColor: '#2F6DF6',
+                color: 'white',
+                padding: '6px 20px',
+                borderRadius: '20px',
+                fontSize: '0.75rem',
+                fontWeight: '600'
+              }}>
+                Most Popular
               </div>
-
-              <div className="text-center mb-6 mt-4">
-                <h3 className="h3 mb-2">Full Mock Interview (Text)</h3>
-                <div className="mb-4">
-                  <span className="text-4xl font-bold text-talBlue">$29</span>
+              <div style={{ textAlign: 'center', marginBottom: '25px', marginTop: '10px' }}>
+                <h3 style={{ fontSize: '1.5rem', fontWeight: '600', color: '#111827', marginBottom: '8px' }}>Full Mock Interview (Text)</h3>
+                <div style={{ marginBottom: '15px' }}>
+                  <span style={{ fontSize: '2.5rem', fontWeight: '700', color: '#2F6DF6' }}>$29</span>
                 </div>
               </div>
-
-              <p className="body text-sm mb-6">
+              <p style={{ fontSize: '0.875rem', color: '#374151', marginBottom: '20px', lineHeight: '1.6' }}>
                 A realistic, text-based mock interview with pacing, coaching, and a full improvement report.
               </p>
-
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-start">
-                  <span className="text-talAqua mr-3">●</span>
-                  <span className="body text-sm">Simulated live interview in chat</span>
+              <ul style={{ listStyle: 'none', padding: 0, marginBottom: '25px' }}>
+                <li style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '12px' }}>
+                  <span style={{ color: '#00C4CC', marginRight: '10px', fontSize: '1.2rem' }}>●</span>
+                  <span style={{ fontSize: '0.875rem', color: '#374151' }}>Simulated live interview in chat</span>
                 </li>
-                <li className="flex items-start">
-                  <span className="text-talAqua mr-3">●</span>
-                  <span className="body text-sm">Follow-up questions, probes, and clarifiers</span>
+                <li style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '12px' }}>
+                  <span style={{ color: '#00C4CC', marginRight: '10px', fontSize: '1.2rem' }}>●</span>
+                  <span style={{ fontSize: '0.875rem', color: '#374151' }}>Follow-up questions, probes, and clarifiers</span>
                 </li>
-                <li className="flex items-start">
-                  <span className="text-talAqua mr-3">●</span>
-                  <span className="body text-sm">Post-interview summary with strengths &amp; gaps</span>
+                <li style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '12px' }}>
+                  <span style={{ color: '#00C4CC', marginRight: '10px', fontSize: '1.2rem' }}>●</span>
+                  <span style={{ fontSize: '0.875rem', color: '#374151' }}>Post-interview summary with strengths & gaps</span>
                 </li>
               </ul>
-
-              <button onClick={handleFullMockCheckout} className="btn btn-primary w-full">
+              <button 
+                onClick={handleFullMockCheckout}
+                style={{
+                  width: '100%',
+                  backgroundColor: '#2F6DF6',
+                  color: 'white',
+                  padding: '12px',
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer'
+                }}
+              >
                 Book Full Mock – $29
               </button>
             </div>
 
             {/* Premium Plan */}
-            <div className="card">
-              <div className="text-center mb-6">
-                <h3 className="h3 mb-2">Premium</h3>
-                <p className="body text-sm text-gray-600 mb-4">Premium Audio Mock Interview</p>
-                <div className="mb-4">
-                  <span className="text-4xl font-bold text-talBlue">$49</span>
+            <div style={{ 
+              backgroundColor: 'white', 
+              border: '2px solid #e5e7eb', 
+              borderRadius: '12px', 
+              padding: '30px',
+              boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+            }}>
+              <div style={{ textAlign: 'center', marginBottom: '25px' }}>
+                <h3 style={{ fontSize: '1.5rem', fontWeight: '600', color: '#111827', marginBottom: '8px' }}>Premium</h3>
+                <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '15px' }}>Premium Audio Mock Interview</p>
+                <div style={{ marginBottom: '15px' }}>
+                  <span style={{ fontSize: '2.5rem', fontWeight: '700', color: '#2F6DF6' }}>$49</span>
                 </div>
               </div>
-
-              <p className="body text-sm mb-6">
+              <p style={{ fontSize: '0.875rem', color: '#374151', marginBottom: '20px', lineHeight: '1.6' }}>
                 A live, audio-mode mock interview with verbal questions, real-time coaching, and a comprehensive report.
               </p>
-
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-start">
-                  <span className="text-talAqua mr-3">●</span>
-                  <span className="body text-sm">Practice answering out loud under pressure</span>
+              <ul style={{ listStyle: 'none', padding: 0, marginBottom: '25px' }}>
+                <li style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '12px' }}>
+                  <span style={{ color: '#00C4CC', marginRight: '10px', fontSize: '1.2rem' }}>●</span>
+                  <span style={{ fontSize: '0.875rem', color: '#374151' }}>Practice answering out loud under pressure</span>
                 </li>
-                <li className="flex items-start">
-                  <span className="text-talAqua mr-3">●</span>
-                  <span className="body text-sm">Coaching on tone, pace, and clarity</span>
+                <li style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '12px' }}>
+                  <span style={{ color: '#00C4CC', marginRight: '10px', fontSize: '1.2rem' }}>●</span>
+                  <span style={{ fontSize: '0.875rem', color: '#374151' }}>Coaching on tone, pace, and clarity</span>
                 </li>
-                <li className="flex items-start">
-                  <span className="text-talAqua mr-3">●</span>
-                  <span className="body text-sm">Final written recap you can reuse for future prep</span>
+                <li style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '12px' }}>
+                  <span style={{ color: '#00C4CC', marginRight: '10px', fontSize: '1.2rem' }}>●</span>
+                  <span style={{ fontSize: '0.875rem', color: '#374151' }}>Final written recap you can reuse for future prep</span>
                 </li>
               </ul>
-
-              <button onClick={handlePremiumCheckout} className="btn btn-primary w-full">
+              <button 
+                onClick={handlePremiumCheckout}
+                style={{
+                  width: '100%',
+                  backgroundColor: '#2F6DF6',
+                  color: 'white',
+                  padding: '12px',
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer'
+                }}
+              >
                 Upgrade to Premium Audio – $49
               </button>
             </div>
           </div>
 
-          <div className="mt-8 text-center">
-            <p className="body text-sm text-gray-600">
-              <strong>24-Hour Upgrade Credit:</strong> If you purchase Quick Prep or Full Mock 
-              and upgrade within 24 hours, Talendro credits your original purchase toward the higher-level plan.
+          <div style={{ textAlign: 'center', marginTop: '30px' }}>
+            <p style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+              <strong>24-Hour Upgrade Credit:</strong> If you purchase Quick Prep or Full Mock and upgrade within 24 hours, 
+              Talendro credits your original purchase toward the higher-level plan.
             </p>
           </div>
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section className="py-16 bg-gradient-to-b from-gray-50 to-white px-4">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="h2 mb-4">How Talendro™ Interview Coach works</h2>
-          <p className="body text-gray-600 mb-12">
-            We keep it simple: pay securely, receive your access email, and start practicing 
-            with a coach that already understands your background and target role.
+      {/* How It Works */}
+      <section style={{ padding: '60px 20px', background: 'linear-gradient(to bottom, #f9fafb, white)' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <h2 style={{ fontSize: '2rem', fontWeight: '700', color: '#111827', marginBottom: '15px', textAlign: 'center' }}>
+            How Talendro™ Interview Coach works
+          </h2>
+          <p style={{ fontSize: '1rem', color: '#6b7280', marginBottom: '50px', textAlign: 'center', maxWidth: '800px', margin: '0 auto 50px auto' }}>
+            We keep it simple: pay securely, receive your access email, and start practicing with a coach that already understands your background and target role.
           </p>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-talBlue text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">1</div>
-              <h3 className="h3 mb-4">Pick your prep level &amp; pay via Stripe</h3>
-              <p className="body">
-                Use the buttons above to choose Quick Prep, Full Mock, or Premium Audio. 
-                Payments are processed securely through Stripe. You&apos;ll receive a confirmation email within minutes.
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '40px' }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{
+                width: '60px',
+                height: '60px',
+                backgroundColor: '#2F6DF6',
+                color: 'white',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '1.5rem',
+                fontWeight: '700',
+                margin: '0 auto 20px auto'
+              }}>1</div>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#111827', marginBottom: '12px' }}>
+                Pick your prep level & pay via Stripe
+              </h3>
+              <p style={{ fontSize: '0.875rem', color: '#6b7280', lineHeight: '1.6' }}>
+                Use the buttons above to choose Quick Prep, Full Mock, or Premium Audio. Payments are processed securely through Stripe. 
+                You'll receive a confirmation email within minutes.
               </p>
             </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-talBlue text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">2</div>
-              <h3 className="h3 mb-4">Upload résumé, JD, and company URL</h3>
-              <p className="body">
-                Your confirmation email includes a link to Talendro™ Interview Coach and clear instructions. 
-                Upload your résumé, paste the job description, and provide the company website so the coach 
-                can tailor everything to your exact opportunity.
+            <div style={{ textAlign: 'center' }}>
+              <div style={{
+                width: '60px',
+                height: '60px',
+                backgroundColor: '#2F6DF6',
+                color: 'white',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '1.5rem',
+                fontWeight: '700',
+                margin: '0 auto 20px auto'
+              }}>2</div>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#111827', marginBottom: '12px' }}>
+                Upload résumé, JD, and company URL
+              </h3>
+              <p style={{ fontSize: '0.875rem', color: '#6b7280', lineHeight: '1.6' }}>
+                Your confirmation email includes a link to Talendro™ Interview Coach and clear instructions. Upload your résumé, 
+                paste the job description, and provide the company website so the coach can tailor everything to your exact opportunity.
               </p>
             </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-talBlue text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">3</div>
-              <h3 className="h3 mb-4">Run your session and review the report</h3>
-              <p className="body">
-                Complete your Quick Prep or Mock Interview session, then review your feedback, suggested 
-                talking points, and improvement areas. Use the insights to walk into your interview clear, 
-                confident, and prepared.
+            <div style={{ textAlign: 'center' }}>
+              <div style={{
+                width: '60px',
+                height: '60px',
+                backgroundColor: '#2F6DF6',
+                color: 'white',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '1.5rem',
+                fontWeight: '700',
+                margin: '0 auto 20px auto'
+              }}>3</div>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#111827', marginBottom: '12px' }}>
+                Run your session and review the report
+              </h3>
+              <p style={{ fontSize: '0.875rem', color: '#6b7280', lineHeight: '1.6' }}>
+                Complete your Quick Prep or Mock Interview session, then review your feedback, suggested talking points, and improvement areas. 
+                Use the insights to walk into your interview clear, confident, and prepared.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* FAQs Section */}
-      <section className="py-16 bg-white px-4">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="h2 mb-12">FAQs &amp; quick notes</h2>
-
-          <div className="space-y-8">
-            <div className="card">
-              <h3 className="h3 mb-3">How do I access the actual Interview Coach?</h3>
-              <p className="body">
-                After payment, Stripe notifies our system and Talendro sends you an email with your 
-                unique Interview Coach link and simple &quot;how to start&quot; steps.
+      {/* FAQs */}
+      <section style={{ padding: '60px 20px', backgroundColor: 'white' }}>
+        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+          <h2 style={{ fontSize: '2rem', fontWeight: '700', color: '#111827', marginBottom: '40px', textAlign: 'center' }}>
+            FAQs & quick notes
+          </h2>
+          <div style={{ display: 'grid', gap: '25px' }}>
+            <div style={{ backgroundColor: '#f9fafb', padding: '25px', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#111827', marginBottom: '10px' }}>
+                How do I access the actual Interview Coach?
+              </h3>
+              <p style={{ fontSize: '0.875rem', color: '#6b7280', lineHeight: '1.6' }}>
+                After payment, Stripe notifies our system and Talendro sends you an email with your unique Interview Coach link 
+                and simple "how to start" steps.
               </p>
             </div>
-
-            <div className="card">
-              <h3 className="h3 mb-3">Can I upgrade after I purchase?</h3>
-              <p className="body">
-                Yes. If you upgrade within 24 hours of your original purchase, Talendro credits 
-                what you already paid toward the higher-level plan.
+            <div style={{ backgroundColor: '#f9fafb', padding: '25px', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#111827', marginBottom: '10px' }}>
+                Can I upgrade after I purchase?
+              </h3>
+              <p style={{ fontSize: '0.875rem', color: '#6b7280', lineHeight: '1.6' }}>
+                Yes. If you upgrade within 24 hours of your original purchase, Talendro credits what you already paid 
+                toward the higher-level plan.
               </p>
             </div>
-
-            <div className="card">
-              <h3 className="h3 mb-3">What do I need ready before I start?</h3>
-              <p className="body">
-                Have your latest résumé, the full job description, and the target company&apos;s 
-                website URL. That&apos;s all the coach needs to personalize your prep.
+            <div style={{ backgroundColor: '#f9fafb', padding: '25px', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#111827', marginBottom: '10px' }}>
+                What do I need ready before I start?
+              </h3>
+              <p style={{ fontSize: '0.875rem', color: '#6b7280', lineHeight: '1.6' }}>
+                Have your latest résumé, the full job description, and the target company's website URL. 
+                That's all the coach needs to personalize your prep.
               </p>
             </div>
-
-            <div className="card">
-              <h3 className="h3 mb-3">Is this part of the full Talendro™ platform?</h3>
-              <p className="body">
-                Yes. Talendro™ Interview Coach is one product in the broader Talendro autonomous 
-                job search &amp; apply suite, built to help serious job seekers move faster with more confidence.
+            <div style={{ backgroundColor: '#f9fafb', padding: '25px', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#111827', marginBottom: '10px' }}>
+                Is this part of the full Talendro™ platform?
+              </h3>
+              <p style={{ fontSize: '0.875rem', color: '#6b7280', lineHeight: '1.6' }}>
+                Yes. Talendro™ Interview Coach is one product in the broader Talendro autonomous job search & apply suite, 
+                built to help serious job seekers move faster with more confidence.
               </p>
             </div>
           </div>
@@ -266,29 +394,40 @@ const InterviewCoachLanding = () => {
       </section>
 
       {/* Final CTA */}
-      <section className="py-16 bg-white px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="h2 mb-4">Ready to ace your next interview?</h2>
-          <p className="body text-lg mb-8">
+      <section style={{ padding: '60px 20px', backgroundColor: 'white', textAlign: 'center' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <h2 style={{ fontSize: '2rem', fontWeight: '700', color: '#111827', marginBottom: '15px' }}>
+            Ready to ace your next interview?
+          </h2>
+          <p style={{ fontSize: '1.125rem', color: '#6b7280', marginBottom: '30px' }}>
             Get personalized interview prep tailored to your background and target role.
           </p>
-
-          <button onClick={scrollToPricing} className="btn btn-primary px-8 py-3">
+          <button 
+            onClick={scrollToPricing}
+            style={{
+              backgroundColor: '#2F6DF6',
+              color: 'white',
+              padding: '14px 32px',
+              fontSize: '1rem',
+              fontWeight: '600',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer'
+            }}
+          >
             Choose Your Plan
           </button>
         </div>
       </section>
 
-      {/* Minimal Footer */}
-      <footer className="bg-gray-900 text-white py-8 px-4">
-        <div className="max-w-6xl mx-auto text-center">
-          <p className="text-sm text-gray-400">
-            © {new Date().getFullYear()} Talendro™. All rights reserved.
-          </p>
-          <p className="text-xs text-gray-500 mt-2">
-            Secure payments processed by Stripe
-          </p>
-        </div>
+      {/* Footer */}
+      <footer style={{ backgroundColor: '#111827', color: 'white', padding: '30px 20px', textAlign: 'center' }}>
+        <p style={{ fontSize: '0.875rem', color: '#9ca3af', marginBottom: '8px' }}>
+          © {new Date().getFullYear()} Talendro™. All rights reserved.
+        </p>
+        <p style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+          Secure payments processed by Stripe
+        </p>
       </footer>
     </div>
   );
