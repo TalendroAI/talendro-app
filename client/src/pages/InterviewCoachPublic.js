@@ -29,6 +29,28 @@ const InterviewCoachPublic = () => {
 
   return (
     <div className="min-h-screen bg-white" style={{ paddingTop: '60px' }}>
+      {/* HUGE VISIBLE INDICATOR - THIS IS THE NEW PAGE */}
+      <div style={{
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        backgroundColor: 'red',
+        color: 'white',
+        padding: '40px 60px',
+        fontSize: '32px',
+        fontWeight: 'bold',
+        zIndex: 999999,
+        fontFamily: 'monospace',
+        borderRadius: '8px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+        border: '5px solid yellow',
+        textAlign: 'center'
+      }}>
+        ✅ THIS IS THE NEW PAGE<br/>
+        InterviewCoachPublic v3.0<br/>
+        Route: /interview-coach-final
+      </div>
       {/* Version Identifier - Shows which version you're viewing - FORCE REBUILD v2.3 */}
       <div style={{
         position: 'fixed',
