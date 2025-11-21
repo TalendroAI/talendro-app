@@ -19,18 +19,20 @@ const InterviewCoachLanding = () => {
   };
 
   return (
-    <div style={{ 
-      position: 'relative',
-      top: 0,
-      left: 0,
-      minHeight: '100vh', 
-      backgroundColor: '#ffffff', 
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-      margin: '0 !important',
-      padding: '0 !important',
-      width: '100%',
-      boxSizing: 'border-box'
-    }}>
+    <div style={{ all: 'initial' }}>
+      <div style={{ 
+        position: 'relative',
+        top: 0,
+        left: 0,
+        minHeight: '100vh', 
+        backgroundColor: '#ffffff', 
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        margin: 0,
+        padding: 0,
+        width: '100%',
+        boxSizing: 'border-box',
+        display: 'block'
+      }}>
       
       {/* Hero Section */}
       <section style={{ backgroundColor: '#f9fafb', padding: '120px 20px 60px 20px', margin: 0, width: '100%', boxSizing: 'border-box' }}>
@@ -440,6 +442,7 @@ const InterviewCoachLanding = () => {
           Secure payments processed by Stripe
         </p>
       </footer>
+      </div>
     </div>
   );
 };
