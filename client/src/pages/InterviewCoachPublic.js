@@ -2,6 +2,7 @@ import React from 'react';
 import TrustBadge from '../ui/TrustBadge';
 
 // Interview Coach Public Landing Page - Brand Standards Compliant
+// Version: 2.1 - Deployed 2024-11-20
 const InterviewCoachPublic = () => {
   // Determine if we're on local or production
   const isLocal = typeof window !== 'undefined' && 
@@ -43,7 +44,7 @@ const InterviewCoachPublic = () => {
         borderRadius: '0 0 0 4px',
         boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
       }}>
-        {isLocal ? '🔴 LOCAL DEV - InterviewCoachPublic v2.0' : '🟢 PRODUCTION - InterviewCoachPublic v2.0'}
+        {isLocal ? '🔴 LOCAL DEV - InterviewCoachPublic v2.1' : '🟢 PRODUCTION - InterviewCoachPublic v2.1 - DEPLOYED'}
       </div>
       {/* Hero Section */}
       <section className="max-w-6xl mx-auto px-4" style={{ paddingTop: '6rem', paddingBottom: '4rem' }}>
