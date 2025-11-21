@@ -29,28 +29,6 @@ const InterviewCoachPublic = () => {
 
   return (
     <div className="min-h-screen bg-white" style={{ paddingTop: '60px' }}>
-      {/* HUGE VISIBLE INDICATOR - THIS IS THE NEW PAGE */}
-      <div style={{
-        position: 'fixed',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        backgroundColor: 'red',
-        color: 'white',
-        padding: '40px 60px',
-        fontSize: '32px',
-        fontWeight: 'bold',
-        zIndex: 999999,
-        fontFamily: 'monospace',
-        borderRadius: '8px',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
-        border: '5px solid yellow',
-        textAlign: 'center'
-      }}>
-        ✅ THIS IS THE NEW PAGE<br/>
-        InterviewCoachPublic v3.0<br/>
-        Route: /interview-coach-final
-      </div>
       {/* Version Identifier - Shows which version you're viewing - FORCE REBUILD v2.3 */}
       <div style={{
         position: 'fixed',
@@ -72,7 +50,7 @@ const InterviewCoachPublic = () => {
       <section className="max-w-6xl mx-auto px-4" style={{ paddingTop: '6rem', paddingBottom: '4rem' }}>
         <div className="bg-gray-50 rounded-xl p-8">
           <h1 className="h1 mb-4">
-            Talendro™ Interview Coach
+            🚀 NEW VERSION - Talendro™ Interview Coach - DEPLOYED FROM MACBOOK
           </h1>
           <p className="tagline mb-6">
             Personalized, professional-grade interview preparation using your
