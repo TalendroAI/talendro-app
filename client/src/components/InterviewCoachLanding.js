@@ -20,11 +20,14 @@ const InterviewCoachLanding = () => {
 
   return (
     <div style={{ 
+      position: 'relative',
+      top: 0,
+      left: 0,
       minHeight: '100vh', 
       backgroundColor: '#ffffff', 
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-      margin: 0,
-      padding: 0,
+      margin: '0 !important',
+      padding: '0 !important',
       width: '100%',
       boxSizing: 'border-box'
     }}>
