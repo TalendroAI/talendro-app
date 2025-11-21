@@ -29,7 +29,7 @@ const InterviewCoachPublic = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Version Identifier - Shows which version you're viewing */}
+      {/* Version Identifier - Shows which version you're viewing - FORCE REBUILD v2.2 */}
       <div style={{
         position: 'fixed',
         top: 0,
@@ -44,7 +44,7 @@ const InterviewCoachPublic = () => {
         borderRadius: '0 0 0 4px',
         boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
       }}>
-        {isLocal ? '🔴 LOCAL DEV - InterviewCoachPublic v2.1' : '🟢 PRODUCTION - InterviewCoachPublic v2.1 - DEPLOYED'}
+        {isLocal ? '🔴 LOCAL DEV - InterviewCoachPublic v2.2' : '🟢 PRODUCTION - InterviewCoachPublic v2.2 - CACHE BUST'}
       </div>
       {/* Hero Section */}
       <section className="max-w-6xl mx-auto px-4" style={{ paddingTop: '6rem', paddingBottom: '4rem' }}>
