@@ -27,7 +27,7 @@ const InterviewCoachPublic = () => {
       <section className="max-w-6xl mx-auto px-4" style={{ paddingTop: '6rem', paddingBottom: '4rem' }}>
         <div className="bg-gray-50 rounded-xl p-8">
           <h1 className="h1 mb-4">
-            ✅ RAILWAY DEPLOY TEST - Talendro™ Interview Coach
+            🚀 FORCE REBUILD v2 - Talendro™ Interview Coach - $(date +%s)
           </h1>
           <p className="tagline mb-6">
             Personalized, professional-grade interview preparation using your
