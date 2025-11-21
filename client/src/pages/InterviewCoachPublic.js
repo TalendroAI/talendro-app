@@ -2,7 +2,7 @@ import React from 'react';
 import TrustBadge from '../ui/TrustBadge';
 
 // Interview Coach Public Landing Page - Brand Standards Compliant
-// Version: 3.0 - FORCE DEPLOY 2024-11-21-07:55
+// Version: 4.0 - FORCE RAILWAY REBUILD - $(date +%s)
 const InterviewCoachPublic = () => {
   // Determine if we're on local or production
   const isLocal = typeof window !== 'undefined' && 
@@ -400,3 +400,4 @@ const InterviewCoachPublic = () => {
 
 export default InterviewCoachPublic;
 
+// Build timestamp: Fri Nov 21 03:26:04 EST 2025
