@@ -43,9 +43,9 @@ export default function Page(){
           </div>
         </div>
         
-        <div className="mt-12 p-6 bg-gray-50 rounded-2xl text-center">
-          <h3 className="h3 mb-3">Ready to Transform Your Job Search?</h3>
-          <p className="body mb-6">Don't wait for opportunities to find you. Let Talendro™ Navigator work around the clock to advance your career.</p>
+        <div className="mt-12 p-6 bg-gray-50 rounded-2xl">
+          <h3 className="h3 mb-3 text-center">Ready to Transform Your Job Search?</h3>
+          <p className="body mb-6 text-center">Don't wait for opportunities to find you. Let Talendro™ Navigator work around the clock to advance your career.</p>
           <a href='/app/onboarding/welcome'><button className='btn btn-primary text-lg px-8 py-3'>Get Started</button></a>
         </div>
       </div>

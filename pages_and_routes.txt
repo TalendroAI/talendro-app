@@ -1,0 +1,225 @@
+TALENDRO™ - COMPLETE PAGES AND ROUTES LIST
+============================================
+
+Total Pages: 33
+Base URL: http://127.0.0.1:3000
+
+PUBLIC MARKETING PAGES (15 pages)
+---------------------------------
+Home
+  Route: /
+  URL: http://127.0.0.1:3000/
+  Description: Main landing page
+
+How It Works
+  Route: /how-it-works
+  URL: http://127.0.0.1:3000/how-it-works
+  Description: Explains how Talendro™ works
+
+Services
+  Route: /services
+  URL: http://127.0.0.1:3000/services
+  Description: Overview of services
+
+Navigator Service
+  Route: /services/navigator
+  URL: http://127.0.0.1:3000/services/navigator
+  Description: Detailed Navigator service page
+
+Optional Services
+  Route: /services/optional
+  URL: http://127.0.0.1:3000/services/optional
+  Description: Optional add-on services
+
+Pricing
+  Route: /pricing
+  URL: http://127.0.0.1:3000/pricing
+  Description: Pricing plans
+
+About
+  Route: /about
+  URL: http://127.0.0.1:3000/about
+  Description: About Talendro™
+
+Our Story
+  Route: /about/our-story
+  URL: http://127.0.0.1:3000/about/our-story
+  Description: Company story
+
+Our Team
+  Route: /about/our-team
+  URL: http://127.0.0.1:3000/about/our-team
+  Description: Team information
+
+FAQ
+  Route: /resources/faq
+  URL: http://127.0.0.1:3000/resources/faq
+  Description: Frequently asked questions
+
+Contact
+  Route: /contact
+  URL: http://127.0.0.1:3000/contact
+  Description: Contact information
+
+Veterans
+  Route: /veterans
+  URL: http://127.0.0.1:3000/veterans
+  Description: Veterans benefits and resources
+
+Security
+  Route: /security
+  URL: http://127.0.0.1:3000/security
+  Description: Security information
+
+Privacy Policy
+  Route: /privacy
+  URL: http://127.0.0.1:3000/privacy
+  Description: Privacy policy
+
+Terms of Service
+  Route: /terms
+  URL: http://127.0.0.1:3000/terms
+  Description: Terms of service
+
+Interview Coach Future
+  Route: /interview-coach-future
+  URL: http://127.0.0.1:3000/interview-coach-future
+  Description: Interview Coach with navigation (future version)
+
+
+INTERVIEW COACH PUBLIC PAGES (2 pages) - NO HEADER/FOOTER
+----------------------------------------------------------
+Interview Coach Public
+  Route: /interview-coach
+  URL: http://127.0.0.1:3000/interview-coach
+  Description: Public Interview Coach landing page (no header/footer)
+
+Interview Coach Final
+  Route: /interview-coach-final
+  URL: http://127.0.0.1:3000/interview-coach-final
+  Description: Final Interview Coach landing page (no header/footer)
+
+
+ONBOARDING FLOW PAGES (9 pages)
+-------------------------------
+Welcome
+  Route: /app/onboarding/welcome
+  URL: http://127.0.0.1:3000/app/onboarding/welcome
+  Description: Welcome page
+
+Step 1: Upload Resume
+  Route: /app/onboarding/step-1
+  URL: http://127.0.0.1:3000/app/onboarding/step-1
+  Description: Resume upload (Onb2 component)
+
+Step 2: Create Profile
+  Route: /app/onboarding/step-2
+  URL: http://127.0.0.1:3000/app/onboarding/step-2
+  Description: Create profile (Onb1 component)
+
+Step 3: Personal Information
+  Route: /app/onboarding/step-3
+  URL: http://127.0.0.1:3000/app/onboarding/step-3
+  Description: Personal information (Onb3 component)
+
+Step 4: Professional Information
+  Route: /app/onboarding/step-4
+  URL: http://127.0.0.1:3000/app/onboarding/step-4
+  Description: Professional information (Onb4 component)
+
+Step 5: Disclosures & Authorizations
+  Route: /app/onboarding/step-5
+  URL: http://127.0.0.1:3000/app/onboarding/step-5
+  Description: Final disclosures (Onb5 component)
+
+Review
+  Route: /app/onboarding/review
+  URL: http://127.0.0.1:3000/app/onboarding/review
+  Description: Final review before checkout
+
+Create Profile (Direct)
+  Route: /app/onboarding/create-profile
+  URL: http://127.0.0.1:3000/app/onboarding/create-profile
+  Description: Direct access to create profile (Onb1)
+
+Upload Resume (Direct)
+  Route: /app/onboarding/upload-resume
+  URL: http://127.0.0.1:3000/app/onboarding/upload-resume
+  Description: Direct access to upload resume (Onb2)
+
+Personal Information (Direct)
+  Route: /app/onboarding/personal-information
+  URL: http://127.0.0.1:3000/app/onboarding/personal-information
+  Description: Direct access to personal information (Onb3)
+
+
+CHECKOUT & PAYMENT PAGES (4 pages)
+----------------------------------
+Checkout
+  Route: /app/checkout
+  URL: http://127.0.0.1:3000/app/checkout
+  Description: Checkout page
+
+Checkout Success
+  Route: /app/checkout/success
+  URL: http://127.0.0.1:3000/app/checkout/success
+  Description: Successful checkout confirmation
+
+Checkout Error
+  Route: /app/checkout/error
+  URL: http://127.0.0.1:3000/app/checkout/error
+  Description: Checkout error page
+
+Payment Success
+  Route: /app/payment/success
+  URL: http://127.0.0.1:3000/app/payment/success
+  Description: Payment success confirmation
+
+
+AUTHENTICATION PAGES (1 page)
+------------------------------
+Sign In
+  Route: /auth/sign-in
+  URL: http://127.0.0.1:3000/auth/sign-in
+  Description: User sign-in page
+
+
+APPLICATION DASHBOARD PAGES (5 pages)
+--------------------------------------
+Dashboard
+  Route: /app/dashboard
+  URL: http://127.0.0.1:3000/app/dashboard
+  Description: Main user dashboard
+
+Profile
+  Route: /app/profile
+  URL: http://127.0.0.1:3000/app/profile
+  Description: User profile management
+
+Agents
+  Route: /app/agents
+  URL: http://127.0.0.1:3000/app/agents
+  Description: Search agents management
+
+Applications
+  Route: /app/applications
+  URL: http://127.0.0.1:3000/app/applications
+  Description: Job applications tracking
+
+Billing
+  Route: /app/billing
+  URL: http://127.0.0.1:3000/app/billing
+  Description: Billing and subscription management
+
+
+QUICK ACCESS - MOST COMMON PAGES
+---------------------------------
+Home: http://127.0.0.1:3000/
+Pricing: http://127.0.0.1:3000/pricing
+Services: http://127.0.0.1:3000/services
+Interview Coach: http://127.0.0.1:3000/interview-coach-final
+Onboarding Start: http://127.0.0.1:3000/app/onboarding/welcome
+Dashboard: http://127.0.0.1:3000/app/dashboard
+
+
+

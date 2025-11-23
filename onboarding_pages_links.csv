@@ -1,0 +1,14 @@
+Step,Page Name,URL,Component,Back Link,Forward Link,External Links
+0,Welcome,https://talendro-app-1.onrender.com/app/onboarding/welcome,OnbWelcome,N/A,Step 1: Upload Resume,How It Works
+1,Upload Résumé,https://talendro-app-1.onrender.com/app/onboarding/step-1,Onb2,Welcome,Step 2: Create Profile (auto),N/A
+2,Create Profile,https://talendro-app-1.onrender.com/app/onboarding/step-2,Onb1,Step 1: Upload Resume,Step 3: Personal Information,Terms of Service; Privacy Policy; Sign In
+3,Personal Information,https://talendro-app-1.onrender.com/app/onboarding/step-3,Onb3,Step 2: Create Profile,Step 4: Professional Information,N/A
+4,Professional Information,https://talendro-app-1.onrender.com/app/onboarding/step-4,Onb4,Step 3: Personal Information,Step 5: Disclosures & Authorizations,N/A
+5,Disclosures & Authorizations,https://talendro-app-1.onrender.com/app/onboarding/step-5,Onb5,Step 4: Professional Information,Checkout,N/A
+6,Review,https://talendro-app-1.onrender.com/app/onboarding/review,OnbReview,N/A,Checkout,N/A
+Direct Access,Create Profile (Direct),https://talendro-app-1.onrender.com/app/onboarding/create-profile,Onb1,N/A,N/A,N/A
+Direct Access,Upload Resume (Direct),https://talendro-app-1.onrender.com/app/onboarding/upload-resume,Onb2,N/A,N/A,N/A
+Direct Access,Personal Information (Direct),https://talendro-app-1.onrender.com/app/onboarding/personal-information,Onb3,N/A,N/A,N/A
+
+
+

@@ -67,7 +67,7 @@ export default function Page() {
       billing: billing
     };
     localStorage.setItem('selectedPlan', JSON.stringify(selection));
-    navigate('/app/onboarding/step-1');
+    navigate('/app/onboarding/welcome');
   };
 
   // Get current price for a plan
@@ -76,86 +76,39 @@ export default function Page() {
   };
 
   return (
-    <section style={{ padding: '2rem 1rem', maxWidth: '1200px', margin: '0 auto' }}>
+    <section className="py-10 px-4 max-w-6xl mx-auto">
       {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-        <h1 style={{ 
-          fontSize: '2.5rem', 
-          fontWeight: 'bold', 
-          color: '#1f2937', 
-          marginBottom: '0.5rem' 
-        }}>
+      <div className="text-center mb-12">
+        <h1 className="h1 mb-2">
           Choose Your Plan
         </h1>
-        <p style={{ 
-          fontSize: '1.125rem', 
-          color: '#6b7280', 
-          marginBottom: '2rem' 
-        }}>
+        <p className="body mb-8">
           All plans include AI-powered job matching and automated applications
         </p>
 
         {/* Billing Toggle */}
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          gap: '1rem',
-          marginBottom: '2rem'
-        }}>
-          <span style={{ 
-            color: billing === 'monthly' ? '#2563eb' : '#6b7280',
-            fontWeight: billing === 'monthly' ? '600' : '400',
-            fontSize: '1rem'
-          }}>
+        <div className="flex items-center justify-center gap-4 mb-8">
+          <span className={billing === 'monthly' ? 'text-talBlue font-semibold' : 'text-gray-600'}>
             Monthly
           </span>
           <button
             onClick={() => setBilling(billing === 'monthly' ? 'annual' : 'monthly')}
-            style={{
-              width: '56px',
-              height: '32px',
-              borderRadius: '16px',
-              border: 'none',
-              backgroundColor: billing === 'annual' ? '#2563eb' : '#d1d5db',
-              cursor: 'pointer',
-              position: 'relative',
-              transition: 'background-color 0.3s',
-              outline: 'none'
-            }}
+            className={`w-14 h-8 rounded-full border-none cursor-pointer relative transition-colors outline-none ${
+              billing === 'annual' ? 'bg-talBlue' : 'bg-gray-300'
+            }`}
             aria-label="Toggle billing period"
           >
             <span
-              style={{
-                position: 'absolute',
-                top: '4px',
-                left: billing === 'monthly' ? '4px' : '28px',
-                width: '24px',
-                height: '24px',
-                borderRadius: '50%',
-                backgroundColor: 'white',
-                transition: 'left 0.3s',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-              }}
+              className={`absolute top-1 w-6 h-6 rounded-full bg-white transition-all shadow-sm ${
+                billing === 'monthly' ? 'left-1' : 'left-7'
+              }`}
             />
           </button>
-          <span style={{ 
-            color: billing === 'annual' ? '#2563eb' : '#6b7280',
-            fontWeight: billing === 'annual' ? '600' : '400',
-            fontSize: '1rem'
-          }}>
+          <span className={billing === 'annual' ? 'text-talBlue font-semibold' : 'text-gray-600'}>
             Annual
           </span>
           {billing === 'annual' && (
-            <span style={{
-              backgroundColor: '#dcfce7',
-              color: '#16a34a',
-              padding: '0.25rem 0.75rem',
-              borderRadius: '0.5rem',
-              fontSize: '0.875rem',
-              fontWeight: '600',
-              marginLeft: '0.5rem'
-            }}>
+            <span className="bg-green-50 text-green-700 px-3 py-1 rounded-lg text-sm font-semibold ml-2">
               Save up to ${calculateSavings('premium')}/year
             </span>
           )}
@@ -163,12 +116,7 @@ export default function Page() {
       </div>
 
       {/* Pricing Cards */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-        gap: '2rem',
-        marginBottom: '3rem'
-      }}>
+      <div className="grid md:grid-cols-3 gap-8 mb-12">
         {Object.entries(plans).map(([key, plan]) => {
           const price = getPrice(key);
           const savings = calculateSavings(key);
@@ -177,144 +125,54 @@ export default function Page() {
           return (
             <div
               key={key}
-              style={{
-                backgroundColor: 'white',
-                borderRadius: '1rem',
-                padding: '2rem',
-                border: isPopular ? '2px solid #2563eb' : '2px solid #e5e7eb',
-                boxShadow: isPopular ? '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                position: 'relative',
-                display: 'flex',
-                flexDirection: 'column',
-                transform: isPopular ? 'scale(1.05)' : 'scale(1)',
-                transition: 'transform 0.3s',
-                '@media (max-width: 768px)': {
-                  transform: 'scale(1)'
-                }
-              }}
+              className={`card relative flex flex-col ${isPopular ? 'border-2 border-talBlue transform scale-105 md:scale-105' : 'border-2 border-gray-200'}`}
             >
               {isPopular && (
-                <div style={{
-                  position: 'absolute',
-                  top: '-12px',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  backgroundColor: '#2563eb',
-                  color: 'white',
-                  padding: '0.5rem 1.5rem',
-                  borderRadius: '9999px',
-                  fontSize: '0.875rem',
-                  fontWeight: '600'
-                }}>
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-talBlue text-white px-6 py-1 rounded-full text-sm font-semibold">
                   Most Popular
                 </div>
               )}
 
-              <h3 style={{
-                fontSize: '1.5rem',
-                fontWeight: 'bold',
-                color: isPopular ? '#2563eb' : '#1f2937',
-                marginBottom: '0.5rem'
-              }}>
+              <h3 className={`h3 mb-2 ${isPopular ? 'text-talBlue' : ''}`}>
                 {plan.name}
               </h3>
 
-              <div style={{ marginBottom: '0.5rem' }}>
-                <span style={{
-                  fontSize: '3rem',
-                  fontWeight: 'bold',
-                  color: '#2563eb'
-                }}>
+              <div className="mb-2">
+                <span className="text-4xl font-bold text-talBlue">
                   ${price}
                 </span>
-                <span style={{
-                  fontSize: '1.125rem',
-                  color: '#6b7280',
-                  marginLeft: '0.5rem'
-                }}>
+                <span className="text-lg text-gray-600 ml-2">
                   /month
                 </span>
                 {billing === 'annual' && (
-                  <span style={{
-                    fontSize: '0.875rem',
-                    color: '#6b7280',
-                    display: 'block',
-                    marginTop: '0.25rem'
-                  }}>
+                  <span className="body text-sm text-gray-600 block mt-1">
                     billed annually
                   </span>
                 )}
               </div>
 
               {billing === 'annual' && (
-                <p style={{
-                  fontSize: '0.875rem',
-                  color: '#16a34a',
-                  fontWeight: '600',
-                  marginBottom: '1rem'
-                }}>
+                <p className="body text-sm text-green-700 font-semibold mb-4">
                   Save ${savings}/year
                 </p>
               )}
 
-              <p style={{
-                fontSize: '0.875rem',
-                color: '#6b7280',
-                marginBottom: '1.5rem'
-              }}>
+              <p className="body text-sm mb-6">
                 {plan.description}
               </p>
 
-              <ul style={{
-                listStyle: 'none',
-                padding: 0,
-                margin: 0,
-                marginBottom: '2rem',
-                flex: 1
-              }}>
+              <ul className="list-none p-0 m-0 mb-8 flex-1">
                 {plan.features.map((feature, index) => (
-                  <li key={index} style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    marginBottom: '0.75rem',
-                    fontSize: '0.875rem',
-                    color: '#374151'
-                  }}>
-                    <span style={{
-                      color: '#00bcd4',
-                      marginRight: '0.75rem',
-                      fontSize: '1.25rem',
-                      lineHeight: '1'
-                    }}>●</span>
-                    <span>{feature}</span>
+                  <li key={index} className="flex items-start mb-3">
+                    <span className="text-talAqua mr-3 text-xl leading-none">●</span>
+                    <span className="body text-sm">{feature}</span>
                   </li>
                 ))}
               </ul>
 
               <button
                 onClick={() => handleSelectPlan(key)}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem 1.5rem',
-                  borderRadius: '0.5rem',
-                  border: 'none',
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s',
-                  backgroundColor: isPopular ? '#2563eb' : 'white',
-                  color: isPopular ? 'white' : '#2563eb',
-                  borderWidth: isPopular ? '0' : '2px',
-                  borderStyle: isPopular ? 'none' : 'solid',
-                  borderColor: '#2563eb',
-                  marginTop: 'auto'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = isPopular ? '#1d4ed8' : '#eff6ff';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = isPopular ? '#2563eb' : 'white';
-                }}
+                className={`btn w-full mt-auto ${isPopular ? 'btn-primary' : 'btn-secondary'}`}
               >
                 Get Started
               </button>
@@ -324,53 +182,17 @@ export default function Page() {
       </div>
 
       {/* Additional Info Section */}
-      <div style={{
-        backgroundColor: '#f8f9fa',
-        borderRadius: '1rem',
-        padding: '2rem',
-        marginTop: '3rem',
-        textAlign: 'center'
-      }}>
-        <h2 style={{
-          fontSize: '1.5rem',
-          fontWeight: 'bold',
-          color: '#1f2937',
-          marginBottom: '1rem'
-        }}>
+      <div className="bg-gray-50 rounded-2xl p-8 mt-12 text-center">
+        <h2 className="h2 mb-4">
           All Plans Include
         </h2>
-        <p style={{
-          fontSize: '1rem',
-          color: '#6b7280',
-          marginBottom: '1.5rem'
-        }}>
+        <p className="body mb-6">
           Real-time job discovery • AI-tailored resumes • Intelligent match scoring • Fully autonomous submission for 90% of applications
         </p>
-        <p style={{
-          fontSize: '0.875rem',
-          color: '#9ca3af'
-        }}>
+        <p className="body text-sm text-gray-500">
           Cancel anytime. No contracts. No commitments.
         </p>
       </div>
-
-      {/* Mobile Responsive Styles */}
-      <style>{`
-        @media (max-width: 768px) {
-          section {
-            padding: 1rem !important;
-          }
-          h1 {
-            font-size: 2rem !important;
-          }
-          div[style*="grid"] {
-            grid-template-columns: 1fr !important;
-          }
-          div[style*="scale(1.05)"] {
-            transform: scale(1) !important;
-          }
-        }
-      `}</style>
     </section>
   );
 }

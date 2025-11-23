@@ -6,7 +6,7 @@ export default function Page(){
       <h1 className="h1">Talendro™ Navigator</h1>
       
       <div className="mt-6">
-        <p className='body-large mb-4'>Fully autonomous job search AI that works 24/7 on your behalf.</p>
+        <p className='tagline mb-4'>Fully autonomous job search AI that works 24/7 on your behalf.</p>
         
         <p className='body mb-2'>
           Search millions of jobs • AI-tailored resume for every application • Intelligent match scoring • <strong className="text-talBlue">Autonomous submission for 90% of applications</strong> • Comprehensive analytics
@@ -17,7 +17,7 @@ export default function Page(){
         </p>
         
         {/* Autonomous AI Callout */}
-        <div className="mb-12 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-xl p-8">
+        <div className="mb-12 bg-talBlue text-white rounded-xl p-8">
           <div className="flex items-start gap-4">
             <div className="text-5xl">🤖</div>
             <div>
@@ -113,14 +113,14 @@ export default function Page(){
       
       {/* Competitive Advantages Section */}
       <div className="max-w-6xl mx-auto py-16 px-4">
-        <h2 className="text-4xl font-bold text-center mb-4">Your Competitive Advantages</h2>
+        <h2 className="h2 text-center mb-4">Your Competitive Advantages</h2>
         <p className="text-center text-gray-600 mb-12 max-w-3xl mx-auto">
           Research-proven strategies built into every application
         </p>
         
         {/* Advantage 1: Speed */}
         <div className="mb-12 p-8 bg-blue-50 rounded-xl border-2 border-talBlue">
-          <h3 className="text-2xl font-bold mb-4 flex items-center gap-3">
+          <h3 className="h3 mb-4 flex items-center gap-3">
             <span className="text-3xl">🏃</span>
             Advantage #1: Apply Before the Competition
           </h3>
@@ -163,7 +163,7 @@ export default function Page(){
         
         {/* Advantage 2: Tailoring */}
         <div className="mb-12 p-8 bg-green-50 rounded-xl border-2 border-green-500">
-          <h3 className="text-2xl font-bold mb-4 flex items-center gap-3">
+          <h3 className="h3 mb-4 flex items-center gap-3">
             <span className="text-3xl">🎯</span>
             Advantage #2: Perfect Resume Every Time
           </h3>
@@ -206,7 +206,7 @@ export default function Page(){
         
         {/* Advantage 3: Volume */}
         <div className="p-8 bg-purple-50 rounded-xl border-2 border-purple-500">
-          <h3 className="text-2xl font-bold mb-4 flex items-center gap-3">
+          <h3 className="h3 mb-4 flex items-center gap-3">
             <span className="text-3xl">📊</span>
             Advantage #3: Play the Numbers Game (The Right Way)
           </h3>

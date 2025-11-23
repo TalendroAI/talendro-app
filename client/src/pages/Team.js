@@ -90,7 +90,7 @@ export default function Page(){
         </div>
       </div>
       
-      <div className='mt-8 flex flex-wrap gap-3 justify-center'>
+      <div className='mt-8 flex flex-wrap gap-3'>
         <a href='/contact'><button className='btn btn-primary mr-3'>Join Our Team</button></a>
         <a href='/about'><button className='btn btn-secondary mr-3'>Learn More About Us</button></a>
       </div>

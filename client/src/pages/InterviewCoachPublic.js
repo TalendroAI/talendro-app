@@ -24,7 +24,7 @@ const InterviewCoachPublic = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="max-w-6xl mx-auto px-4" style={{ paddingTop: '6rem', paddingBottom: '4rem' }}>
+      <section className="max-w-6xl mx-auto px-4 pt-24 pb-16">
         <div className="bg-gray-50 rounded-xl p-8">
           <h1 className="h1 mb-4">
             🚀 FORCE REBUILD v2 - Talendro™ Interview Coach - $(date +%s)
@@ -119,10 +119,7 @@ const InterviewCoachPublic = () => {
             </div>
 
             {/* Full Mock Plan - Most Popular */}
-            <div
-              className="card relative"
-              style={{ border: '2px solid #2F6DF6', transform: 'scale(1.05)' }}
-            >
+            <div className="card relative border-2 border-talBlue scale-105">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                 <span className="bg-talBlue text-white px-4 py-1 rounded-full text-sm font-semibold">
                   Most Popular

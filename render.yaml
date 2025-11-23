@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: talendro-app
+    env: node
+    plan: starter
+    region: oregon
+    buildCommand: npm run install:all && npm run build
+    startCommand: cd server && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PRICE_ID_BASIC
+        sync: false
+      - key: STRIPE_PRICE_ID_PRO
+        sync: false
+      - key: STRIPE_PRICE_ID_PREMIUM
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: DOMAIN
+        sync: false
+

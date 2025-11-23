@@ -1,0 +1,42 @@
+Category,Page Name,Route,Full URL,Description
+Public Marketing,Home,/,http://127.0.0.1:3000/,Main landing page
+Public Marketing,How It Works,/how-it-works,http://127.0.0.1:3000/how-it-works,Explains how Talendro™ works
+Public Marketing,Services,/services,http://127.0.0.1:3000/services,Overview of services
+Public Marketing,Navigator Service,/services/navigator,http://127.0.0.1:3000/services/navigator,Detailed Navigator service page
+Public Marketing,Optional Services,/services/optional,http://127.0.0.1:3000/services/optional,Optional add-on services
+Public Marketing,Pricing,/pricing,http://127.0.0.1:3000/pricing,Pricing plans
+Public Marketing,About,/about,http://127.0.0.1:3000/about,About Talendro™
+Public Marketing,Our Story,/about/our-story,http://127.0.0.1:3000/about/our-story,Company story
+Public Marketing,Our Team,/about/our-team,http://127.0.0.1:3000/about/our-team,Team information
+Public Marketing,FAQ,/resources/faq,http://127.0.0.1:3000/resources/faq,Frequently asked questions
+Public Marketing,Contact,/contact,http://127.0.0.1:3000/contact,Contact information
+Public Marketing,Veterans,/veterans,http://127.0.0.1:3000/veterans,Veterans benefits and resources
+Public Marketing,Security,/security,http://127.0.0.1:3000/security,Security information
+Public Marketing,Privacy Policy,/privacy,http://127.0.0.1:3000/privacy,Privacy policy
+Public Marketing,Terms of Service,/terms,http://127.0.0.1:3000/terms,Terms of service
+Public Marketing,Interview Coach Future,/interview-coach-future,http://127.0.0.1:3000/interview-coach-future,Interview Coach with navigation (future version)
+Interview Coach Public,Interview Coach Public,/interview-coach,http://127.0.0.1:3000/interview-coach,Public Interview Coach landing page (no header/footer)
+Interview Coach Public,Interview Coach Final,/interview-coach-final,http://127.0.0.1:3000/interview-coach-final,Final Interview Coach landing page (no header/footer)
+Onboarding,Welcome,/app/onboarding/welcome,http://127.0.0.1:3000/app/onboarding/welcome,Welcome page
+Onboarding,Step 1: Upload Resume,/app/onboarding/step-1,http://127.0.0.1:3000/app/onboarding/step-1,Resume upload (Onb2 component)
+Onboarding,Step 2: Create Profile,/app/onboarding/step-2,http://127.0.0.1:3000/app/onboarding/step-2,Create profile (Onb1 component)
+Onboarding,Step 3: Personal Information,/app/onboarding/step-3,http://127.0.0.1:3000/app/onboarding/step-3,Personal information (Onb3 component)
+Onboarding,Step 4: Professional Information,/app/onboarding/step-4,http://127.0.0.1:3000/app/onboarding/step-4,Professional information (Onb4 component)
+Onboarding,Step 5: Disclosures & Authorizations,/app/onboarding/step-5,http://127.0.0.1:3000/app/onboarding/step-5,Final disclosures (Onb5 component)
+Onboarding,Review,/app/onboarding/review,http://127.0.0.1:3000/app/onboarding/review,Final review before checkout
+Onboarding,Create Profile (Direct),/app/onboarding/create-profile,http://127.0.0.1:3000/app/onboarding/create-profile,Direct access to create profile (Onb1)
+Onboarding,Upload Resume (Direct),/app/onboarding/upload-resume,http://127.0.0.1:3000/app/onboarding/upload-resume,Direct access to upload resume (Onb2)
+Onboarding,Personal Information (Direct),/app/onboarding/personal-information,http://127.0.0.1:3000/app/onboarding/personal-information,Direct access to personal information (Onb3)
+Checkout & Payment,Checkout,/app/checkout,http://127.0.0.1:3000/app/checkout,Checkout page
+Checkout & Payment,Checkout Success,/app/checkout/success,http://127.0.0.1:3000/app/checkout/success,Successful checkout confirmation
+Checkout & Payment,Checkout Error,/app/checkout/error,http://127.0.0.1:3000/app/checkout/error,Checkout error page
+Checkout & Payment,Payment Success,/app/payment/success,http://127.0.0.1:3000/app/payment/success,Payment success confirmation
+Authentication,Sign In,/auth/sign-in,http://127.0.0.1:3000/auth/sign-in,User sign-in page
+Application Dashboard,Dashboard,/app/dashboard,http://127.0.0.1:3000/app/dashboard,Main user dashboard
+Application Dashboard,Profile,/app/profile,http://127.0.0.1:3000/app/profile,User profile management
+Application Dashboard,Agents,/app/agents,http://127.0.0.1:3000/app/agents,Search agents management
+Application Dashboard,Applications,/app/applications,http://127.0.0.1:3000/app/applications,Job applications tracking
+Application Dashboard,Billing,/app/billing,http://127.0.0.1:3000/app/billing,Billing and subscription management
+
+
+

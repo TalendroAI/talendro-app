@@ -6,25 +6,25 @@ const InterviewCoach = () => {
       {/* Hero Section */}
       <section className="bg-gray-50 py-16 px-4">
         <div className="max-w-5xl mx-auto">
-          <h1 className="h1 mb-4" style={{ fontSize: '3.5rem', lineHeight: '1.1' }}>
+          <h1 className="h1 mb-4">
             Talendro™ Interview Coach
           </h1>
           
-          <p className="tagline text-2xl mb-6">
+          <p className="tagline mb-6">
             Personalized, professional-grade interview preparation using your résumé, job description, and target company.
           </p>
           
-          <p className="body text-lg text-gray-700 mb-4">
+          <p className="body mb-4">
             Choose the level of prep you need, pay securely, and start practicing in minutes.
           </p>
           
-          <p className="body text-sm text-gray-600 mb-8">
+          <p className="body text-sm mb-8">
             Built on Talendro's autonomous job search & apply engine • Optimized for mid-career & senior roles
           </p>
           
           <div className="flex gap-4 mb-8">
             <a href="#pricing">
-              <button className="btn btn-primary px-8 py-3 text-base">
+              <button className="btn btn-primary">
                 View Plans & Pricing
               </button>
             </a>
@@ -35,9 +35,9 @@ const InterviewCoach = () => {
       {/* Info Banner */}
       <section className="bg-talBlue py-4 px-4">
         <div className="max-w-5xl mx-auto text-center">
-          <p className="body text-sm" style={{ color: '#ffffff' }}>
-            <strong style={{ color: '#ffffff' }}>When you purchase, you'll receive an email</strong> with your Interview Coach link and simple instructions: 
-            <strong style={{ color: '#ffffff' }}> upload résumé + job description + company URL</strong>, then select your plan.
+          <p className="body text-sm text-white">
+            <strong className="text-white">When you purchase, you'll receive an email</strong> with your Interview Coach link and simple instructions: 
+            <strong className="text-white"> upload résumé + job description + company URL</strong>, then select your plan.
           </p>
         </div>
       </section>
@@ -95,7 +95,7 @@ const InterviewCoach = () => {
             </div>
 
             {/* Full Mock Plan - Most Popular */}
-            <div className="card relative" style={{ border: '2px solid #2F6DF6', transform: 'scale(1.05)' }}>
+            <div className="card relative border-2 border-talBlue scale-105">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                 <span className="bg-talBlue text-white px-4 py-1 rounded-full text-sm font-semibold">
                   Most Popular

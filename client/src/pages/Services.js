@@ -9,7 +9,7 @@ export default function Page(){
         
         <div className="grid gap-8 md:grid-cols-2">
           <div className="card border-2 border-talBlue bg-gradient-to-br from-blue-50 to-white">
-            <h3 className="h2 text-talBlue mb-4">Talendro™ Navigator</h3>
+            <h3 className="h3 mb-4">Talendro™ Navigator</h3>
             <p className="body mb-6">All-in-one job search automation platform. Everything you need included in one simple subscription.</p>
             
             <div className="space-y-3 mb-6">
@@ -40,7 +40,7 @@ export default function Page(){
           </div>
           
           <div className="card">
-            <h3 className="h2 text-talSlate mb-4">Optional AI Services</h3>
+            <h3 className="h3 mb-4">Optional AI Services</h3>
             <p className="body mb-6">Targeted tools to enhance your job search when you need extra lift. Add-ons available to Navigator subscribers.</p>
             
             <div className="space-y-3 mb-6">
@@ -90,7 +90,7 @@ export default function Page(){
         </div>
       </div>
       
-      <div className='mt-8 flex flex-wrap gap-3 justify-center'>
+      <div className='mt-8 flex flex-wrap gap-3'>
         <a href='/app/onboarding/welcome'><button className='btn btn-primary mr-3'>Get Started Now</button></a>
         <a href='/pricing'><button className='btn btn-secondary mr-3'>View Pricing</button></a>
       </div>

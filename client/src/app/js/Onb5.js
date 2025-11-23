@@ -85,8 +85,8 @@ const Onb5 = () => {
     <div style={styles.body}>
       <div style={styles.container}>
         <div style={styles.header}>
-          <h1 style={styles.h1}>Disclosures & Authorizations</h1>
-          <p style={styles.subheader}>Final step - Please complete all fields</p>
+          <h1 className="h1">Disclosures & Authorizations</h1>
+          <p className="body text-sm">Final step - Please complete all fields</p>
         </div>
         
         <div style={styles.progressBar}>
@@ -102,7 +102,7 @@ const Onb5 = () => {
         <form onSubmit={handleSubmit}>
           {/* Voluntary Self-Identification */}
           <div style={styles.section}>
-            <h2 style={styles.sectionHeader}>Voluntary Self-Identification Questions</h2>
+            <h2 className="h3">Voluntary Self-Identification Questions</h2>
             <p style={styles.helpText}>This information is voluntary and used for Equal Employment Opportunity (EEO) reporting only.</p>
             
             <div style={styles.formRow}>
@@ -342,7 +342,7 @@ const Onb5 = () => {
           
           {/* Authorization */}
           <div style={styles.section}>
-            <h2 style={styles.sectionHeader}>Authorization</h2>
+            <h2 className="h3">Authorization</h2>
             
             <div style={styles.authorizationBox}>
               <p style={styles.authText}><strong>By signing below, I authorize and consent to the following:</strong></p>
@@ -441,9 +441,7 @@ const styles = {
     marginBottom: '30px'
   },
   h1: {
-    color: '#2563eb',
-    fontSize: '32px',
-    marginBottom: '8px'
+    // Using brand class .h1 instead
   },
   subheader: {
     color: '#6b7280',
@@ -457,7 +455,7 @@ const styles = {
   },
   progressFill: {
     height: '100%',
-    background: 'linear-gradient(to right, #2563eb, #00bcd4)'
+    background: 'linear-gradient(to right, #2F6DF6, #00C4CC)'
   },
   alert: {
     background: '#fef2f2',

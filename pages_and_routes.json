@@ -1,0 +1,321 @@
+{
+  "totalPages": 33,
+  "baseUrl": "http://127.0.0.1:3000",
+  "pages": [
+    {
+      "category": "Public Marketing",
+      "name": "Home",
+      "route": "/",
+      "url": "http://127.0.0.1:3000/",
+      "description": "Main landing page",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Public Marketing",
+      "name": "How It Works",
+      "route": "/how-it-works",
+      "url": "http://127.0.0.1:3000/how-it-works",
+      "description": "Explains how Talendro™ works",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Public Marketing",
+      "name": "Services",
+      "route": "/services",
+      "url": "http://127.0.0.1:3000/services",
+      "description": "Overview of services",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Public Marketing",
+      "name": "Navigator Service",
+      "route": "/services/navigator",
+      "url": "http://127.0.0.1:3000/services/navigator",
+      "description": "Detailed Navigator service page",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Public Marketing",
+      "name": "Optional Services",
+      "route": "/services/optional",
+      "url": "http://127.0.0.1:3000/services/optional",
+      "description": "Optional add-on services",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Public Marketing",
+      "name": "Pricing",
+      "route": "/pricing",
+      "url": "http://127.0.0.1:3000/pricing",
+      "description": "Pricing plans",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Public Marketing",
+      "name": "About",
+      "route": "/about",
+      "url": "http://127.0.0.1:3000/about",
+      "description": "About Talendro™",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Public Marketing",
+      "name": "Our Story",
+      "route": "/about/our-story",
+      "url": "http://127.0.0.1:3000/about/our-story",
+      "description": "Company story",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Public Marketing",
+      "name": "Our Team",
+      "route": "/about/our-team",
+      "url": "http://127.0.0.1:3000/about/our-team",
+      "description": "Team information",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Public Marketing",
+      "name": "FAQ",
+      "route": "/resources/faq",
+      "url": "http://127.0.0.1:3000/resources/faq",
+      "description": "Frequently asked questions",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Public Marketing",
+      "name": "Contact",
+      "route": "/contact",
+      "url": "http://127.0.0.1:3000/contact",
+      "description": "Contact information",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Public Marketing",
+      "name": "Veterans",
+      "route": "/veterans",
+      "url": "http://127.0.0.1:3000/veterans",
+      "description": "Veterans benefits and resources",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Public Marketing",
+      "name": "Security",
+      "route": "/security",
+      "url": "http://127.0.0.1:3000/security",
+      "description": "Security information",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Public Marketing",
+      "name": "Privacy Policy",
+      "route": "/privacy",
+      "url": "http://127.0.0.1:3000/privacy",
+      "description": "Privacy policy",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Public Marketing",
+      "name": "Terms of Service",
+      "route": "/terms",
+      "url": "http://127.0.0.1:3000/terms",
+      "description": "Terms of service",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Public Marketing",
+      "name": "Interview Coach Future",
+      "route": "/interview-coach-future",
+      "url": "http://127.0.0.1:3000/interview-coach-future",
+      "description": "Interview Coach with navigation (future version)",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Interview Coach Public",
+      "name": "Interview Coach Public",
+      "route": "/interview-coach",
+      "url": "http://127.0.0.1:3000/interview-coach",
+      "description": "Public Interview Coach landing page (no header/footer)",
+      "hasHeaderFooter": false
+    },
+    {
+      "category": "Interview Coach Public",
+      "name": "Interview Coach Final",
+      "route": "/interview-coach-final",
+      "url": "http://127.0.0.1:3000/interview-coach-final",
+      "description": "Final Interview Coach landing page (no header/footer)",
+      "hasHeaderFooter": false
+    },
+    {
+      "category": "Onboarding",
+      "name": "Welcome",
+      "route": "/app/onboarding/welcome",
+      "url": "http://127.0.0.1:3000/app/onboarding/welcome",
+      "description": "Welcome page",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Onboarding",
+      "name": "Step 1: Upload Resume",
+      "route": "/app/onboarding/step-1",
+      "url": "http://127.0.0.1:3000/app/onboarding/step-1",
+      "description": "Resume upload (Onb2 component)",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Onboarding",
+      "name": "Step 2: Create Profile",
+      "route": "/app/onboarding/step-2",
+      "url": "http://127.0.0.1:3000/app/onboarding/step-2",
+      "description": "Create profile (Onb1 component)",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Onboarding",
+      "name": "Step 3: Personal Information",
+      "route": "/app/onboarding/step-3",
+      "url": "http://127.0.0.1:3000/app/onboarding/step-3",
+      "description": "Personal information (Onb3 component)",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Onboarding",
+      "name": "Step 4: Professional Information",
+      "route": "/app/onboarding/step-4",
+      "url": "http://127.0.0.1:3000/app/onboarding/step-4",
+      "description": "Professional information (Onb4 component)",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Onboarding",
+      "name": "Step 5: Disclosures & Authorizations",
+      "route": "/app/onboarding/step-5",
+      "url": "http://127.0.0.1:3000/app/onboarding/step-5",
+      "description": "Final disclosures (Onb5 component)",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Onboarding",
+      "name": "Review",
+      "route": "/app/onboarding/review",
+      "url": "http://127.0.0.1:3000/app/onboarding/review",
+      "description": "Final review before checkout",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Onboarding",
+      "name": "Create Profile (Direct)",
+      "route": "/app/onboarding/create-profile",
+      "url": "http://127.0.0.1:3000/app/onboarding/create-profile",
+      "description": "Direct access to create profile (Onb1)",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Onboarding",
+      "name": "Upload Resume (Direct)",
+      "route": "/app/onboarding/upload-resume",
+      "url": "http://127.0.0.1:3000/app/onboarding/upload-resume",
+      "description": "Direct access to upload resume (Onb2)",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Onboarding",
+      "name": "Personal Information (Direct)",
+      "route": "/app/onboarding/personal-information",
+      "url": "http://127.0.0.1:3000/app/onboarding/personal-information",
+      "description": "Direct access to personal information (Onb3)",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Checkout & Payment",
+      "name": "Checkout",
+      "route": "/app/checkout",
+      "url": "http://127.0.0.1:3000/app/checkout",
+      "description": "Checkout page",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Checkout & Payment",
+      "name": "Checkout Success",
+      "route": "/app/checkout/success",
+      "url": "http://127.0.0.1:3000/app/checkout/success",
+      "description": "Successful checkout confirmation",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Checkout & Payment",
+      "name": "Checkout Error",
+      "route": "/app/checkout/error",
+      "url": "http://127.0.0.1:3000/app/checkout/error",
+      "description": "Checkout error page",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Checkout & Payment",
+      "name": "Payment Success",
+      "route": "/app/payment/success",
+      "url": "http://127.0.0.1:3000/app/payment/success",
+      "description": "Payment success confirmation",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Authentication",
+      "name": "Sign In",
+      "route": "/auth/sign-in",
+      "url": "http://127.0.0.1:3000/auth/sign-in",
+      "description": "User sign-in page",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Application Dashboard",
+      "name": "Dashboard",
+      "route": "/app/dashboard",
+      "url": "http://127.0.0.1:3000/app/dashboard",
+      "description": "Main user dashboard",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Application Dashboard",
+      "name": "Profile",
+      "route": "/app/profile",
+      "url": "http://127.0.0.1:3000/app/profile",
+      "description": "User profile management",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Application Dashboard",
+      "name": "Agents",
+      "route": "/app/agents",
+      "url": "http://127.0.0.1:3000/app/agents",
+      "description": "Search agents management",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Application Dashboard",
+      "name": "Applications",
+      "route": "/app/applications",
+      "url": "http://127.0.0.1:3000/app/applications",
+      "description": "Job applications tracking",
+      "hasHeaderFooter": true
+    },
+    {
+      "category": "Application Dashboard",
+      "name": "Billing",
+      "route": "/app/billing",
+      "url": "http://127.0.0.1:3000/app/billing",
+      "description": "Billing and subscription management",
+      "hasHeaderFooter": true
+    }
+  ],
+  "categories": {
+    "Public Marketing": 15,
+    "Interview Coach Public": 2,
+    "Onboarding": 9,
+    "Checkout & Payment": 4,
+    "Authentication": 1,
+    "Application Dashboard": 5
+  }
+}
+
+
+

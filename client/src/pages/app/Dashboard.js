@@ -123,13 +123,13 @@ export default function Dashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Welcome Back!</h1>
-          <p className="text-gray-600 mt-2">Here's your job search activity and progress</p>
+          <h1 className="h1">Welcome Back!</h1>
+          <p className="body mt-2">Here's your job search activity and progress</p>
         </div>
 
         {/* Overview Stats */}
         <section className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Overview</h2>
+          <h2 className="h2 mb-4">Overview</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card>
               <div className="flex items-center">
@@ -140,7 +140,7 @@ export default function Dashboard() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Jobs Searched</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.jobsSearched || 0}</p>
+                  <p className="h2">{stats.jobsSearched || 0}</p>
                 </div>
               </div>
             </Card>
@@ -154,7 +154,7 @@ export default function Dashboard() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Resumes</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.resumes || 0}</p>
+                  <p className="h2">{stats.resumes || 0}</p>
                 </div>
               </div>
             </Card>
@@ -168,7 +168,7 @@ export default function Dashboard() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Applications</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.applications || 0}</p>
+                  <p className="h2">{stats.applications || 0}</p>
                 </div>
               </div>
             </Card>
@@ -182,7 +182,7 @@ export default function Dashboard() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Agents</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.agents || 0}</p>
+                  <p className="h2">{stats.agents || 0}</p>
                 </div>
               </div>
             </Card>
@@ -191,7 +191,7 @@ export default function Dashboard() {
 
         {/* Boolean Search Tools */}
         <section className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Search Tools</h2>
+          <h2 className="h2 mb-4">Search Tools</h2>
           <Card>
             <div className="flex flex-wrap gap-4">
               <Button onClick={handleGenerateBoolean}>
@@ -209,7 +209,7 @@ export default function Dashboard() {
 
         {/* Matched Jobs */}
         <section className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Matched Jobs</h2>
+          <h2 className="h2 mb-4">Matched Jobs</h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {jobs.map(job => (
               <Card key={job.id}>
@@ -247,7 +247,7 @@ export default function Dashboard() {
 
         {/* Applications */}
         <section className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Submitted Applications</h2>
+          <h2 className="h2 mb-4">Submitted Applications</h2>
           <div className="space-y-4">
             {applications.map(app => (
               <Card key={app.id}>
@@ -274,7 +274,7 @@ export default function Dashboard() {
 
         {/* Resumes */}
         <section className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Customized Resumes</h2>
+          <h2 className="h2 mb-4">Customized Resumes</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {resumes.map(resume => (
               <Card key={resume.id}>
@@ -306,7 +306,7 @@ export default function Dashboard() {
 
         {/* Analytics */}
         <section className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Performance Metrics</h2>
+          <h2 className="h2 mb-4">Performance Metrics</h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <h3 className="font-semibold text-gray-900 mb-4">Applications Over Time</h3>

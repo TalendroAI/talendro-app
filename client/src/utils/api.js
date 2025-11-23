@@ -3,9 +3,9 @@
  * Automatically detects production vs development and uses correct API base URL
  */
 
-// Detect if we're in production (Railway deployment)
+// Detect if we're in production (Render deployment)
 const isProduction = process.env.NODE_ENV === 'production' || 
-                     window.location.hostname.includes('railway.app') ||
+                     window.location.hostname.includes('onrender.com') ||
                      window.location.hostname.includes('talendro.com');
 
 // Get API base URL

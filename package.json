@@ -5,7 +5,7 @@
   "scripts": {
     "install:all": "npm --prefix client install && npm --prefix server install",
     "dev": "concurrently \"npm --prefix server run dev\" \"npm --prefix client start\"",
-    "build": "echo '🧹 Cleaning old build...' && rm -rf client/build && echo '🔨 Building React app...' && npm --prefix client run build && echo '✅ Build complete! Checking files...' && ls -la client/build/static/js/ | head -5",
+    "build": "npm --prefix client run build",
     "start": "cd server && npm start"
   },
   "devDependencies": {

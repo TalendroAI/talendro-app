@@ -102,7 +102,7 @@ export default function Page(){
         </div>
       </div>
       
-      <div className='mt-8 flex flex-wrap gap-3 justify-center'>
+      <div className='mt-8 flex flex-wrap gap-3'>
         <a href='/app/onboarding/welcome?veteran=true'><button className='btn btn-primary mr-3 text-lg py-3 px-6'>Enroll as a Veteran</button></a>
         <a href='/contact'><button className='btn btn-secondary mr-3'>Questions? Contact Us</button></a>
       </div>

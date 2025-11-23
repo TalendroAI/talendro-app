@@ -128,7 +128,7 @@ export default function Page(){
         </div>
       </div>
       
-      <div className='mt-8 flex flex-wrap gap-3 justify-center'>
+      <div className='mt-8 flex flex-wrap gap-3'>
         <a href='/pricing'><button className='btn btn-secondary mr-3'>View Pricing</button></a>
         <a href='/privacy'><button className='btn btn-primary mr-3'>Read Privacy Policy</button></a>
       </div>

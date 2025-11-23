@@ -12,21 +12,21 @@ export default function Page(){
             <h3 className="h3 mb-4">What Happens Next</h3>
             <div className="space-y-4">
               <div className="flex gap-4 items-center">
-                <div className="w-8 h-8 bg-talBlue text-white flex items-center justify-center font-bold text-sm flex-shrink-0" style={{minWidth: '32px', minHeight: '32px', maxWidth: '32px', maxHeight: '32px'}}>1</div>
+                <div className="w-8 h-8 bg-talBlue text-white flex items-center justify-center font-bold text-sm flex-shrink-0">1</div>
                 <div>
                   <h4 className="font-medium mb-1">Profile Setup (5 minutes)</h4>
                   <p className="body text-sm">Share your experience, preferences, and career goals. We'll use this to create your personalized job search strategy.</p>
                 </div>
               </div>
               <div className="flex gap-4 items-center">
-                <div className="w-8 h-8 bg-talBlue text-white flex items-center justify-center font-bold text-sm flex-shrink-0" style={{minWidth: '32px', minHeight: '32px', maxWidth: '32px', maxHeight: '32px'}}>2</div>
+                <div className="w-8 h-8 bg-talBlue text-white flex items-center justify-center font-bold text-sm flex-shrink-0">2</div>
                 <div>
                   <h4 className="font-medium mb-1">AI Calibration (24 hours)</h4>
                   <p className="body text-sm">Our algorithms analyze hundreds of thousands of career pages to understand your ideal opportunity profile and market positioning.</p>
                 </div>
               </div>
               <div className="flex gap-4 items-center">
-                <div className="w-8 h-8 bg-talBlue text-white flex items-center justify-center font-bold text-sm flex-shrink-0" style={{minWidth: '32px', minHeight: '32px', maxWidth: '32px', maxHeight: '32px'}}>3</div>
+                <div className="w-8 h-8 bg-talBlue text-white flex items-center justify-center font-bold text-sm flex-shrink-0">3</div>
                 <div>
                   <h4 className="font-medium mb-1">Navigator Activation</h4>
                   <p className="body text-sm">Your dedicated AI agents begin real-time job discovery, résumé tailoring, and application submissions based on your criteria.</p>

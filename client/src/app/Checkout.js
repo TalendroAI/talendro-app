@@ -20,7 +20,7 @@ function Checkout() {
           width: '40px',
           height: '40px',
           border: '4px solid #f3f4f6',
-          borderTop: '4px solid #2563eb',
+          borderTop: '4px solid #2F6DF6',
           borderRadius: '50%',
           animation: 'spin 1s linear infinite',
           margin: '0 auto 20px'

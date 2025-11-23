@@ -8,36 +8,33 @@ const InterviewCoachWithNav = () => {
       {/* Hero Section */}
       <section className="bg-gray-50 py-16 px-4">
         <div className="max-w-5xl mx-auto">
-          <h1
-            className="h1 mb-4"
-            style={{ fontSize: '3.5rem', lineHeight: '1.1' }}
-          >
+          <h1 className="h1 mb-4">
             Talendro™ Interview Coach
           </h1>
 
-          <p className="tagline text-2xl mb-6">
+          <p className="tagline mb-6">
             Personalized, professional-grade interview preparation using your
             résumé, job description, and target company.
           </p>
 
-          <p className="body text-lg text-gray-700 mb-4">
+          <p className="body mb-4">
             Choose the level of prep you need, pay securely, and start practicing
             in minutes.
           </p>
 
-          <p className="body text-sm text-gray-600 mb-8">
+          <p className="body text-sm mb-8">
             Built on Talendro&apos;s autonomous job search &amp; apply engine •
             Optimized for mid-career &amp; senior roles
           </p>
 
           <div className="flex gap-4 mb-8">
             <Link to="#pricing">
-              <button className="btn btn-primary px-8 py-3 text-base">
+              <button className="btn btn-primary">
                 View Plans &amp; Pricing
               </button>
             </Link>
             <Link to="/how-it-works">
-              <button className="btn btn-secondary px-8 py-3 text-base">
+              <button className="btn btn-secondary">
                 See How It Works
               </button>
             </Link>
@@ -48,12 +45,12 @@ const InterviewCoachWithNav = () => {
       {/* Info Banner */}
       <section className="bg-talBlue py-4 px-4">
         <div className="max-w-5xl mx-auto text-center">
-          <p className="body text-sm" style={{ color: '#ffffff' }}>
-            <strong style={{ color: '#ffffff' }}>
+          <p className="body text-sm text-white">
+            <strong className="text-white">
               When you purchase, you&apos;ll receive an email
             </strong>{' '}
             with your Interview Coach link and simple instructions:{' '}
-            <strong style={{ color: '#ffffff' }}>
+            <strong className="text-white">
               {' '}
               upload résumé + job description + company URL
             </strong>
@@ -119,7 +116,7 @@ const InterviewCoachWithNav = () => {
             {/* Full Mock Plan - Most Popular */}
             <div
               className="card relative"
-              style={{ border: '2px solid #2F6DF6', transform: 'scale(1.05)' }}
+              className="border-2 border-talBlue scale-105"
             >
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                 <span className="bg-talBlue text-white px-4 py-1 rounded-full text-sm font-semibold">
@@ -335,7 +332,7 @@ const InterviewCoachWithNav = () => {
       <section className="py-16 bg-white px-4">
         <div className="max-w-4xl mx-auto">
           <h2 className="h2 mb-4">Ready to ace your next interview?</h2>
-          <p className="body text-lg text-gray-700 mb-8">
+          <p className="body mb-8">
             Get personalized interview prep tailored to your background and
             target role.
           </p>

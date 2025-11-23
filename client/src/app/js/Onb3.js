@@ -99,8 +99,8 @@ const Onb3 = () => {
     <div style={styles.body}>
       <div style={styles.container}>
         <div style={styles.header}>
-          <h1 style={styles.h1}>Personal Information</h1>
-          <p style={styles.subheader}>Please complete all fields</p>
+          <h1 className="h1">Personal Information</h1>
+          <p className="body text-sm">Please complete all fields</p>
         </div>
         
         <div style={styles.progressBar}>
@@ -116,7 +116,7 @@ const Onb3 = () => {
         <form onSubmit={handleSubmit}>
           {/* Contact Information */}
           <div style={styles.section}>
-            <h2 style={styles.sectionHeader}>Contact Information</h2>
+            <h2 className="h3">Contact Information</h2>
             
             <div style={styles.formRow}>
               <div style={styles.formGroup}>
@@ -200,7 +200,7 @@ const Onb3 = () => {
           
           {/* Current Address */}
           <div style={styles.section}>
-            <h2 style={styles.sectionHeader}>Current Address</h2>
+            <h2 className="h3">Current Address</h2>
             
             <div style={styles.formGroup}>
               <label style={styles.label}>Street Address <span style={styles.required}>*</span></label>
@@ -258,7 +258,7 @@ const Onb3 = () => {
           
           {/* Emergency Contact */}
           <div style={styles.section}>
-            <h2 style={styles.sectionHeader}>Emergency Contact</h2>
+            <h2 className="h3">Emergency Contact</h2>
             
             <div style={styles.formRow}>
               <div style={styles.formGroup}>
@@ -318,7 +318,7 @@ const Onb3 = () => {
           
           {/* Sensitive Information */}
           <div style={styles.section}>
-            <h2 style={styles.sectionHeader}>Sensitive Personal Information</h2>
+            <h2 className="h3">Sensitive Personal Information</h2>
             <p style={styles.helpText}>This information is encrypted and only used for background checks</p>
             
             <div style={styles.formRow}>
@@ -378,7 +378,7 @@ const Onb3 = () => {
           
           {/* Residential History */}
           <div style={styles.section}>
-            <h2 style={styles.sectionHeader}>Residential History (7 Years Required)</h2>
+            <h2 className="h3">Residential History (7 Years Required)</h2>
             
             {residences.map((res, index) => (
               <div key={res.id} style={styles.collectionItem}>
@@ -510,9 +510,7 @@ const styles = {
     marginBottom: '30px'
   },
   h1: {
-    color: '#2563eb',
-    fontSize: '32px',
-    marginBottom: '8px'
+    // Using brand class .h1 instead
   },
   subheader: {
     color: '#6b7280',
@@ -526,7 +524,7 @@ const styles = {
   },
   progressFill: {
     height: '100%',
-    background: 'linear-gradient(to right, #2563eb, #00bcd4)'
+    background: 'linear-gradient(to right, #2F6DF6, #00C4CC)'
   },
   alert: {
     background: '#fef2f2',
@@ -631,8 +629,8 @@ const styles = {
   },
   addBtn: {
     background: 'white',
-    color: '#2563eb',
-    border: '2px solid #2563eb',
+    color: '#2F6DF6',
+    border: '2px solid #2F6DF6',
     padding: '10px 20px',
     borderRadius: '6px',
     cursor: 'pointer',
@@ -646,7 +644,7 @@ const styles = {
     marginTop: '32px'
   },
   btnPrimary: {
-    background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+    background: 'linear-gradient(135deg, #2F6DF6, #1d4ed8)',
     color: 'white',
     border: 'none',
     padding: '14px 32px',

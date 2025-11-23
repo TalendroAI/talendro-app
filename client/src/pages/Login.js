@@ -48,14 +48,14 @@ function Login() {
       <div className="login-box">
         {/* Logo */}
         <div className="login-header">
-          <h1 className="login-logo">Talendro™</h1>
-          <p className="login-tagline">Precision Matches. Faster Results.</p>
+          <h1 className="h1">Talendro™</h1>
+          <p className="tagline">Precision Matches. Faster Results.</p>
         </div>
 
         {/* Login Form */}
         <form onSubmit={handleSubmit} className="login-form">
-          <h2>Sign In</h2>
-          <p className="login-subtitle">Access your job search dashboard</p>
+          <h2 className="h2">Sign In</h2>
+          <p className="body text-sm">Access your job search dashboard</p>
 
           {error && (
             <div className="login-error">

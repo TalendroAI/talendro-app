@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onboarding Pages - Clickable Links</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #2F6DF6;
+            border-bottom: 3px solid #2F6DF6;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #2F6DF6;
+            margin-top: 30px;
+        }
+        .link-section {
+            background: #f9fafb;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #2F6DF6;
+        }
+        .link-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+        }
+        a {
+            color: #2F6DF6;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .flow-sequence {
+            background: #eff6ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .flow-item {
+            margin: 15px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+        }
+        .arrow {
+            text-align: center;
+            font-size: 24px;
+            color: #2F6DF6;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Onboarding Pages - Clickable Links</h1>
+    <p><strong>Base URL:</strong> https://talendro-app-1.onrender.com</p>
+
+    <h2>📝 Main Onboarding Flow</h2>
+
+    <div class="link-section">
+        <h3>Step 0: Welcome</h3>
+        <div class="link-item">
+            <a href="https://talendro-app-1.onrender.com/app/onboarding/welcome" target="_blank">Welcome to Talendro™</a>
+        </div>
+        <p><strong>Links from this page:</strong></p>
+        <ul>
+            <li><a href="https://talendro-app-1.onrender.com/app/onboarding/step-1" target="_blank">Upload Resume (Step 1)</a></li>
+            <li><a href="https://talendro-app-1.onrender.com/services/how-it-works" target="_blank">Learn How It Works</a></li>
+        </ul>
+    </div>
+
+    <div class="link-section">
+        <h3>Step 1: Upload Résumé</h3>
+        <div class="link-item">
+            <a href="https://talendro-app-1.onrender.com/app/onboarding/step-1" target="_blank">Upload Résumé</a>
+        </div>
+        <p><strong>Links from this page:</strong></p>
+        <ul>
+            <li><a href="https://talendro-app-1.onrender.com/app/onboarding/welcome" target="_blank">← Back to Welcome</a></li>
+            <li><em>Auto-navigates to Step 2 after resume upload</em></li>
+        </ul>
+    </div>
+
+    <div class="link-section">
+        <h3>Step 2: Create Profile</h3>
+        <div class="link-item">
+            <a href="https://talendro-app-1.onrender.com/app/onboarding/step-2" target="_blank">Create Profile</a>
+        </div>
+        <p><strong>Links from this page:</strong></p>
+        <ul>
+            <li><a href="https://talendro-app-1.onrender.com/app/onboarding/step-1" target="_blank">← Back to Upload Resume (Step 1)</a></li>
+            <li><a href="https://talendro-app-1.onrender.com/app/onboarding/step-3" target="_blank">Continue to Personal Information (Step 3)</a></li>
+            <li><a href="https://talendro-app-1.onrender.com/terms" target="_blank">Terms of Service</a></li>
+            <li><a href="https://talendro-app-1.onrender.com/privacy" target="_blank">Privacy Policy</a></li>
+            <li><a href="https://talendro-app-1.onrender.com/auth/sign-in" target="_blank">Log In (if already have account)</a></li>
+        </ul>
+    </div>
+
+    <div class="link-section">
+        <h3>Step 3: Personal Information</h3>
+        <div class="link-item">
+            <a href="https://talendro-app-1.onrender.com/app/onboarding/step-3" target="_blank">Personal Information</a>
+        </div>
+        <p><strong>Links from this page:</strong></p>
+        <ul>
+            <li><a href="https://talendro-app-1.onrender.com/app/onboarding/step-2" target="_blank">← Back to Create Profile (Step 2)</a></li>
+            <li><a href="https://talendro-app-1.onrender.com/app/onboarding/step-4" target="_blank">Continue to Professional Information (Step 4)</a></li>
+        </ul>
+    </div>
+
+    <div class="link-section">
+        <h3>Step 4: Professional Information</h3>
+        <div class="link-item">
+            <a href="https://talendro-app-1.onrender.com/app/onboarding/step-4" target="_blank">Professional Information</a>
+        </div>
+        <p><strong>Links from this page:</strong></p>
+        <ul>
+            <li><a href="https://talendro-app-1.onrender.com/app/onboarding/step-3" target="_blank">← Back to Personal Information (Step 3)</a></li>
+            <li><a href="https://talendro-app-1.onrender.com/app/onboarding/step-5" target="_blank">Continue to Disclosures & Authorizations (Step 5)</a></li>
+        </ul>
+    </div>
+
+    <div class="link-section">
+        <h3>Step 5: Disclosures & Authorizations</h3>
+        <div class="link-item">
+            <a href="https://talendro-app-1.onrender.com/app/onboarding/step-5" target="_blank">Disclosures & Authorizations</a>
+        </div>
+        <p><strong>Links from this page:</strong></p>
+        <ul>
+            <li><a href="https://talendro-app-1.onrender.com/app/onboarding/step-4" target="_blank">← Back to Professional Information (Step 4)</a></li>
+            <li><a href="https://talendro-app-1.onrender.com/app/checkout" target="_blank">Proceed to Payment & Activate</a></li>
+        </ul>
+    </div>
+
+    <div class="link-section">
+        <h3>Step 6: Review</h3>
+        <div class="link-item">
+            <a href="https://talendro-app-1.onrender.com/app/onboarding/review" target="_blank">Final Review</a>
+        </div>
+        <p><strong>Links from this page:</strong></p>
+        <ul>
+            <li><a href="https://talendro-app-1.onrender.com/app/checkout" target="_blank">Approve & Continue to Payment</a></li>
+        </ul>
+    </div>
+
+    <h2>🔗 Direct Access Routes (For Testing/QA)</h2>
+    <div class="link-section">
+        <ul>
+            <li><a href="https://talendro-app-1.onrender.com/app/onboarding/create-profile" target="_blank">Create Profile (Direct Access)</a></li>
+            <li><a href="https://talendro-app-1.onrender.com/app/onboarding/upload-resume" target="_blank">Upload Resume (Direct Access)</a></li>
+            <li><a href="https://talendro-app-1.onrender.com/app/onboarding/personal-information" target="_blank">Personal Information (Direct Access)</a></li>
+        </ul>
+    </div>
+
+    <h2>📋 Quick Reference - All Onboarding URLs</h2>
+    <div class="link-section">
+        <ol>
+            <li><a href="https://talendro-app-1.onrender.com/app/onboarding/welcome" target="_blank">Welcome</a></li>
+            <li><a href="https://talendro-app-1.onrender.com/app/onboarding/step-1" target="_blank">Step 1 - Upload Résumé</a></li>
+            <li><a href="https://talendro-app-1.onrender.com/app/onboarding/step-2" target="_blank">Step 2 - Create Profile</a></li>
+            <li><a href="https://talendro-app-1.onrender.com/app/onboarding/step-3" target="_blank">Step 3 - Personal Information</a></li>
+            <li><a href="https://talendro-app-1.onrender.com/app/onboarding/step-4" target="_blank">Step 4 - Professional Information</a></li>
+            <li><a href="https://talendro-app-1.onrender.com/app/onboarding/step-5" target="_blank">Step 5 - Disclosures & Authorizations</a></li>
+            <li><a href="https://talendro-app-1.onrender.com/app/onboarding/review" target="_blank">Review</a></li>
+            <li><a href="https://talendro-app-1.onrender.com/app/onboarding/create-profile" target="_blank">Create Profile (Direct)</a></li>
+            <li><a href="https://talendro-app-1.onrender.com/app/onboarding/upload-resume" target="_blank">Upload Resume (Direct)</a></li>
+            <li><a href="https://talendro-app-1.onrender.com/app/onboarding/personal-information" target="_blank">Personal Information (Direct)</a></li>
+        </ol>
+    </div>
+
+    <h2>🔄 Complete Onboarding Flow (Clickable Sequence)</h2>
+    <div class="flow-sequence">
+        <div class="flow-item">
+            <a href="https://talendro-app-1.onrender.com/app/onboarding/welcome" target="_blank">Welcome</a>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="flow-item">
+            <a href="https://talendro-app-1.onrender.com/app/onboarding/step-1" target="_blank">Step 1: Upload Résumé</a>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="flow-item">
+            <a href="https://talendro-app-1.onrender.com/app/onboarding/step-2" target="_blank">Step 2: Create Profile</a>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="flow-item">
+            <a href="https://talendro-app-1.onrender.com/app/onboarding/step-3" target="_blank">Step 3: Personal Information</a>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="flow-item">
+            <a href="https://talendro-app-1.onrender.com/app/onboarding/step-4" target="_blank">Step 4: Professional Information</a>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="flow-item">
+            <a href="https://talendro-app-1.onrender.com/app/onboarding/step-5" target="_blank">Step 5: Disclosures & Authorizations</a>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="flow-item">
+            <a href="https://talendro-app-1.onrender.com/app/checkout" target="_blank">Checkout</a>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="flow-item">
+            <a href="https://talendro-app-1.onrender.com/app/onboarding/review" target="_blank">Review (optional)</a>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="flow-item">
+            <a href="https://talendro-app-1.onrender.com/app/dashboard" target="_blank">Dashboard</a>
+        </div>
+    </div>
+
+    <h2>🔗 External Links from Onboarding Pages</h2>
+    <div class="link-section">
+        <ul>
+            <li><a href="https://talendro-app-1.onrender.com/services/how-it-works" target="_blank">How It Works</a></li>
+            <li><a href="https://talendro-app-1.onrender.com/terms" target="_blank">Terms of Service</a></li>
+            <li><a href="https://talendro-app-1.onrender.com/privacy" target="_blank">Privacy Policy</a></li>
+            <li><a href="https://talendro-app-1.onrender.com/auth/sign-in" target="_blank">Sign In</a></li>
+            <li><a href="https://talendro-app-1.onrender.com/app/checkout" target="_blank">Checkout</a></li>
+        </ul>
+    </div>
+
+</body>
+</html>
+
+
+

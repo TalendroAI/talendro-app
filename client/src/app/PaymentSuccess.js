@@ -95,9 +95,9 @@ export default function PaymentSuccess() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <h2 className="text-xl font-semibold text-gray-900 mt-4">Processing Payment...</h2>
-          <p className="text-gray-600 mt-2">Setting up your account and running initial job search</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-talBlue mx-auto"></div>
+          <h2 className="h2 mt-4">Processing Payment...</h2>
+          <p className="body mt-2">Setting up your account and running initial job search</p>
         </div>
       </div>
     );
@@ -112,11 +112,11 @@ export default function PaymentSuccess() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-gray-900">Payment Error</h2>
-          <p className="text-gray-600 mt-2">{error}</p>
+          <h2 className="h2">Payment Error</h2>
+          <p className="body mt-2">{error}</p>
           <button 
             onClick={() => navigate('/app/checkout')}
-            className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+            className="btn btn-primary mt-4"
           >
             Try Again
           </button>
@@ -133,9 +133,9 @@ export default function PaymentSuccess() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h2 className="text-xl font-semibold text-gray-900">Payment Successful!</h2>
-        <p className="text-gray-600 mt-2">Your account is being set up...</p>
-        <p className="text-sm text-gray-500 mt-1">Redirecting to your dashboard</p>
+        <h2 className="h2">Payment Successful!</h2>
+        <p className="body mt-2">Your account is being set up...</p>
+        <p className="body text-sm mt-1">Redirecting to your dashboard</p>
       </div>
     </div>
   );

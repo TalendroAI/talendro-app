@@ -30,29 +30,107 @@ export default function Onb2() {
       const fd = new FormData();
       fd.append('file', file, file.name);
 
-      const resp = await fetch('/api/resume/parse', { method: 'POST', body: fd });
+      // When calling the parser API - with error logging
+      const authToken = localStorage.getItem('authToken');
+      console.log('📤 Sending file to /api/resume/parse', { 
+        fileName: file.name, 
+        fileSize: file.size, 
+        fileType: file.type,
+        hasAuthToken: !!authToken 
+      });
+
+      const resp = await fetch('/api/resume/parse', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authToken || ''}`
+        },
+        body: fd
+      });
+      
       console.log('📡 Parse response status:', resp.status);
       
       if (!resp.ok) {
-        const t = await resp.text().catch(()=>'');
-        throw new Error(`Parse failed: ${resp.status} ${t}`);
+        const errorData = await resp.json().catch(() => ({ message: 'Unknown error' }));
+        console.error('❌ Parser API error:', errorData);
+        throw new Error(`Parse failed: ${resp.status} ${errorData.message || 'Unknown error'}`);
       }
+      
       const result = await resp.json();
       console.log('📄 Parse result:', result);
+      
+      if (!result.success) {
+        console.error('❌ Parser API returned success:false:', result);
+        throw new Error(result.message || 'Parser did not report success');
+      }
 
-      // Accept either { success:true, data:{...} } or the flat shape we used earlier
-      const successLike = result?.success === true || result?.status === 'complete';
-      if (!successLike) throw new Error('Parser did not report success/complete');
+      // Handle both response formats (new text-based and existing file-based)
+      let payload;
+      if (result.data && result.data.personalInfo) {
+        // New text-based parser response format
+        const parsedData = result.data;
+        console.log('📄 Parsed data structure (new format):', {
+          hasPersonalInfo: !!parsedData.personalInfo,
+          hasWorkHistory: !!parsedData.workHistory,
+          hasEducation: !!parsedData.education,
+          hasSkills: !!parsedData.skills
+        });
 
-      const payload = result?.data?.prefill
-        ? result.data
-        : {
-            jobId: result.jobId ?? result.data?.jobId,
-            status: result.status ?? result.data?.status,
-            prefill: result.prefill ?? result.data?.prefill ?? {},
-            profileDraft: result.profileDraft ?? result.data?.profileDraft ?? {},
-            confidence: result.confidence ?? result.data?.confidence ?? {}
-          };
+        // Map the new format to the expected format
+        payload = {
+          prefill: {
+            step1: {
+              firstName: parsedData.personalInfo?.fullLegalName?.split(' ')[0] || '',
+              lastName: parsedData.personalInfo?.fullLegalName?.split(' ').slice(1).join(' ') || '',
+              email: parsedData.personalInfo?.email || '',
+              phone: parsedData.personalInfo?.phone || ''
+            },
+            step3: {
+              fullLegalName: parsedData.personalInfo?.fullLegalName || '',
+              email: parsedData.personalInfo?.email || '',
+              phone: parsedData.personalInfo?.phone || '',
+              city: parsedData.personalInfo?.city || '',
+              state: parsedData.personalInfo?.state || '',
+              postalCode: parsedData.personalInfo?.zipCode || '',
+              linkedinUrl: parsedData.personalInfo?.linkedinUrl || ''
+            },
+            step4: {
+              workHistory: parsedData.workHistory?.map(job => ({
+                companyName: job.company || '',
+                jobTitle: job.title || '',
+                startDate: job.startDate || '',
+                endDate: job.endDate || '',
+                current: job.current || (job.endDate === 'Present')
+              })) || [],
+              education: parsedData.education?.map(edu => ({
+                institutionName: edu.school || '',
+                highestDegree: edu.degree || '',
+                majorFieldOfStudy: edu.field || '',
+                graduationDate: edu.graduationDate || ''
+              })) || []
+            }
+          },
+          profileDraft: {
+            skills: parsedData.skills || []
+          }
+        };
+      } else {
+        // Existing file-based parser response format
+        const successLike = result?.success === true || result?.status === 'complete';
+        if (!successLike) {
+          console.error('❌ Parser did not report success/complete:', result);
+          throw new Error('Parser did not report success/complete');
+        }
+
+        payload = result?.data?.prefill
+          ? result.data
+          : {
+              jobId: result.jobId ?? result.data?.jobId,
+              status: result.status ?? result.data?.status,
+              prefill: result.prefill ?? result.data?.prefill ?? {},
+              profileDraft: result.profileDraft ?? result.data?.profileDraft ?? {},
+              confidence: result.confidence ?? result.data?.confidence ?? {}
+            };
+      }
 
       console.log('💾 Saving payload to localStorage:', payload);
 
@@ -79,11 +157,11 @@ export default function Onb2() {
       localStorage.setItem('resumeData', JSON.stringify(payload));
       localStorage.setItem('resumeParsed', 'true');
 
-      console.log('✅ Resume data saved, navigating to step-1...');
+      console.log('✅ Resume data saved, navigating to step-2...');
 
       // Add a small delay to ensure the user can see the Create Profile page
       setTimeout(() => {
-        // Jump to Step 1 (Basic Registration) after resume upload
+        // Jump to Step 2 (Create Profile) after resume upload
         jumped.current = true;
         try { 
           navigate('/app/onboarding/step-2', { replace: true }); 

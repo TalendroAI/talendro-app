@@ -209,6 +209,7 @@ import jobsRoutes from './routes/jobs.js'
 import aiRoutes from './routes/ai.js'
 import authRoutes from './routes/auth.js'
 import webhookRoutes from './routes/webhooks.js'
+import resumeRoutes from './routes/resume.js'
 import { parseResumeData } from './resume-parser-ultimate.js'
 import crypto from 'crypto'
 
@@ -218,7 +219,7 @@ function generateTraceId() {
 }
 
 // Set to production mode to serve React build
-// Railway sets NODE_ENV automatically, but ensure it's set for local testing
+// Render sets NODE_ENV automatically, but ensure it's set for local testing
 if (!process.env.NODE_ENV) {
   process.env.NODE_ENV = 'production'
 }
@@ -255,14 +256,15 @@ app.use(cors({
       // Production domains
       'https://talendro.com',
       'https://www.talendro.com',
-      process.env.FRONTEND_URL, // Set this in Railway env vars
+      process.env.FRONTEND_URL, // Set this in Render env vars
       process.env.DOMAIN, // Or set this
+      'https://talendro-app-1.onrender.com', // Render production URL
     ].filter(Boolean); // Remove undefined values
     
-    // In production, allow Railway domains and custom domains
-    const isRailwayDomain = origin.includes('.up.railway.app');
+    // In production, allow Render domains and custom domains
+    const isRenderDomain = origin.includes('.onrender.com');
     const isLocalhost = origin.includes('localhost') || origin.includes('127.0.0.1');
-    const isAllowed = allowedOrigins.includes(origin) || isRailwayDomain;
+    const isAllowed = allowedOrigins.includes(origin) || isRenderDomain;
     
     if (isAllowed || isLocalhost || process.env.NODE_ENV !== 'production') {
       callback(null, true);
@@ -298,7 +300,11 @@ app.use('/api/user', userRoutes)
 // --- Auth Routes ---
 app.use('/api/auth', authRoutes)
 
-// --- Resume Parsing Routes (Affinda Integration) ---
+// --- Resume Routes (Anthropic Claude Parser - Text-based) ---
+// Register BEFORE parseRoutes so JSON requests are handled first
+app.use('/api/resume', resumeRoutes)
+
+// --- Resume Parsing Routes (Affinda Integration - File upload) ---
 app.use('/api', parseRoutes)
 
 // --- Dashboard Routes ---
@@ -409,7 +415,7 @@ const clientBuildPath = path.resolve(__dirname, '../client/build')
 // Check if build directory exists
 if (!fs.existsSync(clientBuildPath)) {
   console.error('❌ ERROR: React build directory not found at:', clientBuildPath)
-  console.error('❌ Make sure Railway runs: npm run install:all && npm run build')
+          console.error('❌ Make sure Render runs: npm run install:all && npm run build')
   console.error('❌ Current NODE_ENV:', process.env.NODE_ENV)
 } else {
   console.log('✅ React build directory found at:', clientBuildPath)
@@ -438,7 +444,7 @@ app.use((req, res, next) => {
       res.sendFile(indexPath)
     } else {
       console.error('❌ index.html not found at:', indexPath)
-      res.status(500).send('React build not found. Please check Railway build logs.')
+      res.status(500).send('React build not found. Please check Render build logs.')
     }
   }
 })

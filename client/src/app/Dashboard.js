@@ -147,7 +147,7 @@ function Dashboard() {
   if (!userData) {
     return (
       <div className="dashboard-error">
-        <p>Unable to load dashboard. Please try refreshing the page.</p>
+        <p className="body">Unable to load dashboard. Please try refreshing the page.</p>
       </div>
     );
   }
@@ -157,8 +157,8 @@ function Dashboard() {
       {/* Header */}
       <div className="dashboard-header">
         <div>
-          <h1>Welcome back, {userData.name.split(' ')[0]}!</h1>
-          <p className="subtitle">Here's what's happening with your job search</p>
+          <h1 className="h1">Welcome back, {userData.name.split(' ')[0]}!</h1>
+          <p className="body">Here's what's happening with your job search</p>
         </div>
         <div className="header-actions">
           <button className="btn-secondary" onClick={handleUpdatePayment}>
@@ -175,7 +175,7 @@ function Dashboard() {
         <div className="trial-banner">
           <div className="trial-icon">🎉</div>
           <div className="trial-content">
-            <h3>You're on a free trial!</h3>
+            <h3 className="h3">You're on a free trial!</h3>
             <p>
               <strong>{daysRemaining} days remaining</strong> in your 7-day trial. 
               You'll be charged ${getPlanPrice(userData.plan)}/month when your trial ends.
@@ -193,7 +193,7 @@ function Dashboard() {
         {/* COLUMN 1: Subscription Card (spans 2 rows) */}
         <div className="card subscription-card">
           <div className="card-header">
-            <h2>Your Subscription</h2>
+            <h2 className="h2">Your Subscription</h2>
             <span className={`status-badge ${userData.subscriptionStatus}`}>
               {userData.subscriptionStatus === 'trialing' ? 'Trial' : 'Active'}
             </span>
@@ -240,7 +240,7 @@ function Dashboard() {
         {/* COLUMN 2, ROW 1: Tailored Match Rate */}
         <div className="card stats-card stats-card-highlight">
           <div className="card-header">
-            <h2>Tailored Match Rate</h2>
+            <h2 className="h2">Tailored Match Rate</h2>
             <span className="info-icon" title="Match rate after AI tailors your resume to each job">ℹ️</span>
           </div>
           <div className="card-body">
@@ -255,7 +255,7 @@ function Dashboard() {
         {/* COLUMN 3, ROW 1: Applications */}
         <div className="card stats-card">
           <div className="card-header">
-            <h2>Applications</h2>
+            <h2 className="h2">Applications</h2>
           </div>
           <div className="card-body">
             <div className="stat-value">{userData.stats.totalApplications}</div>
@@ -269,7 +269,7 @@ function Dashboard() {
         {/* COLUMN 2, ROW 2: Jobs Discovered */}
         <div className="card stats-card">
           <div className="card-header">
-            <h2>Jobs Discovered</h2>
+            <h2 className="h2">Jobs Discovered</h2>
           </div>
           <div className="card-body">
             <div className="stat-value">{userData.stats.totalJobsDiscovered}</div>
@@ -281,7 +281,7 @@ function Dashboard() {
         {/* COLUMN 3, ROW 2: Initial Match Rate */}
         <div className="card stats-card">
           <div className="card-header">
-            <h2>Initial Match Rate</h2>
+            <h2 className="h2">Initial Match Rate</h2>
             <span className="info-icon" title="Match rate based on your raw resume">ℹ️</span>
           </div>
           <div className="card-body">
@@ -294,23 +294,23 @@ function Dashboard() {
         {/* Getting Started Card */}
         <div className="card full-width getting-started-card">
           <div className="card-header">
-            <h2>🚀 Getting Started with Talendro</h2>
+            <h2 className="h2">🚀 Getting Started with Talendro</h2>
           </div>
           <div className="card-body">
             <div className="steps-grid">
               <div className="step completed">
                 <div className="step-icon">✓</div>
                 <div className="step-content">
-                  <h3>Complete Profile</h3>
-                  <p>Your profile is complete and ready!</p>
+                  <h3 className="h3">Complete Profile</h3>
+                  <p className="body text-sm">Your profile is complete and ready!</p>
                 </div>
               </div>
               
               <div className="step">
                 <div className="step-icon">2</div>
                 <div className="step-content">
-                  <h3>AI is Searching</h3>
-                  <p>Our AI is finding jobs that match your profile</p>
+                  <h3 className="h3">AI is Searching</h3>
+                  <p className="body text-sm">Our AI is finding jobs that match your profile</p>
                   <button className="step-action">View Matches →</button>
                 </div>
               </div>
@@ -318,8 +318,8 @@ function Dashboard() {
               <div className="step">
                 <div className="step-icon">3</div>
                 <div className="step-content">
-                  <h3>Auto-Apply Active</h3>
-                  <p>We'll automatically apply to your top matches</p>
+                  <h3 className="h3">Auto-Apply Active</h3>
+                  <p className="body text-sm">We'll automatically apply to your top matches</p>
                   <button className="step-action">Configure Settings →</button>
                 </div>
               </div>
@@ -330,7 +330,7 @@ function Dashboard() {
         {/* Quick Actions Card */}
         <div className="card quick-actions-card">
           <div className="card-header">
-            <h2>Quick Actions</h2>
+            <h2 className="h2">Quick Actions</h2>
           </div>
           <div className="card-body">
             <div className="action-list">
@@ -364,7 +364,7 @@ function Dashboard() {
         {/* Activity Feed Card */}
         <div className="card activity-card">
           <div className="card-header">
-            <h2>Recent Activity</h2>
+            <h2 className="h2">Recent Activity</h2>
           </div>
           <div className="card-body">
             <div className="activity-list">
