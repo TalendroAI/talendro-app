@@ -20,7 +20,7 @@ const PLANS = {
     starter: {
         name: 'Starter',
         price: 49,
-        priceId: process.env.STRIPE_PRICE_ID_STARTER || 'price_1T6vTTCoFieNARvYAJmPCS4T',
+        priceId: process.env.STRIPE_PRICE_ID_STARTER_APPLY || 'price_1T6vTTCoFieNARvYAJmPCS4T',
         features: [
             '24/7 automated job search',
             'Up to 100 auto-applications/month',
@@ -33,7 +33,7 @@ const PLANS = {
     pro: {
         name: 'Pro',
         price: 99,
-        priceId: process.env.STRIPE_PRICE_ID_PRO || 'price_1T6vTTCoFieNARvY7qN7JUPE',
+        priceId: process.env.STRIPE_PRICE_ID_PRO_APPLY || 'price_1T6vTTCoFieNARvY7qN7JUPE',
         features: [
             'Everything in Starter',
             'Unlimited auto-applications',
@@ -47,7 +47,7 @@ const PLANS = {
     concierge: {
         name: 'Concierge',
         price: 499,
-        priceId: process.env.STRIPE_PRICE_ID_CONCIERGE || 'price_1T6vTUCoFieNARvYWFtOpeeh',
+        priceId: process.env.STRIPE_PRICE_ID_CONCIERGE_APPLY || 'price_1T6vTUCoFieNARvYWFtOpeeh',
         features: [
             'Everything in Pro',
             'Dedicated success manager',
