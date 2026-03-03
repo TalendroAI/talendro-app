@@ -75,10 +75,10 @@ const Onb5 = () => {
       signatureDate: new Date().toISOString()
     };
     
-    localStorage.setItem('step4Data', JSON.stringify(completeData));
+    localStorage.setItem('step5Data', JSON.stringify(completeData));
     
-    // Navigate to checkout/payment
-    navigate('/checkout');
+    // Navigate to review page (payment already completed before onboarding)
+    navigate('/app/onboarding/review');
   };
 
   return (
@@ -90,7 +90,7 @@ const Onb5 = () => {
         </div>
         
         <div style={styles.progressBar}>
-          <div style={{...styles.progressFill, width: '80%'}}></div>
+          <div style={{...styles.progressFill, width: '100%'}}></div>
         </div>
         
         <div style={styles.alert}>
