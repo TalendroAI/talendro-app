@@ -1,15 +1,16 @@
 /**
- * Claude AI Resume Parser Adapter
- * Mirrors the structure of affindaAdapter.js but uses Claude 3.5 Sonnet
+ * OpenAI Resume Parser Adapter
+ * Replaces the former Claude/Anthropic adapter — same interface, OpenAI backend.
+ * Uses gpt-4.1-mini for cost efficiency with no quality loss for structured extraction.
  */
 
-const ANTHROPIC_API_KEY = process.env.CLAUDE_API_KEY || process.env.ANTHROPIC_API_KEY;
+import OpenAI from 'openai';
 
-console.log('[Claude Adapter] API Key check:', { hasKey: !!ANTHROPIC_API_KEY, keyLength: ANTHROPIC_API_KEY?.length });
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
+console.log('[OpenAI Parser] API Key check:', { hasKey: !!process.env.OPENAI_API_KEY });
 
-const MODEL = 'claude-sonnet-4-20250514';
+const MODEL = 'gpt-4.1-mini';
 
 // PDF.js for server-side PDF parsing
 import pdf from 'pdf-parse-new';
@@ -22,12 +23,10 @@ import mammoth from 'mammoth';
  * Reads environment variables at call-time to ensure latest values
  */
 export function claudeStatus() {
-  // Re-read environment at call-time for safety
-  const liveKey = process.env.CLAUDE_API_KEY || process.env.ANTHROPIC_API_KEY;
   return {
-    hasKey: !!liveKey,
+    hasKey: !!process.env.OPENAI_API_KEY,
     model: MODEL,
-    configured: !!liveKey
+    configured: !!process.env.OPENAI_API_KEY
   };
 }
 
@@ -40,34 +39,34 @@ async function extractText(buffer, filename, mimetype) {
   try {
     // Handle PDF
     if (mimetype === 'application/pdf' || fileExt === 'pdf') {
-      console.log('[CLAUDE] Extracting text from PDF...');
+      console.log('[OPENAI PARSER] Extracting text from PDF...');
       const data = await pdf(buffer);
       return data.text;
     }
     
     // Handle DOCX
     if (mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || fileExt === 'docx') {
-      console.log('[CLAUDE] Extracting text from DOCX...');
+      console.log('[OPENAI PARSER] Extracting text from DOCX...');
       const result = await mammoth.extractRawText({ buffer });
       return result.value;
     }
     
     // Handle DOC (older Word format)
     if (mimetype === 'application/msword' || fileExt === 'doc') {
-      console.log('[CLAUDE] Extracting text from DOC...');
+      console.log('[OPENAI PARSER] Extracting text from DOC...');
       const result = await mammoth.extractRawText({ buffer });
       return result.value;
     }
     
     // Handle plain text
     if (mimetype === 'text/plain' || fileExt === 'txt') {
-      console.log('[CLAUDE] Reading plain text file...');
+      console.log('[OPENAI PARSER] Reading plain text file...');
       return buffer.toString('utf-8');
     }
     
     throw new Error(`Unsupported file type: ${mimetype} (${fileExt})`);
   } catch (error) {
-    console.error('[CLAUDE] Text extraction failed:', error.message);
+    console.error('[OPENAI PARSER] Text extraction failed:', error.message);
     throw new Error(`Failed to extract text from file: ${error.message}`);
   }
 }
@@ -196,65 +195,45 @@ Return the JSON now:`;
  * Matches the signature of parseWithAffinda
  */
 export async function parseWithClaude(buffer, filename, mimetype) {
-  console.log(`[CLAUDE] Starting parse for: ${filename}`);
+  console.log(`[OPENAI PARSER] Starting parse for: ${filename}`);
   
-  // Re-read environment at call-time for safety
-  const liveKey = process.env.CLAUDE_API_KEY || process.env.ANTHROPIC_API_KEY;
-  
-  // Check if Claude is configured
-  if (!liveKey) {
-    console.warn(`[CLAUDE] No API key configured`);
-    throw new Error('Claude not available: No API key');
+  if (!process.env.OPENAI_API_KEY) {
+    console.warn('[OPENAI PARSER] No OPENAI_API_KEY configured');
+    throw new Error('OpenAI not available: No API key');
   }
   
   try {
     // Step 1: Extract text from file
-    console.log('[CLAUDE] Step 1: Extracting text from file...');
+    console.log('[OPENAI PARSER] Step 1: Extracting text from file...');
     const resumeText = await extractText(buffer, filename, mimetype);
-    console.log(`[CLAUDE] Extracted ${resumeText.length} characters of text`);
+    console.log(`[OPENAI PARSER] Extracted ${resumeText.length} characters of text`);
     
     if (!resumeText || resumeText.trim().length < 50) {
       throw new Error('Extracted text is too short or empty');
     }
     
-    // Step 2: Call Claude API
-    console.log('[CLAUDE] Step 2: Calling Claude API...');
+    // Step 2: Call OpenAI API
+    console.log('[OPENAI PARSER] Step 2: Calling OpenAI API...');
     const prompt = createPrompt(resumeText);
     
-    const response = await fetch(ANTHROPIC_API_URL, {
-      method: 'POST',
-      headers: {
-        'x-api-key': liveKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: 4096,
-        messages: [{
-          role: 'user',
-          content: prompt
-        }]
-      })
+    const response = await openai.chat.completions.create({
+      model: MODEL,
+      max_tokens: 4096,
+      messages: [
+        { role: 'system', content: 'You are an expert resume data extractor. Return ONLY valid JSON — no markdown, no explanation, no code blocks.' },
+        { role: 'user', content: prompt }
+      ]
     });
     
-    if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({}));
-      const errorMsg = errorBody.error?.message || JSON.stringify(errorBody);
-      console.error('[CLAUDE] API error:', response.status, errorMsg);
-      throw new Error(`Claude API error: ${response.status} - ${errorMsg}`);
-    }
+    console.log('[OPENAI PARSER] API response received');
     
-    const result = await response.json();
-    console.log('[CLAUDE] API response received');
-    
-    // Step 3: Extract and parse JSON from Claude's response
-    const content = result.content?.[0]?.text;
+    // Step 3: Extract and parse JSON from OpenAI's response
+    const content = response.choices[0].message.content;
     if (!content) {
-      throw new Error('No content in Claude response');
+      throw new Error('No content in OpenAI response');
     }
     
-    console.log('[CLAUDE] Step 3: Parsing JSON response...');
+    console.log('[OPENAI PARSER] Step 3: Parsing JSON response...');
     
     // Clean up response (remove markdown code blocks if present)
     const cleanJson = content
@@ -266,13 +245,13 @@ export async function parseWithClaude(buffer, filename, mimetype) {
     try {
       parsedData = JSON.parse(cleanJson);
     } catch (parseError) {
-      console.error('[CLAUDE] JSON parse error:', parseError.message);
-      console.error('[CLAUDE] Raw content:', content.substring(0, 500));
-      throw new Error('Failed to parse Claude JSON response');
+      console.error('[OPENAI PARSER] JSON parse error:', parseError.message);
+      console.error('[OPENAI PARSER] Raw content:', content.substring(0, 500));
+      throw new Error('Failed to parse OpenAI JSON response');
     }
     
-    console.log('[CLAUDE] ✅ Successfully parsed resume');
-    console.log('[CLAUDE] Extracted:', {
+    console.log('[OPENAI PARSER] ✅ Successfully parsed resume');
+    console.log('[OPENAI PARSER] Extracted:', {
       name: parsedData.candidateName || 'N/A',
       email: parsedData.email?.[0] || 'N/A',
       phone: parsedData.phoneNumber?.[0] || 'N/A',
@@ -286,15 +265,15 @@ export async function parseWithClaude(buffer, filename, mimetype) {
       raw: {
         data: parsedData,
         meta: {
-          identifier: `claude-${Date.now()}`,
+          identifier: `openai-${Date.now()}`,
           ready: true,
-          parser: 'claude-3.5-sonnet'
+          parser: 'gpt-4.1-mini'
         }
       }
     };
     
   } catch (error) {
-    console.error('[CLAUDE] Parse error:', error.message);
+    console.error('[OPENAI PARSER] Parse error:', error.message);
     throw error;
   }
 }

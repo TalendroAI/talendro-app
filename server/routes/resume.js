@@ -1,12 +1,14 @@
 import express from 'express';
 import { authenticateToken } from '../middleware/auth.js';
-import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 
 const router = express.Router();
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
+
+const MODEL = 'gpt-4.1-mini';
 
 // Parse resume endpoint
 router.post('/parse', authenticateToken, async (req, res) => {
@@ -20,13 +22,17 @@ router.post('/parse', authenticateToken, async (req, res) => {
       });
     }
 
-    // Call Claude to parse resume
-    const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+    const response = await openai.chat.completions.create({
+      model: MODEL,
       max_tokens: 4096,
-      messages: [{
-        role: 'user',
-        content: `Extract information from this resume and return ONLY valid JSON:
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an expert resume data extractor. Return ONLY valid JSON — no markdown, no explanation, no code blocks.'
+        },
+        {
+          role: 'user',
+          content: `Extract information from this resume and return ONLY valid JSON:
 
 ${resumeText}
 
@@ -63,10 +69,11 @@ Return this exact structure:
 }
 
 Return ONLY the JSON object, no other text.`
-      }]
+        }
+      ]
     });
 
-    const responseText = message.content[0].text;
+    const responseText = response.choices[0].message.content;
     const cleanJson = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     const parsedData = JSON.parse(cleanJson);
 
@@ -85,6 +92,3 @@ Return ONLY the JSON object, no other text.`
 });
 
 export default router;
-
-
-

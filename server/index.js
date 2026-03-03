@@ -191,8 +191,8 @@ import './bootstrap-env.js';  // ✅ MUST BE FIRST
 
 // ✅ DIAGNOSTIC: Print environment status immediately
 console.log('[ENV] CWD:', process.cwd());
-console.log('[ENV] has ANTHROPIC_API_KEY:', !!process.env.ANTHROPIC_API_KEY);
-console.log('[ENV] Anthropic key configured:', !!process.env.ANTHROPIC_API_KEY && process.env.ANTHROPIC_API_KEY.startsWith('sk-ant-'));
+console.log('[ENV] has OPENAI_API_KEY:', !!process.env.OPENAI_API_KEY);
+console.log('[ENV] OpenAI key configured:', !!process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.startsWith('sk-'));
 
 import express from 'express'
 import cors from 'cors'
@@ -289,7 +289,7 @@ app.use('/api/user', userRoutes)
 // --- Auth Routes ---
 app.use('/api/auth', authRoutes)
 
-// --- Resume Routes (Anthropic Claude Parser - Text-based) ---
+// --- Resume Routes (OpenAI Parser - Text-based) ---
 // Register BEFORE parseRoutes so JSON requests are handled first
 app.use('/api/resume', resumeRoutes)
 
@@ -302,7 +302,7 @@ app.use('/api/dashboard', dashboardRoutes)
 // --- Job Search Routes ---
 app.use('/api/jobs', jobsRoutes)
 
-// --- AI Routes (Anthropic API Proxy) ---
+// --- AI Routes (OpenAI API Proxy) ---
 app.use('/api/ai', aiRoutes)
 
 app.use('/api/stripe', stripeRoutes)
@@ -440,6 +440,6 @@ app.use((req, res, next) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Talendro API server running on port ${PORT}`);
-  console.log(`✅ Anthropic API key configured: ${!!process.env.ANTHROPIC_API_KEY && process.env.ANTHROPIC_API_KEY.startsWith('sk-ant-')}`);
+  console.log(`✅ OpenAI API key configured: ${!!process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.startsWith('sk-')}`);
   console.log(`✅ CORS enabled for: http://localhost:3000, http://localhost:3001`);
 })

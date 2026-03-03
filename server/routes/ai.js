@@ -1,9 +1,13 @@
 import express from 'express';
+import OpenAI from 'openai';
 
 const router = express.Router();
 
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-const CLAUDE_MODEL = 'claude-sonnet-4-20250514';
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+const MODEL = 'gpt-4.1-mini';
 
 /**
  * POST /api/ai/generate-search-string
@@ -12,64 +16,52 @@ const CLAUDE_MODEL = 'claude-sonnet-4-20250514';
 router.post('/generate-search-string', async (req, res) => {
   try {
     const { profileData } = req.body;
-    
-    if (!ANTHROPIC_API_KEY) {
-      console.error('❌ ANTHROPIC_API_KEY not configured on server');
+
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('❌ OPENAI_API_KEY not configured on server');
       return res.status(500).json({
         success: false,
-        error: 'Anthropic API key not configured on server'
+        error: 'OpenAI API key not configured on server'
       });
     }
-    
+
     console.log('=== Generating Boolean Search String ===');
     console.log('Profile:', profileData.personalInfo?.fullLegalName);
-    
-    // Create prompt
+
     const prompt = createBooleanPrompt(profileData);
-    
-    // Call Anthropic API from backend (no CORS issues)
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: CLAUDE_MODEL,
-        max_tokens: 2048,
-        messages: [{ role: 'user', content: prompt }]
-      })
+
+    const response = await openai.chat.completions.create({
+      model: MODEL,
+      max_tokens: 2048,
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an expert recruiter. Return ONLY valid JSON — no markdown, no explanation, no code blocks.'
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ]
     });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Anthropic API Error:', errorData);
-      return res.status(response.status).json({
-        success: false,
-        error: errorData.error?.message || 'API request failed'
-      });
-    }
-    
-    const data = await response.json();
-    let result = data.content[0].text.trim();
-    
-    // Clean markdown
-    if (result.startsWith('```json')) {
-      result = result.replace(/```json\n?/g, '').replace(/```\n?$/g, '').trim();
-    } else if (result.startsWith('```')) {
-      result = result.replace(/```\n?/g, '').trim();
-    }
-    
+
+    let result = response.choices[0].message.content.trim();
+
+    // Clean markdown if present
+    result = result
+      .replace(/```json\n?/g, '')
+      .replace(/```\n?/g, '')
+      .trim();
+
     const searchString = JSON.parse(result);
-    
+
     console.log('✓ Boolean search string generated');
-    
+
     res.json({
       success: true,
       searchString: searchString
     });
-    
+
   } catch (error) {
     console.error('Error generating search string:', error);
     res.status(500).json({
@@ -80,10 +72,10 @@ router.post('/generate-search-string', async (req, res) => {
 });
 
 /**
- * Create prompt for Claude
+ * Create prompt for Boolean search string generation
  */
 function createBooleanPrompt(profileData) {
-  const workHistory = profileData.workHistory?.slice(0, 3).map((job, idx) => 
+  const workHistory = profileData.workHistory?.slice(0, 3).map((job, idx) =>
     `${idx + 1}. ${job.title || job.position} at ${job.company || job.name} (${job.startDate || job.start} - ${job.current ? 'Present' : (job.endDate || job.end)})\n   ${job.responsibilities?.substring(0, 250) || 'No description'}...`
   ).join('\n') || 'No work history';
 
@@ -121,7 +113,7 @@ CERTIFICATIONS: ${profileData.certifications?.length || 0}
 
 INSTRUCTIONS:
 Create a Boolean search string that will find jobs matching this profile with a 75%+ match rate.
-Focus on entry to mid-level positions appropriate for someone with this experience level.
+Focus on positions appropriate for someone with this experience level.
 
 Return ONLY valid JSON (no markdown, no extra text):
 
@@ -140,4 +132,3 @@ Return ONLY valid JSON (no markdown, no extra text):
 }
 
 export default router;
-

@@ -1047,14 +1047,14 @@ router.get('/debug/env', async (req, res) => {
     const status = await claudeStatus();
     res.json({
       success: true,
-      claude: {
+      openai: {
         hasApiKey: status.hasKey,
         model: status.model || 'Not configured',
         configured: status.configured || false,
         status: status.hasKey && status.configured ? 'operational' : 'unavailable'
       },
       parser: {
-        mode: 'claude-only',
+        mode: 'openai-only',
         fallbackEnabled: false
       },
       timestamp: new Date().toISOString()
@@ -1089,9 +1089,9 @@ router.get('/resume/parser-info', (req, res) => {
   res.json({
     success: true,
     parser: {
-      mode: 'claude-only',
+      mode: 'openai-only',
       fallbackEnabled: false,
-      description: 'Using Claude API exclusively for resume parsing'
+      description: 'Using OpenAI API exclusively for resume parsing'
     },
     features: {
       formats: ['PDF', 'DOCX', 'DOC', 'RTF', 'TXT'],
