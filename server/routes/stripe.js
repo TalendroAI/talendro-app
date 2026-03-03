@@ -17,43 +17,45 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 // ============================================
 
 const PLANS = {
-    basic: {
-        name: 'Basic',
-        price: 29,
-        priceId: process.env.STRIPE_PRICE_ID_BASIC, // Stripe Price ID
+    starter: {
+        name: 'Starter',
+        price: 49,
+        priceId: process.env.STRIPE_PRICE_ID_STARTER || 'price_1T6vTTCoFieNARvYAJmPCS4T',
         features: [
-            'Daily job searches',
-            '50 auto-applications/month',
-            'AI-powered matching',
-            'Resume auto-tailoring',
-            'SMS + Email notifications',
-            'Basic analytics'
+            '24/7 automated job search',
+            'Up to 100 auto-applications/month',
+            'AI resume tailoring for each job',
+            '75%+ match threshold filtering',
+            'Email & SMS job alerts',
+            'Application tracking dashboard'
         ]
     },
     pro: {
         name: 'Pro',
-        price: 49,
-        priceId: process.env.STRIPE_PRICE_ID_PRO,
+        price: 99,
+        priceId: process.env.STRIPE_PRICE_ID_PRO || 'price_1T6vTTCoFieNARvY7qN7JUPE',
         features: [
-            'Hourly job searches',
+            'Everything in Starter',
             'Unlimited auto-applications',
-            'Priority auto-apply',
-            'Advanced AI matching',
-            'Detailed analytics',
-            'Everything in Basic'
+            'Real-time alerts (every 30 min)',
+            'Priority apply — first to submit',
+            'Advanced AI matching & scoring',
+            'Interview prep resources',
+            'Detailed analytics & insights'
         ]
     },
-    premium: {
-        name: 'Premium',
-        price: 99,
-        priceId: process.env.STRIPE_PRICE_ID_PREMIUM,
+    concierge: {
+        name: 'Concierge',
+        price: 499,
+        priceId: process.env.STRIPE_PRICE_ID_CONCIERGE || 'price_1T6vTUCoFieNARvYWFtOpeeh',
         features: [
-            'Real-time alerts',
+            'Everything in Pro',
             'Dedicated success manager',
-            'Interview preparation',
+            'Custom outreach to hiring managers',
             'Salary negotiation support',
-            'Priority support',
-            'Everything in Pro'
+            'LinkedIn profile optimization',
+            'Weekly strategy calls',
+            'Priority 24/7 support'
         ]
     }
 };
@@ -70,7 +72,7 @@ const TRIAL_DAYS = 7;
  */
 router.post('/create-subscription', async (req, res) => {
     try {
-        const { paymentMethodId, plan, email, name, onboardingData } = req.body;
+        const { paymentMethodId, plan, priceId, email, name, onboardingData } = req.body;
         
         // Validate plan
         if (!PLANS[plan]) {
@@ -81,6 +83,8 @@ router.post('/create-subscription', async (req, res) => {
         }
         
         const selectedPlan = PLANS[plan];
+        // Allow frontend to pass priceId directly (e.g. after plan updates)
+        const resolvedPriceId = priceId || selectedPlan.priceId;
         
         // Check if user already exists
         let user = await User.findOne({ email });
@@ -109,7 +113,7 @@ router.post('/create-subscription', async (req, res) => {
         // Create subscription with trial
         const subscription = await stripe.subscriptions.create({
             customer: customer.id,
-            items: [{ price: selectedPlan.priceId }],
+            items: [{ price: resolvedPriceId }],
             trial_period_days: TRIAL_DAYS,
             payment_behavior: 'default_incomplete',
             payment_settings: { save_default_payment_method: 'on_subscription' },

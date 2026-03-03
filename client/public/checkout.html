@@ -528,7 +528,7 @@
         <!-- Pricing Cards -->
         <div class="pricing-cards">
             <!-- Starter Plan -->
-            <div class="pricing-card" data-plan="starter" data-price="49">
+            <div class="pricing-card" data-plan="starter" data-price="49" data-price-id="price_1T6vTTCoFieNARvYAJmPCS4T">
                 <div class="plan-name">Starter</div>
                 <div class="plan-price">$49<span>/month</span></div>
                 <div class="plan-description">For professionals ready to automate their job search</div>
@@ -546,7 +546,7 @@
             </div>
             
             <!-- Pro Plan (Most Popular) -->
-            <div class="pricing-card popular" data-plan="pro" data-price="99">
+            <div class="pricing-card popular" data-plan="pro" data-price="99" data-price-id="price_1T6vTTCoFieNARvY7qN7JUPE">
                 <div class="popular-badge">Most Popular</div>
                 <div class="plan-name">Pro</div>
                 <div class="plan-price">$99<span>/month</span></div>
@@ -566,7 +566,7 @@
             </div>
             
             <!-- Concierge Plan -->
-            <div class="pricing-card" data-plan="concierge" data-price="499">
+            <div class="pricing-card" data-plan="concierge" data-price="499" data-price-id="price_1T6vTUCoFieNARvYWFtOpeeh">
                 <div class="plan-name">Concierge</div>
                 <div class="plan-price">$499<span>/month</span></div>
                 <div class="plan-description">Full-service, done-for-you job placement</div>
@@ -671,7 +671,7 @@
 
     <script>
         // Configuration
-        const STRIPE_PUBLISHABLE_KEY = 'pk_test_51SQk2qECvCuCTIlIzi5wkfLJnUSIwEooPJeVfeu6TCBDgfyJ7tSWiBuy1OIH9mU60JGCgbELqZpuu2YC3oOAp6dO00wvUC4SJI'; // Replace with your Stripe key
+        const STRIPE_PUBLISHABLE_KEY = 'pk_live_51SQk2kCoFieNARvYGjfS1xRXJGrrBV3Xa231va5ndR2YRym0cIOngvtS4QK1cDadvcb4jzlMKVv3lpm1nl2p8A8R00fM3nl3js'; // Live Stripe key
         const API_BASE_URL = '/api'; // Production backend URL
         
         // Initialize Stripe
@@ -720,6 +720,7 @@
                 selectedPlan = {
                     name: this.dataset.plan,
                     price: parseInt(this.dataset.price),
+                    priceId: this.dataset.priceId,
                     displayName: this.querySelector('.plan-name').textContent
                 };
                 
@@ -812,6 +813,7 @@
                     body: JSON.stringify({
                         paymentMethodId: paymentMethod.id,
                         plan: selectedPlan.name,
+                        priceId: selectedPlan.priceId,
                         email: step1Data.email || step2Data.email,
                         name: step2Data.fullLegalName || `${step1Data.firstName} ${step1Data.lastName}`,
                         onboardingData: {
