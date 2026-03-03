@@ -61,6 +61,60 @@ const PLANS = {
 const TRIAL_DAYS = 7;
 
 // ============================================
+// CUSTOMER LOOKUP (Sign-in)
+// ============================================
+
+/**
+ * POST /api/stripe/lookup-customer
+ * Look up a customer by email and return their subscription status.
+ * Used by the sign-in page to route returning vs new users.
+ */
+router.post('/lookup-customer', async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ success: false, message: 'Email required' });
+
+        const customers = await stripe.customers.list({ email: email.toLowerCase().trim(), limit: 1 });
+
+        if (!customers.data.length) {
+            return res.json({ customerExists: false, hasActiveSubscription: false });
+        }
+
+        const customer = customers.data[0];
+
+        // Check for active or trialing subscriptions
+        const subs = await stripe.subscriptions.list({
+            customer: customer.id,
+            status: 'all',
+            limit: 5
+        });
+
+        const activeSub = subs.data.find(s => s.status === 'active' || s.status === 'trialing');
+
+        if (!activeSub) {
+            return res.json({ customerExists: true, hasActiveSubscription: false });
+        }
+
+        const planKey = activeSub.metadata?.plan || 'starter';
+
+        return res.json({
+            customerExists: true,
+            hasActiveSubscription: true,
+            customerId: customer.id,
+            subscriptionId: activeSub.id,
+            subscriptionStatus: activeSub.status,
+            plan: planKey,
+            planName: PLANS[planKey]?.name || planKey,
+            trialEnd: activeSub.trial_end ? new Date(activeSub.trial_end * 1000).toISOString() : null
+        });
+
+    } catch (error) {
+        console.error('Error looking up customer:', error);
+        res.status(500).json({ success: false, message: 'Lookup failed' });
+    }
+});
+
+// ============================================
 // CREATE SUBSCRIPTION
 // ============================================
 
