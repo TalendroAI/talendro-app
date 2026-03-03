@@ -26,7 +26,6 @@
     "nodemailer": "^7.0.10",
     "pdf-parse-new": "^1.4.1",
     "stripe": "^19.3.0",
-    "talendro-fullstack-js": "file:..",
     "textract": "^2.5.0",
     "uuid": "^10.0.0",
     "zod": "^3.22.4"
