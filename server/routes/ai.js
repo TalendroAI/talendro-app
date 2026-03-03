@@ -2,12 +2,19 @@ import express from 'express';
 import OpenAI from 'openai';
 
 const router = express.Router();
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 const MODEL = 'gpt-4.1-mini';
+
+// Lazy client — initialized on first use, not at module load time
+let _openai = null;
+function getOpenAI() {
+  if (!_openai) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OpenAI not available: OPENAI_API_KEY environment variable is not set');
+    }
+    _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return _openai;
+}
 
 /**
  * POST /api/ai/generate-search-string
@@ -28,6 +35,7 @@ router.post('/generate-search-string', async (req, res) => {
     console.log('=== Generating Boolean Search String ===');
     console.log('Profile:', profileData.personalInfo?.fullLegalName);
 
+    const openai = getOpenAI();
     const prompt = createBooleanPrompt(profileData);
 
     const response = await openai.chat.completions.create({
