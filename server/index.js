@@ -201,7 +201,6 @@ import morgan from 'morgan'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import fs from 'fs'
-import mongoose from 'mongoose'
 import userRoutes from './routes.user.js'
 import parseRoutes from './routes/parse.js'
 import dashboardRoutes from './routes/dashboard.js'
@@ -232,16 +231,6 @@ const __dirname = path.dirname(__filename)
 import stripeRoutes from './routes/stripe.js'
 
 const app = express()
-
-// ============================================
-// DATABASE CONNECTION
-// ============================================
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/talendro', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
-.then(() => console.log('✅ MongoDB connected'))
-.catch(err => console.error('❌ MongoDB connection error:', err));
 
 // CORS Configuration - Allow requests from frontend
 app.use(cors({
