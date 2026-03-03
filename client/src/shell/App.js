@@ -22,13 +22,7 @@ import Security from '../pages/Security'
 import Privacy from '../pages/Privacy'
 import Terms from '../pages/Terms'
 
-import OnbWelcome from '../app/js/OnbWelcome'
-import Onb1 from '../app/js/Onb1'
-import Onb2 from '../app/js/Onb2'
-import Onb3 from '../app/js/Onb3'
-import Onb4 from '../app/js/Onb4'
-import Onb5 from '../app/js/Onb5'
-import OnbReview from '../app/js/OnbReview'
+import Onboarding from '../app/js/Onboarding'
 import SignIn from '../auth/SignIn'
 
 import Checkout from '../app/Checkout'
@@ -73,18 +67,9 @@ export default function App(){
           <Route path="/security" element={<Security />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
-          {/* App */}
-          <Route path="/app/onboarding/welcome" element={<OnbWelcome />} />
-          <Route path="/app/onboarding/step-1" element={<Onb2 />} />
-          <Route path="/app/onboarding/step-2" element={<Onb1 />} />
-          <Route path="/app/onboarding/step-3" element={<Onb3 />} />
-          {/* Direct access routes for testing/QA */}
-          <Route path="/app/onboarding/create-profile" element={<Onb1 />} />
-          <Route path="/app/onboarding/upload-resume" element={<Onb2 />} />
-          <Route path="/app/onboarding/personal-information" element={<Onb3 />} />
-          <Route path="/app/onboarding/step-4" element={<Onb4 />} />
-          <Route path="/app/onboarding/step-5" element={<Onb5 />} />
-          <Route path="/app/onboarding/review" element={<OnbReview />} />
+          {/* App — 10-Step Onboarding */}
+          <Route path="/app/onboarding/*" element={<Onboarding />} />
+          <Route path="/app/onboarding/welcome" element={<Onboarding />} />
           
           <Route path="/auth/sign-in" element={<SignIn />} />
 
