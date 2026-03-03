@@ -1,53 +1,55 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export default function Page() {
   const navigate = useNavigate();
   const [billing, setBilling] = useState('monthly'); // 'monthly' or 'annual'
 
-  // Pricing configuration
+  // Pricing configuration — Talendro unified platform tiers
   const plans = {
     starter: {
       name: 'Starter',
-      monthly: 29,
-      annual: 23,
-      description: 'Perfect for passive job seekers',
+      monthly: 49,
+      annual: 39,
+      description: 'For professionals ready to automate their job search',
       features: [
-        'Daily job searches',
-        'Up to 50 auto-applications/month',
-        'AI-powered matching & scoring',
-        'Resume auto-tailored for each job',
-        'SMS + Email notifications',
-        'Basic analytics dashboard'
+        '24/7 automated job search',
+        'Up to 100 auto-applications/month',
+        'AI resume tailoring for each job',
+        '75%+ match threshold filtering',
+        'Email & SMS job alerts',
+        'Application tracking dashboard'
       ]
     },
-    professional: {
-      name: 'Professional',
-      monthly: 59,
-      annual: 47,
-      description: 'For active job seekers',
+    pro: {
+      name: 'Pro',
+      monthly: 99,
+      annual: 79,
+      description: 'For serious job seekers who want maximum reach',
       features: [
-        'Hourly job searches (24x per day)',
+        'Everything in Starter',
         'Unlimited auto-applications',
-        'Priority auto-apply (first to submit)',
-        'Advanced AI matching algorithms',
-        'Detailed analytics & insights',
-        'Everything in Starter'
+        'Real-time job alerts (every 30 min)',
+        'Priority apply — first to submit',
+        'Advanced AI matching & scoring',
+        'Interview prep resources',
+        'Detailed analytics & insights'
       ],
       popular: true
     },
-    premium: {
-      name: 'Premium',
-      monthly: 99,
-      annual: 79,
-      description: 'Maximum results & support',
+    concierge: {
+      name: 'Concierge',
+      monthly: 499,
+      annual: 399,
+      description: 'Full-service, done-for-you job placement',
       features: [
-        'Real-time alerts (every 30 min)',
+        'Everything in Pro',
         'Dedicated success manager',
-        'Interview preparation resources',
+        'Custom outreach to hiring managers',
         'Salary negotiation support',
-        'Priority customer support',
-        'Everything in Professional'
+        'LinkedIn profile optimization',
+        'Weekly strategy calls',
+        'Priority 24/7 support'
       ]
     }
   };
@@ -60,14 +62,15 @@ export default function Page() {
     return monthlyTotal - annualTotal;
   };
 
-  // Handle plan selection
+  // Handle plan selection — store plan and go to checkout
   const handleSelectPlan = (planKey) => {
     const selection = {
       plan: planKey,
-      billing: billing
+      billing: billing,
+      price: billing === 'monthly' ? plans[planKey].monthly : plans[planKey].annual
     };
     localStorage.setItem('selectedPlan', JSON.stringify(selection));
-    navigate('/app/onboarding/welcome');
+    navigate('/app/checkout');
   };
 
   // Get current price for a plan
@@ -83,7 +86,7 @@ export default function Page() {
           Choose Your Plan
         </h1>
         <p className="body mb-8">
-          All plans include AI-powered job matching and automated applications
+          Talendro searches for jobs 24/7, tailors your resume, and applies on your behalf — automatically.
         </p>
 
         {/* Billing Toggle */}
@@ -109,7 +112,7 @@ export default function Page() {
           </span>
           {billing === 'annual' && (
             <span className="bg-green-50 text-green-700 px-3 py-1 rounded-lg text-sm font-semibold ml-2">
-              Save up to ${calculateSavings('premium')}/year
+              Save up to ${calculateSavings('concierge')}/year
             </span>
           )}
         </div>
@@ -187,7 +190,7 @@ export default function Page() {
           All Plans Include
         </h2>
         <p className="body mb-6">
-          Real-time job discovery • AI-tailored resumes • Intelligent match scoring • Fully autonomous submission for 90% of applications
+          24/7 job discovery • AI-tailored resumes • 75%+ match threshold • Autonomous application submission
         </p>
         <p className="body text-sm text-gray-500">
           Cancel anytime. No contracts. No commitments.

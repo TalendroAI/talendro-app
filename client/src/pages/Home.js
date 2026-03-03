@@ -224,14 +224,14 @@ const Home = () => {
           
           {/* Two CTA Buttons Only */}
           <div className="flex gap-4 justify-center mb-6">
-            <Link to="/app/onboarding/welcome">
+            <Link to="/pricing">
               <button className="btn btn-primary">
                 Get Started
               </button>
             </Link>
-            <Link to="/pricing">
+            <Link to="/how-it-works">
               <button className="btn btn-secondary">
-                View Pricing
+                See How It Works
               </button>
             </Link>
           </div>

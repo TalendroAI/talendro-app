@@ -304,7 +304,7 @@ const Header = () => {
                     View Pricing
                   </button>
                 </Link>
-                <Link to="/app/onboarding/welcome">
+                <Link to="/pricing">
                   <button className="px-6 py-2 bg-talBlue text-white rounded-lg font-semibold hover:bg-blue-700 transition shadow-md" style={{ border: 'none' }}>
                     Get Started
                   </button>

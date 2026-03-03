@@ -56,7 +56,7 @@ export default function Page(){
       
       <div className='mt-8 flex flex-wrap gap-3'>
         <a href='/contact'><button className='btn btn-secondary mr-3'>Contact Support</button></a>
-        <a href='/app/onboarding/welcome'><button className='btn btn-primary mr-3'>Get Started</button></a>
+        <a href='/pricing'><button className='btn btn-primary mr-3'>Get Started</button></a>
       </div>
     </section>
   )
