@@ -30,21 +30,42 @@ import CheckoutSuccess from '../app/CheckoutSuccess'
 import CheckoutError from '../app/CheckoutError'
 import PaymentSuccess from '../app/PaymentSuccess'
 
+// Resume Readiness Gate
+import ResumeGate from '../app/resume/ResumeGate'
+import ResumeUpload from '../app/resume/ResumeUpload'
+import ResumeUpdate from '../app/resume/ResumeUpdate'
+import ResumeCreate from '../app/resume/ResumeCreate'
+import ResumeOptimize from '../app/resume/ResumeOptimize'
+
 import Dashboard from '../pages/app/Dashboard'
 import Profile from '../app/Profile'
 import Agents from '../app/Agents'
 import Applications from '../app/Applications'
 import Billing from '../app/Billing'
 
+// Determine which routes should render without the public header/footer
+const NO_CHROME_ROUTES = [
+  '/interview-coach',
+  '/interview-coach-final',
+  '/app/resume-gate',
+  '/app/resume/upload',
+  '/app/resume/update',
+  '/app/resume/create',
+  '/app/resume/optimize',
+  '/app/onboarding',
+];
+
 export default function App(){
   const location = useLocation();
   const isInterviewCoachPublic = location.pathname === '/interview-coach' || location.pathname === '/interview-coach-final';
-  
+  const isAppRoute = NO_CHROME_ROUTES.some(r => location.pathname.startsWith(r));
+  const hideChrome = isInterviewCoachPublic || isAppRoute;
+
   return (
     <>
       <ScrollToTop />
-      {!isInterviewCoachPublic && <Header />}
-      <main className={isInterviewCoachPublic ? "" : "container py-10"}>
+      {!hideChrome && <Header />}
+      <main className={hideChrome ? "" : "container py-10"}>
         <Routes>
           {/* Public route - NO header/footer */}
           <Route path="/interview-coach" element={<InterviewCoachPublic />} />
@@ -67,7 +88,15 @@ export default function App(){
           <Route path="/security" element={<Security />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
-          {/* App — 10-Step Onboarding */}
+
+          {/* ── Resume Readiness Gate (post-payment, pre-onboarding) ── */}
+          <Route path="/app/resume-gate" element={<ResumeGate />} />
+          <Route path="/app/resume/upload" element={<ResumeUpload />} />
+          <Route path="/app/resume/update" element={<ResumeUpdate />} />
+          <Route path="/app/resume/create" element={<ResumeCreate />} />
+          <Route path="/app/resume/optimize" element={<ResumeOptimize />} />
+
+          {/* ── 10-Step Onboarding (after resume optimization) ── */}
           <Route path="/app/onboarding/*" element={<Onboarding />} />
           <Route path="/app/onboarding/welcome" element={<Onboarding />} />
           
@@ -85,7 +114,7 @@ export default function App(){
           <Route path="/app/billing" element={<Billing />} />
         </Routes>
       </main>
-      {!isInterviewCoachPublic && <Footer />}
+      {!hideChrome && <Footer />}
     </>
   )
 }
