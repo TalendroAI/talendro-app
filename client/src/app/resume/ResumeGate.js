@@ -116,26 +116,28 @@ export default function ResumeGate() {
           </p>
 
           {/* Path Cards */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, marginBottom: 40 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, marginBottom: 16 }}>
             {paths.map(path => {
               const isSelected = selected === path.id;
               const isHovered = hovering === path.id;
               return (
                 <div key={path.id}
-                  onClick={() => setSelected(path.id)}
+                  onClick={() => navigate(path.route)}
                   onMouseEnter={() => setHovering(path.id)}
                   onMouseLeave={() => setHovering(null)}
                   style={{
-                    background: isSelected ? path.bg : C.white,
-                    border: `2px solid ${isSelected ? path.color : isHovered ? path.color + "60" : "#E5E7EB"}`,
+                    background: isHovered ? path.bg : C.white,
+                    border: `2px solid ${isHovered ? path.color : "#E5E7EB"}`,
                     borderRadius: 16,
                     padding: 28,
                     cursor: "pointer",
                     textAlign: "left",
                     transition: "all 0.2s",
-                    transform: isSelected || isHovered ? "translateY(-3px)" : "none",
-                    boxShadow: isSelected ? `0 8px 24px ${path.color}20` : isHovered ? "0 4px 12px rgba(0,0,0,0.08)" : "0 1px 3px rgba(0,0,0,0.05)",
+                    transform: isHovered ? "translateY(-3px)" : "none",
+                    boxShadow: isHovered ? `0 8px 24px ${path.color}20` : "0 1px 3px rgba(0,0,0,0.05)",
                     position: "relative",
+                    display: "flex",
+                    flexDirection: "column",
                   }}>
 
                   {/* Badge */}
@@ -149,40 +151,24 @@ export default function ResumeGate() {
                   {/* Title */}
                   <h3 style={{ margin: "0 0 6px", fontSize: 18, fontWeight: 700, color: C.slate, fontFamily: "'Montserrat', sans-serif" }}>{path.title}</h3>
                   <p style={{ margin: "0 0 12px", fontSize: 13, color: path.color, fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>{path.subtitle}</p>
-                  <p style={{ margin: 0, fontSize: 14, color: C.gray, lineHeight: 1.6, fontFamily: "'Inter', sans-serif" }}>{path.description}</p>
+                  <p style={{ margin: "0 0 20px", fontSize: 14, color: C.gray, lineHeight: 1.6, fontFamily: "'Inter', sans-serif", flex: 1 }}>{path.description}</p>
 
-                  {/* Selection indicator */}
-                  {isSelected && (
-                    <div style={{ marginTop: 18, display: "flex", alignItems: "center", gap: 8 }}>
-                      <div style={{ width: 20, height: 20, borderRadius: "50%", background: path.color, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <span style={{ color: C.white, fontSize: 11, fontWeight: 700 }}>✓</span>
-                      </div>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: path.color, fontFamily: "'Inter', sans-serif" }}>Selected</span>
-                    </div>
-                  )}
+                  {/* Inline CTA Button */}
+                  <div style={{
+                    width: "100%", padding: "12px 0", borderRadius: 10, border: "none",
+                    background: isHovered ? path.color : path.bg,
+                    color: isHovered ? C.white : path.color,
+                    fontSize: 14, fontWeight: 700, textAlign: "center",
+                    fontFamily: "'Inter', sans-serif",
+                    transition: "all 0.2s",
+                    boxShadow: isHovered ? `0 4px 12px ${path.color}40` : "none",
+                  }}>
+                    {path.cta} →
+                  </div>
                 </div>
               );
             })}
           </div>
-
-          {/* CTA */}
-          {selected ? (
-            <button
-              onClick={() => navigate(paths.find(p => p.id === selected).route)}
-              style={{
-                padding: "14px 52px", border: "none", borderRadius: 10,
-                fontSize: 16, fontWeight: 600, cursor: "pointer",
-                background: C.blue, color: C.white,
-                fontFamily: "'Inter', sans-serif",
-                boxShadow: `0 4px 16px ${C.blue}40`,
-                transition: "all 0.2s",
-                letterSpacing: 0.2
-              }}>
-              {paths.find(p => p.id === selected).cta} →
-            </button>
-          ) : (
-            <p style={{ fontSize: 14, color: C.gray, fontStyle: "italic", fontFamily: "'Inter', sans-serif" }}>Select one of the options above to continue</p>
-          )}
 
           {/* Trust note */}
           <p style={{ marginTop: 32, fontSize: 13, color: C.gray, lineHeight: 1.6, fontFamily: "'Inter', sans-serif" }}>
