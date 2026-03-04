@@ -42,15 +42,33 @@ export default function ResumeUpload() {
       if (!res.ok) throw new Error(result.error || "Parse failed");
       localStorage.setItem("talendro_resume_raw", JSON.stringify(result.data));
       localStorage.setItem("talendro_resume_path", "upload");
-      setParsed(result.extracted || result.data);
-      setConfidence(result.confidence || 82);
+      // Map from actual API response shape: result.data.summary + result.data.profileDraft
+      const summary = result.data?.summary || {};
+      const profileDraft = result.data?.profileDraft || {};
+      const basics = profileDraft?.basics || {};
+      const work = Array.isArray(profileDraft?.work) ? profileDraft.work : [];
+      const edu = Array.isArray(profileDraft?.education) ? profileDraft.education : [];
+      const skills = Array.isArray(profileDraft?.skills) ? profileDraft.skills : [];
+      const mapped = {
+        name: summary.name !== 'N/A' ? summary.name : (basics.name || ''),
+        email: summary.email !== 'N/A' ? summary.email : (basics.email || ''),
+        phone: summary.phone !== 'N/A' ? summary.phone : (basics.phone || ''),
+        currentTitle: profileDraft?.currentJobTitle || work[0]?.jobTitle || '',
+        currentCompany: work[0]?.companyName || work[0]?.name || '',
+        location: summary.location !== 'N/A' ? summary.location : '',
+        linkedin: basics.linkedin || '',
+        jobCount: work.length || 0,
+        educationCount: edu.length || 0,
+        skillCount: skills.length || 0,
+        certCount: 0,
+      };
+      setParsed(mapped);
+      setConfidence(Math.round((result.data?.confidence || 0.82) * 100));
       const foundGaps = [];
-      const d = result.extracted || result.data?.s1 || {};
-      if (!d.email) foundGaps.push({ field: "email", label: "Email Address", hint: "Required for all applications" });
-      if (!d.phone) foundGaps.push({ field: "phone", label: "Phone Number", hint: "Required for most applications" });
-      if (!d.linkedin) foundGaps.push({ field: "linkedin", label: "LinkedIn URL", hint: "Increases interview rate by 40%" });
-      const jobs = result.data?.s3?.entries || [];
-      if (jobs.length === 0) foundGaps.push({ field: "employment", label: "Work History", hint: "No positions were detected" });
+      if (!mapped.email) foundGaps.push({ field: "email", label: "Email Address", hint: "Required for all applications" });
+      if (!mapped.phone) foundGaps.push({ field: "phone", label: "Phone Number", hint: "Required for most applications" });
+      if (!mapped.linkedin) foundGaps.push({ field: "linkedin", label: "LinkedIn URL", hint: "Increases interview rate by 40%" });
+      if (work.length === 0) foundGaps.push({ field: "employment", label: "Work History", hint: "No positions were detected" });
       setGaps(foundGaps);
       setStage("verify");
     } catch (err) {
@@ -120,7 +138,7 @@ export default function ResumeUpload() {
         <h3 style={{ fontSize: 16, fontWeight: 700, color: C.slate, fontFamily: "'Montserrat', sans-serif", marginBottom: 16 }}>Extracted Information</h3>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, marginBottom: 32 }}>
           {Object.entries(FIELD_LABELS).map(([key, label]) => {
-            const val = parsed?.[key] || parsed?.s1?.[key];
+            const val = parsed?.[key];
             const found = val && val !== "N/A";
             return (
               <div key={key} style={{
