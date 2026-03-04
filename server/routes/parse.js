@@ -708,72 +708,24 @@ router.post('/resume/parse', formatProtectionMiddleware, (req, res) => {
               });
             }
           } catch (claudeError) {
-            // Determine if fallback is appropriate
-            const errorDetail = claudeError.message.toLowerCase();
-            const shouldFallback =
-              errorDetail.includes('timeout') ||
-              errorDetail.includes('network') ||
-              errorDetail.includes('econnrefused') ||
-              errorDetail.includes('rate limit') ||
-              claudeError.code === 'ECONNRESET';
+            // All errors fall through to OpenAI local parser
+            console.warn(`[${traceId}] ⚠️  Primary parser failed, falling back to OpenAI parser`);
+            console.warn(`[${traceId}] Error:`, claudeError.message);
 
-            if (shouldFallback) {
-              console.warn(`[${traceId}] ⚠️  Claude failed (recoverable), falling back to local parser`);
-              console.warn(`[${traceId}] Claude error:`, claudeError.message);
+            try {
+              const result = await parseWithLocal(fileBuffer, fileName, fileType);
+              raw = result.raw;
+              parserUsed = 'openai-fallback';
 
-              try {
-                const result = await parseWithLocal(fileBuffer, fileName, fileType);
-                raw = result.raw;
-                parserUsed = 'local-fallback';
-
-                console.log(`[${traceId}] ✅ Local fallback parser succeeded`);
-                console.log(`[${traceId}] Extracted with fallback:`, {
-                  name: raw.data?.candidateName || 'N/A',
-                  email: raw.data?.email?.[0] || 'N/A',
-                  skillsCount: raw.data?.skills?.length || 0
-                });
-              } catch (localError) {
-                console.error(`[${traceId}] ❌ Local fallback also failed:`, localError.message);
-                throw new Error(`Both parsers failed. Claude: ${claudeError.message}, Local: ${localError.message}`);
-              }
-              } else {
-              // Critical Claude errors (auth, credits) should not fallback
-              console.error(`[${traceId}] ❌ Claude parsing failed (non-recoverable):`, claudeError.message);
-
-              // Update job status
-              setJobStatus(jobId, {
-                status: 'failed',
-                error: claudeError.message
+              console.log(`[${traceId}] ✅ OpenAI fallback parser succeeded`);
+              console.log(`[${traceId}] Extracted with fallback:`, {
+                name: raw.data?.candidateName || 'N/A',
+                email: raw.data?.email?.[0] || 'N/A',
+                skillsCount: raw.data?.skills?.length || 0
               });
-
-              // Determine error type and response
-              let statusCode = 500;
-              let errorMessage = 'Claude parsing failed';
-              let suggestion = 'Please try again or contact support';
-
-              if (errorDetail.includes('api key') || errorDetail.includes('unauthorized')) {
-                statusCode = 401;
-                errorMessage = 'Claude authentication failed';
-                suggestion = 'Please check your Claude API key configuration';
-              } else if (errorDetail.includes('invalid') && errorDetail.includes('file')) {
-                statusCode = 400;
-                errorMessage = 'Invalid file format';
-                suggestion = 'Please upload a valid PDF, DOCX, DOC, or TXT file';
-              }
-
-              return res.status(statusCode).json({
-                success: false,
-                error: errorMessage,
-                detail: claudeError.message,
-                suggestion,
-                traceId,
-                jobId,
-                metadata: {
-                  parserUsed: 'claude',
-                  fallbackAttempted: false,
-                  processingTime: Date.now() - t0
-                }
-              });
+            } catch (localError) {
+              console.error(`[${traceId}] ❌ OpenAI fallback also failed:`, localError.message);
+              throw new Error(`All parsers failed. Primary: ${claudeError.message}, Fallback: ${localError.message}`);
             }
           }
         }
