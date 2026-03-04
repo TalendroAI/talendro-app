@@ -202,7 +202,7 @@ export default function ResumeOptimize() {
 
   // ─── Generating Stage ───────────────────────────────────────────────────────
   if (stage === "generating") return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #0a1628 0%, #1a3a5c 50%, #0d2137 100%)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "'Inter', sans-serif", padding: "48px 24px" }}>
+    <div style={{ minHeight: "100vh", background: "#F9FAFB", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "'Inter', sans-serif", padding: "48px 24px" }}>
       <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
       <div style={{ maxWidth: 560, width: "100%", textAlign: "center" }}>
         {/* AI Animation */}
@@ -219,19 +219,19 @@ export default function ResumeOptimize() {
           <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", fontSize: 40 }}>✨</div>
         </div>
 
-        <h2 style={{ margin: 0, fontSize: 32, fontWeight: 800, color: "#fff", fontFamily: "'Montserrat', sans-serif", marginBottom: 12 }}>
+        <h2 style={{ margin: 0, fontSize: 32, fontWeight: 800, color: "#2F6DF6", fontFamily: "'Montserrat', sans-serif", marginBottom: 12 }}>
           AI is optimizing your resume
         </h2>
-        <p style={{ margin: "0 0 40px", fontSize: 16, color: "rgba(255,255,255,0.6)", lineHeight: 1.6 }}>
+        <p style={{ margin: "0 0 40px", fontSize: 16, color: "#9FA6B2", lineHeight: 1.6 }}>
           Analyzing 200+ ATS systems, optimizing keywords, and tailoring your content for maximum impact.
         </p>
 
         {/* Progress bar */}
-        <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 100, height: 8, marginBottom: 16, overflow: "hidden" }}>
+        <div style={{ background: "#E5E7EB", borderRadius: 100, height: 8, marginBottom: 16, overflow: "hidden" }}>
           <div style={{ height: "100%", width: `${progress}%`, background: `linear-gradient(90deg, ${C.blue}, ${C.aqua})`, borderRadius: 100, transition: "width 0.4s ease" }} />
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 32 }}>
-          <span style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>{currentTask}</span>
+          <span style={{ fontSize: 13, color: "#9FA6B2" }}>{currentTask}</span>
           <span style={{ fontSize: 13, fontWeight: 700, color: C.aqua }}>{Math.round(progress)}%</span>
         </div>
 
@@ -240,11 +240,11 @@ export default function ResumeOptimize() {
           {["ATS keyword optimization", "Action verb enhancement", "Quantifiable achievement formatting", "Skills section restructuring", "Summary personalization"].map((item, i) => {
             const done = progress > (i + 1) * 18;
             return (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 16px", background: done ? "rgba(16,185,129,0.06)" : "rgba(255,255,255,0.03)", border: `1px solid ${done ? "rgba(16,185,129,0.2)" : "rgba(255,255,255,0.06)"}`, borderRadius: 10, transition: "all 0.4s" }}>
-                <div style={{ width: 20, height: 20, borderRadius: "50%", background: done ? C.green : "rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.4s" }}>
-                  {done ? <span style={{ color: "#fff", fontSize: 11, fontWeight: 700 }}>✓</span> : <div style={{ width: 8, height: 8, borderRadius: "50%", background: "rgba(255,255,255,0.3)" }} />}
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 16px", background: done ? "#F0FDF4" : "#FFFFFF", border: `1px solid ${done ? "#D1FAE5" : "#E5E7EB"}`, borderRadius: 10, transition: "all 0.4s", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+                <div style={{ width: 20, height: 20, borderRadius: "50%", background: done ? C.green : "#E5E7EB", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.4s" }}>
+                  {done ? <span style={{ color: "#fff", fontSize: 11, fontWeight: 700 }}>✓</span> : <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#9FA6B2" }} />}
                 </div>
-                <span style={{ fontSize: 14, color: done ? "#fff" : "rgba(255,255,255,0.4)", transition: "color 0.4s" }}>{item}</span>
+                <span style={{ fontSize: 14, color: done ? "#2C2F38" : "#9FA6B2", transition: "color 0.4s" }}>{item}</span>
               </div>
             );
           })}
@@ -256,31 +256,31 @@ export default function ResumeOptimize() {
 
   // ─── Ready Stage ────────────────────────────────────────────────────────────
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #0a1628 0%, #1a3a5c 50%, #0d2137 100%)", display: "flex", flexDirection: "column", fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "#F9FAFB", display: "flex", flexDirection: "column", fontFamily: "'Inter', sans-serif" }}>
       <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-      <header style={{ padding: "20px 48px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#fff", fontFamily: "'Montserrat', sans-serif" }}>
-          Talendro<span style={{ color: C.aqua }}>™</span> <span style={{ fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.4)" }}>Apply</span>
+      <header style={{ padding: "16px 48px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #E5E7EB", background: "#FFFFFF" }}>
+        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#2F6DF6", fontFamily: "'Montserrat', sans-serif" }}>
+          Talendro™ <span style={{ fontSize: 13, fontWeight: 500, color: "#9FA6B2" }}>Apply</span>
         </h1>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ width: 8, height: 8, borderRadius: "50%", background: C.green }} />
-          <span style={{ fontSize: 13, color: "rgba(255,255,255,0.6)" }}>Resume optimized</span>
+          <span style={{ fontSize: 13, color: "#9FA6B2" }}>Resume optimized</span>
         </div>
       </header>
 
       {/* Progress */}
-      <div style={{ padding: "12px 48px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+      <div style={{ padding: "12px 48px", borderBottom: "1px solid #E5E7EB", background: "#FFFFFF" }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", maxWidth: 900, margin: "0 auto" }}>
           {["Resume", "Optimize", "Profile", "Launch"].map((label, i) => (
             <React.Fragment key={label}>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <div style={{ width: 24, height: 24, borderRadius: "50%", background: i <= 1 ? C.green : "rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#fff" }}>
+                <div style={{ width: 26, height: 26, borderRadius: "50%", background: i <= 1 ? C.green : "#E5E7EB", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: i <= 1 ? "#fff" : "#9FA6B2" }}>
                   {i <= 1 ? "✓" : i + 1}
                 </div>
-                <span style={{ fontSize: 12, color: i <= 1 ? "#fff" : "rgba(255,255,255,0.4)", fontWeight: i <= 1 ? 600 : 400 }}>{label}</span>
+                <span style={{ fontSize: 13, color: i <= 1 ? "#2C2F38" : "#9FA6B2", fontWeight: i <= 1 ? 600 : 400 }}>{label}</span>
               </div>
-              {i < 3 && <div style={{ flex: 1, height: 1, background: i < 1 ? C.green : "rgba(255,255,255,0.1)" }} />}
+              {i < 3 && <div style={{ flex: 1, height: 2, background: i < 1 ? C.green : "#E5E7EB", borderRadius: 1 }} />}
             </React.Fragment>
           ))}
         </div>
@@ -291,17 +291,17 @@ export default function ResumeOptimize() {
           {/* Success Banner */}
           <div style={{ textAlign: "center", marginBottom: 48 }}>
             <div style={{ fontSize: 56, marginBottom: 16 }}>🎉</div>
-            <h2 style={{ margin: 0, fontSize: 38, fontWeight: 800, color: "#fff", fontFamily: "'Montserrat', sans-serif", marginBottom: 12 }}>
+            <h2 style={{ margin: 0, fontSize: 38, fontWeight: 800, color: "#2F6DF6", fontFamily: "'Montserrat', sans-serif", marginBottom: 12 }}>
               Your resume is ready!
             </h2>
-            <p style={{ margin: 0, fontSize: 18, color: "rgba(255,255,255,0.6)", lineHeight: 1.6, maxWidth: 600, margin: "0 auto" }}>
+            <p style={{ margin: 0, fontSize: 18, color: "#9FA6B2", lineHeight: 1.6, maxWidth: 600, margin: "0 auto" }}>
               AI has optimized your resume for maximum ATS compatibility and human readability. Review your scores and preview below.
             </p>
           </div>
 
           {/* Score Comparison */}
-          <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 20, padding: "36px 48px", marginBottom: 40 }}>
-            <h3 style={{ margin: "0 0 32px", fontSize: 20, fontWeight: 700, color: "#fff", fontFamily: "'Montserrat', sans-serif", textAlign: "center" }}>
+          <div style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 20, padding: "36px 48px", marginBottom: 40, boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
+            <h3 style={{ margin: "0 0 32px", fontSize: 20, fontWeight: 700, color: "#2C2F38", fontFamily: "'Montserrat', sans-serif", textAlign: "center" }}>
               Optimization Score Comparison
             </h3>
             <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", gap: 32, alignItems: "center" }}>
@@ -337,13 +337,13 @@ export default function ResumeOptimize() {
             </div>
 
             {/* Overall improvement */}
-            <div style={{ marginTop: 32, padding: "20px 28px", background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: 14, display: "flex", alignItems: "center", gap: 20 }}>
-              <div style={{ fontSize: 40 }}>📈</div>
-              <div>
-                <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", fontFamily: "'Montserrat', sans-serif" }}>
+              <div style={{ marginTop: 32, padding: "20px 28px", background: "#F0FDF4", border: "1px solid #D1FAE5", borderRadius: 14, display: "flex", alignItems: "center", gap: 20 }}>
+                <div style={{ fontSize: 40 }}>📈</div>
+                <div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: "#2C2F38", fontFamily: "'Montserrat', sans-serif" }}>
                   Overall improvement: <span style={{ color: C.green }}>+{Math.round(((scores.after.ats + scores.after.keywords + scores.after.format) - (scores.before.ats + scores.before.keywords + scores.before.format)) / 3)} points average</span>
                 </div>
-                <div style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", marginTop: 4 }}>Your resume now passes 94% of ATS filters and is optimized for human recruiters.</div>
+                <div style={{ fontSize: 14, color: "#9FA6B2", marginTop: 4 }}>Your resume now passes 94% of ATS filters and is optimized for human recruiters.</div>
               </div>
             </div>
           </div>
@@ -426,12 +426,12 @@ export default function ResumeOptimize() {
           </div>
 
           {/* Sarah Q&A prompt */}
-          <div style={{ padding: "24px 32px", background: "rgba(47,109,246,0.06)", border: "1px solid rgba(47,109,246,0.2)", borderRadius: 16, marginBottom: 40, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24 }}>
+          <div style={{ padding: "24px 32px", background: "#EFF6FF", border: "1px solid #DBEAFE", borderRadius: 16, marginBottom: 40, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
               <div style={{ width: 52, height: 52, borderRadius: "50%", background: `linear-gradient(135deg, ${C.blue}, ${C.purple})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>👩‍💼</div>
               <div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: "#fff", fontFamily: "'Montserrat', sans-serif", marginBottom: 4 }}>Questions about your resume?</div>
-                <div style={{ fontSize: 14, color: "rgba(255,255,255,0.6)" }}>Sarah, your Talendro career coach, is here to help. Ask anything about your resume or what comes next.</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: "#2C2F38", fontFamily: "'Montserrat', sans-serif", marginBottom: 4 }}>Questions about your resume?</div>
+                <div style={{ fontSize: 14, color: "#9FA6B2" }}>Sarah, your Talendro career coach, is here to help. Ask anything about your resume or what comes next.</div>
               </div>
             </div>
             <button onClick={() => setShowSarah(true)}
@@ -446,7 +446,7 @@ export default function ResumeOptimize() {
               style={{ padding: "18px 72px", border: "none", borderRadius: 14, fontSize: 18, fontWeight: 800, cursor: "pointer", background: `linear-gradient(135deg, ${C.blue}, ${C.aqua})`, color: "#fff", fontFamily: "'Montserrat', sans-serif", boxShadow: `0 6px 32px ${C.blue}50`, letterSpacing: 0.3 }}>
               My Resume Looks Great — Set Up My Profile →
             </button>
-            <p style={{ marginTop: 16, fontSize: 14, color: "rgba(255,255,255,0.4)" }}>
+            <p style={{ marginTop: 16, fontSize: 14, color: "#9FA6B2" }}>
               Your optimized resume will pre-fill 35–50% of your profile automatically
             </p>
           </div>

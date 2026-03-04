@@ -1003,23 +1003,23 @@ export default function Onboarding() {
 
   if (submitted) {
     return (
-      <div style={{ minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(135deg, #0a1628 0%, #1a3a5c 50%, #0d2137 100%)",fontFamily:"'Montserrat', sans-serif",padding:20 }}>
+      <div style={{ minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:C.lightBg,fontFamily:"'Montserrat', sans-serif",padding:20 }}>
         <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <div style={{ textAlign:"center",maxWidth:600 }}>
           <div style={{ fontSize:80,marginBottom:24 }}>🎯</div>
-          <h1 style={{ fontSize:36,fontWeight:800,color:"#fff",marginBottom:12 }}>Profile Complete</h1>
-          <p style={{ fontSize:18,color:"#a8c6df",marginBottom:32 }}>Your profile is locked and loaded. AI is ready to start applying to jobs on your behalf.</p>
-          <div style={{ background:"rgba(255,255,255,0.08)",borderRadius:16,padding:32,border:"1px solid rgba(255,255,255,0.1)",marginBottom:32 }}>
+          <h1 style={{ fontSize:36,fontWeight:800,color:C.blue,fontFamily:"'Montserrat', sans-serif",marginBottom:12 }}>Profile Complete</h1>
+          <p style={{ fontSize:18,color:C.gray,marginBottom:32 }}>Your profile is locked and loaded. AI is ready to start applying to jobs on your behalf.</p>
+          <div style={{ background:"#F0FDF4",borderRadius:16,padding:32,border:"1px solid #D1FAE5",marginBottom:32 }}>
             <p style={{ color:"#10B981",fontWeight:700,fontSize:16 }}>24 additional fields are handled by AI at application time</p>
-            <p style={{ color:"#a8c6df",fontSize:14,marginTop:8 }}>Cover letters, company research, gap explanations, and custom employer questions — all generated automatically.</p>
+            <p style={{ color:C.gray,fontSize:14,marginTop:8 }}>Cover letters, company research, gap explanations, and custom employer questions — all generated automatically.</p>
           </div>
           <div style={{ display:"flex",gap:16,justifyContent:"center" }}>
             <button onClick={() => { setSubmitted(false); setStep(10); }}
-              style={{ padding:"14px 32px",border:"2px solid rgba(255,255,255,0.3)",borderRadius:10,fontSize:15,fontWeight:600,cursor:"pointer",background:"transparent",color:"#fff",fontFamily:"'Inter', sans-serif" }}>
+              style={{ padding:"14px 32px",border:"1.5px solid #E5E7EB",borderRadius:10,fontSize:15,fontWeight:600,cursor:"pointer",background:C.white,color:C.slate,fontFamily:"'Inter', sans-serif" }}>
               ← Review & Edit
             </button>
             <button onClick={() => navigate("/app/dashboard")}
-              style={{ padding:"14px 40px",border:"none",borderRadius:10,fontSize:15,fontWeight:700,cursor:"pointer",background:"#2F6DF6",color:"#fff",fontFamily:"'Inter', sans-serif",boxShadow:"0 4px 16px rgba(47,109,246,0.4)" }}>
+              style={{ padding:"14px 40px",border:"none",borderRadius:10,fontSize:15,fontWeight:700,cursor:"pointer",background:C.blue,color:C.white,fontFamily:"'Inter', sans-serif",boxShadow:"0 4px 16px rgba(47,109,246,0.4)" }}>
               Go to Dashboard →
             </button>
           </div>

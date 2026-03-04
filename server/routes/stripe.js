@@ -58,8 +58,6 @@ const PLANS = {
     }
 };
 
-const TRIAL_DAYS = 7;
-
 // ============================================
 // CUSTOMER LOOKUP (Sign-in)
 // ============================================
@@ -82,14 +80,14 @@ router.post('/lookup-customer', async (req, res) => {
 
         const customer = customers.data[0];
 
-        // Check for active or trialing subscriptions
+        // Check for active subscriptions
         const subs = await stripe.subscriptions.list({
             customer: customer.id,
             status: 'all',
             limit: 5
         });
 
-        const activeSub = subs.data.find(s => s.status === 'active' || s.status === 'trialing');
+        const activeSub = subs.data.find(s => s.status === 'active');
 
         if (!activeSub) {
             return res.json({ customerExists: true, hasActiveSubscription: false });
@@ -120,7 +118,7 @@ router.post('/lookup-customer', async (req, res) => {
 
 /**
  * POST /api/stripe/create-subscription
- * Creates a new Stripe customer and subscription with trial
+ * Creates a new Stripe customer and subscription (immediate billing, 7-day money-back guarantee)
  */
 router.post('/create-subscription', async (req, res) => {
     try {
@@ -143,8 +141,7 @@ router.post('/create-subscription', async (req, res) => {
         if (existingCustomers.data.length > 0) {
             const existing = existingCustomers.data[0];
             const existingSubs = await stripe.subscriptions.list({ customer: existing.id, status: 'active', limit: 1 });
-            const trialSubs = await stripe.subscriptions.list({ customer: existing.id, status: 'trialing', limit: 1 });
-            if (existingSubs.data.length > 0 || trialSubs.data.length > 0) {
+            if (existingSubs.data.length > 0) {
                 return res.status(400).json({ 
                     success: false, 
                     message: 'An account with this email already exists' 
@@ -166,42 +163,35 @@ router.post('/create-subscription', async (req, res) => {
             }
         });
         
-        // Create subscription with trial
+        // Create subscription (immediate billing — 7-day money-back guarantee policy)
         const subscription = await stripe.subscriptions.create({
             customer: customer.id,
             items: [{ price: resolvedPriceId }],
-            trial_period_days: TRIAL_DAYS,
             payment_behavior: 'default_incomplete',
             payment_settings: { save_default_payment_method: 'on_subscription' },
             expand: ['latest_invoice.payment_intent'],
             metadata: {
                 plan: plan,
-                trialStart: new Date().toISOString()
+                subscribedAt: new Date().toISOString()
             }
         });
-        
-        // Calculate trial end date
-        const trialEnd = new Date();
-        trialEnd.setDate(trialEnd.getDate() + TRIAL_DAYS);
         
         // Store onboarding data in Stripe customer metadata
         await stripe.customers.update(customer.id, {
             metadata: {
                 plan,
-                subscriptionStatus: 'trialing',
-                trialEndsAt: trialEnd.toISOString(),
+                subscriptionStatus: 'active',
                 onboardingData: JSON.stringify(onboardingData || {}).slice(0, 500)
             }
         });
         
-        console.log(`✅ New subscriber: ${email} (${plan} plan, trial until ${trialEnd.toLocaleDateString()})`);
+        console.log(`✅ New subscriber: ${email} (${plan} plan)`);
         
         res.json({
             success: true,
             subscriptionId: subscription.id,
             clientSecret: subscription.latest_invoice.payment_intent.client_secret,
-            customerId: customer.id,
-            trialEnd: trialEnd
+            customerId: customer.id
         });
         
     } catch (error) {

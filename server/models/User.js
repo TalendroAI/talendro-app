@@ -36,15 +36,7 @@ const UserSchema = new mongoose.Schema({
     subscriptionStatus: {
         type: String,
         enum: ['trialing', 'active', 'past_due', 'canceled', 'canceling', 'incomplete', 'incomplete_expired', 'unpaid'],
-        default: 'trialing'
-    },
-    trialEndsAt: {
-        type: Date,
-        index: true
-    },
-    trialEndingNotificationSent: {
-        type: Boolean,
-        default: false
+        default: 'active'
     },
     lastPaymentDate: {
         type: Date
@@ -88,7 +80,6 @@ UserSchema.index({ email: 1 });
 UserSchema.index({ stripeCustomerId: 1 });
 UserSchema.index({ stripeSubscriptionId: 1 });
 UserSchema.index({ subscriptionStatus: 1 });
-UserSchema.index({ trialEndsAt: 1 });
 UserSchema.index({ createdAt: -1 });
 
 UserSchema.methods.canApplyToJobs = function() {
