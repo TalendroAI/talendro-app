@@ -651,83 +651,26 @@ router.post('/resume/parse', formatProtectionMiddleware, (req, res) => {
       let parserUsed = 'unknown';
 
       try {
-        console.log(`[${traceId}] Starting Claude parse with local fallback...`);
+        // Always use OpenAI (claudeAdapter is fully OpenAI-backed) as the sole parser
+        console.log(`[${traceId}] Starting OpenAI resume parse (gpt-4.1-mini)...`);
 
-        // Check Claude status first
-        const status = await claudeStatus();
-        console.log(`[${traceId}] Claude status:`, {
-          hasKey: status.hasKey,
-          model: status.model,
-          configured: status.configured
-        });
+        try {
+          const result = await parseWithClaude(fileBuffer, fileName, fileType);
+          raw = result.raw;
+          parserUsed = 'openai';
 
-        // Strategy 1: No Claude key configured → use local immediately
-        if (!status.hasKey) {
-          console.log(`[${traceId}] ⚠️  Claude not configured, using local parser`);
-
-          try {
-            const result = await parseWithLocal(fileBuffer, fileName, fileType);
-            raw = result.raw;
-            parserUsed = 'local';
-
-            console.log(`[${traceId}] ✅ Local parser succeeded`);
-            console.log(`[${traceId}] Extracted:`, {
-              name: raw.data?.candidateName || 'N/A',
-              email: raw.data?.email?.[0] || 'N/A',
-              phone: raw.data?.phoneNumber?.[0] || 'N/A',
-              skillsCount: raw.data?.skills?.length || 0
-            });
-          } catch (localError) {
-            console.error(`[${traceId}] ❌ Local parser failed:`, localError.message);
-            throw new Error(`Local parser failed: ${localError.message}`);
-          }
-        }
-        // Strategy 2: Claude configured → try Claude first, fallback to local on failure
-        else {
-          try {
-            console.log(`[${traceId}] Calling Claude API...`);
-            const result = await parseWithClaude(fileBuffer, fileName, fileType);
-            raw = result.raw;
-            parserUsed = 'claude';
-
-            console.log(`[${traceId}] ✅ Claude parser succeeded`);
-            console.log(`[${traceId}] Response structure:`, {
-              hasData: !!raw.data,
-              hasMeta: !!raw.meta,
-              dataKeys: raw.data ? Object.keys(raw.data) : []
-            });
-
-            if (raw.data) {
-              console.log(`[${traceId}] Extracted fields:`, {
-                name: raw.data.candidateName?.[0]?.raw || raw.data.name?.raw || 'N/A',
-                email: raw.data.email?.[0] || 'N/A',
-                phone: raw.data.phoneNumber?.[0] || 'N/A',
-                workCount: raw.data.workExperience?.length || 0,
-                eduCount: raw.data.education?.length || 0,
-                skillsCount: raw.data.skills?.length || 0
-              });
-            }
-          } catch (claudeError) {
-            // All errors fall through to OpenAI local parser
-            console.warn(`[${traceId}] ⚠️  Primary parser failed, falling back to OpenAI parser`);
-            console.warn(`[${traceId}] Error:`, claudeError.message);
-
-            try {
-              const result = await parseWithLocal(fileBuffer, fileName, fileType);
-              raw = result.raw;
-              parserUsed = 'openai-fallback';
-
-              console.log(`[${traceId}] ✅ OpenAI fallback parser succeeded`);
-              console.log(`[${traceId}] Extracted with fallback:`, {
-                name: raw.data?.candidateName || 'N/A',
-                email: raw.data?.email?.[0] || 'N/A',
-                skillsCount: raw.data?.skills?.length || 0
-              });
-            } catch (localError) {
-              console.error(`[${traceId}] ❌ OpenAI fallback also failed:`, localError.message);
-              throw new Error(`All parsers failed. Primary: ${claudeError.message}, Fallback: ${localError.message}`);
-            }
-          }
+          console.log(`[${traceId}] ✅ OpenAI parser succeeded`);
+          console.log(`[${traceId}] Extracted fields:`, {
+            name: raw.data?.candidateName || 'N/A',
+            email: raw.data?.email?.[0] || 'N/A',
+            phone: raw.data?.phoneNumber?.[0] || 'N/A',
+            workCount: raw.data?.workExperience?.length || 0,
+            eduCount: raw.data?.education?.length || 0,
+            skillsCount: raw.data?.skills?.length || 0
+          });
+        } catch (openaiError) {
+          console.error(`[${traceId}] ❌ OpenAI parser failed:`, openaiError.message);
+          throw new Error(`OpenAI parser failed: ${openaiError.message}`);
         }
       } catch (error) {
         // Critical error - all parsing strategies failed
