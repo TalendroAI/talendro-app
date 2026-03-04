@@ -1527,9 +1527,12 @@ function extractWork(workArray) {
     );
 
     const datesData = datesObj.parsed || {};
+    // Support OpenAI flat dates object: w.dates.startDate / w.dates.endDate / w.dates.isCurrent
+    const wDates = (w.dates && typeof w.dates === 'object') ? w.dates : {};
     let start = coalesce(
       datesData.start?.date,
       datesData.start?.year ? `${datesData.start.year}-01-01` : '',
+      wDates.startDate,
       w.startDate,
       w.fromDate
     );
@@ -1537,12 +1540,14 @@ function extractWork(workArray) {
     let end = coalesce(
       datesData.end?.date,
       datesData.end?.year ? `${datesData.end.year}-01-01` : '',
+      wDates.isCurrent ? '' : wDates.endDate,
       w.endDate,
       w.toDate
     );
 
-    let current = datesData.end?.isCurrent === false ? false :
-      (isPresentLike(end) || w.current === true || datesData.end?.isCurrent === true);
+    let current = wDates.isCurrent === true ? true :
+      (datesData.end?.isCurrent === false ? false :
+      (isPresentLike(end) || w.current === true || datesData.end?.isCurrent === true));
 
     const locationData = locationObj.parsed || locationObj.raw || w.location;
     let workLocation;
