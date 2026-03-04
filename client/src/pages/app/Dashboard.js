@@ -156,7 +156,7 @@ export default function Dashboard() {
         {subscription?.status === 'trialing' && trialEndDate && (
           <div className="mb-6 bg-blue-50 border border-blue-200 rounded-xl px-5 py-4 flex items-center justify-between">
             <p className="text-sm text-blue-800">
-              <strong>Your free trial is active.</strong> Your subscription begins on {trialEndDate}. No action needed — you're all set.
+              <strong>7-day money-back guarantee active.</strong> Your subscription began on {trialEndDate}. No action needed — you're all set.
             </p>
             <a href="/app/billing" className="text-blue-700 text-sm font-medium hover:underline ml-4 whitespace-nowrap">
               Manage billing →

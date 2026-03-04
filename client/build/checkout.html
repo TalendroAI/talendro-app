@@ -513,8 +513,8 @@
         
         <!-- Trial Notice -->
         <div class="trial-notice">
-            <h2>🎉 Start Your 7-Day Free Trial</h2>
-            <p>Full access to all features. Cancel anytime. No charges until trial ends.</p>
+            <h2>🎉 Start Your Job Search</h2>
+            <p>Full access to all features. 7-day money-back guarantee. Cancel anytime.</p>
         </div>
         
         <!-- All Plans Include -->
@@ -596,27 +596,26 @@
                     <span class="summary-value" id="selectedPlanName">Pro</span>
                 </div>
                 <div class="summary-row">
-                    <span class="summary-label">Trial Period:</span>
-                    <span class="summary-value">7 Days Free</span>
+                    <span class="summary-label">Guarantee:</span>
+                    <span class="summary-value">7-Day Money-Back</span>
                 </div>
                 <div class="summary-row">
                     <span class="summary-label">First Charge Date:</span>
                     <span class="summary-value" id="chargeDate">—</span>
                 </div>
                 <div class="summary-row">
-                    <span class="summary-label">After Trial:</span>
+                    <span class="summary-label">Monthly Rate:</span>
                     <span class="summary-value" id="monthlyCharge">$49/month</span>
                 </div>
             </div>
             
-            <!-- Trial Info -->
+            <!-- Guarantee Info -->
             <div class="trial-info">
                 <div class="trial-info-icon">ℹ️</div>
                 <div class="trial-info-text">
-                    <strong>About Your Trial:</strong><br>
-                    Your card will be authorized but not charged today. You'll have full access to all features for 7 days. 
-                    If you don't cancel before <span id="trialEndDate">—</span>, your subscription will begin and you'll be charged <span id="trialEndCharge">$49</span>.
-                    You can cancel anytime from your dashboard with no questions asked.
+                    <strong>7-Day Money-Back Guarantee:</strong><br>
+                    Your card will be charged today. If you're not satisfied within 7 days, contact support for a full refund — no questions asked.
+                    You can also cancel anytime from your dashboard.
                 </div>
             </div>
             
@@ -654,7 +653,7 @@
                 <div class="btn-group">
                     <button type="button" class="btn-secondary" onclick="goBack()">← Back to Plans</button>
                     <button type="submit" class="btn-primary" id="submitBtn">
-                        Start 7-Day Free Trial →
+                        Get Started →
                     </button>
                 </div>
             </form>
@@ -854,7 +853,7 @@
                 
                 // Re-enable button
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Start 7-Day Free Trial →';
+                submitBtn.textContent = 'Get Started →';
             }
         });
         

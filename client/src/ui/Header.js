@@ -299,16 +299,16 @@ const Header = () => {
                 >
                   Sign In
                 </Link>
-                <Link to="/pricing">
+                <a href="/#pricing">
                   <button className="px-6 py-2 bg-white text-talBlue border-2 border-talBlue rounded-lg font-semibold hover:bg-blue-50 transition">
                     View Pricing
                   </button>
-                </Link>
-                <Link to="/pricing">
+                </a>
+                <a href="/#pricing">
                   <button className="px-6 py-2 bg-talBlue text-white rounded-lg font-semibold hover:bg-blue-700 transition shadow-md" style={{ border: 'none' }}>
                     Get Started
                   </button>
-                </Link>
+                </a>
               </>
             )}
             

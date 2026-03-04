@@ -175,14 +175,14 @@ function Dashboard() {
         <div className="trial-banner">
           <div className="trial-icon">🎉</div>
           <div className="trial-content">
-            <h3 className="h3">You're on a free trial!</h3>
+            <h3 className="h3">7-day money-back guarantee active</h3>
             <p>
-              <strong>{daysRemaining} days remaining</strong> in your 7-day trial. 
-              You'll be charged ${getPlanPrice(userData.plan)}/month when your trial ends.
+              <strong>{daysRemaining} days remaining</strong> in your guarantee period.
+              Contact support for a full refund within 7 days.
             </p>
           </div>
           <div className="trial-action">
-            <button className="btn-outline">Cancel Trial</button>
+            <button className="btn-outline">Contact Support</button>
           </div>
         </div>
       )}
@@ -212,7 +212,7 @@ function Dashboard() {
               <div className="detail-row">
                 <span>Status:</span>
                 <strong>
-                  {userData.subscriptionStatus === 'trialing' ? 'Free Trial' : 'Active'}
+                  {userData.subscriptionStatus === 'trialing' ? 'Active' : 'Active'}
                 </strong>
               </div>
               <div className="detail-row">

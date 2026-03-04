@@ -117,7 +117,7 @@ function Login() {
           <p>
             Don't have an account?{' '}
             <a href="/signup" className="signup-link">
-              Start your free trial
+              Get Started
             </a>
           </p>
         </div>
