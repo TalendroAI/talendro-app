@@ -37,7 +37,7 @@ export default function ResumeUpload() {
     try {
       const formData = new FormData();
       formData.append("resume", f);
-      const res = await fetch("/api/parse-resume", { method: "POST", body: formData });
+      const res = await fetch("/api/resume/parse", { method: "POST", body: formData });
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || "Parse failed");
       localStorage.setItem("talendro_resume_raw", JSON.stringify(result.data));

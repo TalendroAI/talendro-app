@@ -283,7 +283,7 @@ const StepResume = ({ data, set, onParsed }) => {
     try {
       const formData = new FormData();
       formData.append("resume", file);
-      const res = await fetch("/api/parse-resume", { method:"POST", body:formData });
+      const res = await fetch("/api/resume/parse", { method:"POST", body:formData });
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || "Parse failed");
       setParseResult(result.meta);
