@@ -134,20 +134,7 @@ export default function Onb2() {
 
       console.log('💾 Saving payload to localStorage:', payload);
 
-      // FORCE CLEAR bad education data before storing
-      if (payload?.prefill?.step3) {
-        payload.prefill.step3.majorFieldOfStudy = ''
-        payload.prefill.step3.highestDegree = ''
-        payload.prefill.step3.gpa = ''
-        payload.prefill.step3.institutionName = ''
-        payload.prefill.step3.institutionAddress = ''
-        payload.prefill.step3.institutionCity = ''
-        payload.prefill.step3.institutionState = ''
-        payload.prefill.step3.attendanceStartDate = ''
-        payload.prefill.step3.graduationDate = ''
-        payload.prefill.step3.country = 'US'
-        console.log('🔍 Onb2 - FORCED CLEAR of bad education data')
-      }
+      // Education data is now correctly extracted by the OpenAI parser — no clearing needed
       
       // NUCLEAR OPTION: Clear ALL localStorage first
       localStorage.clear()

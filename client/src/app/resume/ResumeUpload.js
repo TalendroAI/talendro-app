@@ -42,6 +42,9 @@ export default function ResumeUpload() {
       if (!res.ok) throw new Error(result.error || "Parse failed");
       localStorage.setItem("talendro_resume_raw", JSON.stringify(result.data));
       localStorage.setItem("talendro_resume_path", "upload");
+      // Also save under 'resumeData' key so Onb1/Onb3/Onb4 can find the prefill data
+      localStorage.setItem("resumeData", JSON.stringify(result.data));
+      localStorage.setItem("resumeParsed", "true");
       // Map from actual API response shape: result.data.summary + result.data.profileDraft
       const summary = result.data?.summary || {};
       const profileDraft = result.data?.profileDraft || {};

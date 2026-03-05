@@ -37,8 +37,10 @@ const Onb3 = () => {
   useEffect(() => {
     // Auto-fill from localStorage if available
     const resumeData = JSON.parse(localStorage.getItem('resumeData') || 'null');
-    if (resumeData?.data?.prefill?.step3) {
-      setFormData(prev => ({...prev, ...resumeData.data.prefill.step3}));
+    // resumeData is stored as result.data (not result), so path is prefill.step3 directly
+    const step3 = resumeData?.prefill?.step3 || resumeData?.data?.prefill?.step3;
+    if (step3) {
+      setFormData(prev => ({...prev, ...step3}));
     }
   }, []);
 
