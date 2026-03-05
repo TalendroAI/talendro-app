@@ -57,6 +57,8 @@ const UserSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed,
     default: null
   },
+  trialEndsAt: { type: Date },
+  currentPeriodEnd: { type: Date },
   lastPaymentDate: { type: Date },
   lastPaymentAmount: { type: Number },
   paymentFailedAt: { type: Date },

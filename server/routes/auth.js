@@ -20,6 +20,9 @@ function isMongoConnected() {
 }
 
 // POST /api/auth/register
+// Handles two cases:
+//   1. Brand new user (no record in MongoDB yet)
+//   2. Placeholder user created by Stripe webhook (passwordHash === 'PENDING_REGISTRATION')
 router.post('/register', async (req, res) => {
   try {
     const { email, password, name, stripeCustomerId, stripeSubscriptionId, plan } = req.body;
@@ -27,21 +30,41 @@ router.post('/register', async (req, res) => {
     if (password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters' });
     if (!isMongoConnected()) return res.status(503).json({ error: 'Database unavailable. Please try again.' });
 
-    const existing = await User.findOne({ email: email.toLowerCase().trim() });
-    if (existing) return res.status(409).json({ error: 'An account with this email already exists. Please log in.' });
+    const normalizedEmail = email.toLowerCase().trim();
+    const existing = await User.findOne({ email: normalizedEmail });
 
     const passwordHash = await bcrypt.hash(password, 12);
-    const user = new User({
-      email: email.toLowerCase().trim(),
-      name: name || email.split('@')[0],
-      passwordHash,
-      stripeCustomerId: stripeCustomerId || 'pending',
-      stripeSubscriptionId: stripeSubscriptionId || 'pending',
-      plan: plan || 'pro',
-      subscriptionStatus: 'active',
-      onboardingProgress: { step: 0, completedAt: null },
-    });
-    await user.save();
+
+    let user;
+    if (existing && existing.passwordHash === 'PENDING_REGISTRATION') {
+      // Webhook created a placeholder — complete the registration by setting the password
+      existing.passwordHash = passwordHash;
+      if (name) existing.name = name;
+      // Only overwrite Stripe fields if they were still pending
+      if (stripeCustomerId && existing.stripeCustomerId === 'pending') existing.stripeCustomerId = stripeCustomerId;
+      if (stripeSubscriptionId && existing.stripeSubscriptionId === 'pending') existing.stripeSubscriptionId = stripeSubscriptionId;
+      if (plan && existing.plan !== plan) existing.plan = plan;
+      existing.updatedAt = new Date();
+      await existing.save();
+      user = existing;
+      console.log(`[auth/register] Completed registration for placeholder user: ${normalizedEmail}`);
+    } else if (existing) {
+      return res.status(409).json({ error: 'An account with this email already exists. Please log in.' });
+    } else {
+      // Completely new user
+      user = new User({
+        email: normalizedEmail,
+        name: name || email.split('@')[0],
+        passwordHash,
+        stripeCustomerId: stripeCustomerId || 'pending',
+        stripeSubscriptionId: stripeSubscriptionId || 'pending',
+        plan: plan || 'pro',
+        subscriptionStatus: 'active',
+        onboardingProgress: { step: 0, completedAt: null },
+      });
+      await user.save();
+      console.log(`[auth/register] New user created: ${normalizedEmail}`);
+    }
 
     const token = makeToken(user._id.toString(), user.email);
     res.status(201).json({
@@ -63,7 +86,14 @@ router.post('/login', async (req, res) => {
     if (!isMongoConnected()) return res.status(503).json({ error: 'Database unavailable. Please try again.' });
 
     const user = await User.findOne({ email: email.toLowerCase().trim() });
-    if (!user || !user.passwordHash) return res.status(401).json({ error: 'Invalid email or password' });
+    if (!user) return res.status(401).json({ error: 'Invalid email or password' });
+
+    // Placeholder user created by webhook — they haven't set a password yet
+    if (user.passwordHash === 'PENDING_REGISTRATION') {
+      return res.status(403).json({ error: 'Please complete your account setup. Check your email for the account creation link, or go to the Create Account page.' });
+    }
+
+    if (!user.passwordHash) return res.status(401).json({ error: 'Invalid email or password' });
 
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) return res.status(401).json({ error: 'Invalid email or password' });

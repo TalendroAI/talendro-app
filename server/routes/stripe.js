@@ -7,8 +7,12 @@
 
 import express from 'express';
 import Stripe from 'stripe';
+import User from '../models/User.js';
 const router = express.Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+// Map Stripe plan keys to our User model enum values
+const PLAN_MAP = { starter: 'basic', pro: 'pro', concierge: 'premium' };
 
 // ============================================
 // PRICING CONFIGURATION
@@ -230,6 +234,10 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
     
     // Handle the event
     switch (event.type) {
+        case 'checkout.session.completed':
+            await handleCheckoutCompleted(event.data.object);
+            break;
+
         case 'customer.subscription.trial_will_end':
             await handleTrialWillEnd(event.data.object);
             break;
@@ -261,6 +269,69 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 // WEBHOOK HANDLERS
 // ============================================
 
+/**
+ * checkout.session.completed
+ * Fired when a Stripe Checkout Session payment is confirmed.
+ * Syncs Stripe customer/subscription data back to MongoDB.
+ * The user record may already exist (created on CreateAccount page) or not yet.
+ */
+async function handleCheckoutCompleted(session) {
+    console.log(`\u2705 Checkout completed: session ${session.id}`);
+    try {
+        const customerId = session.customer;
+        const subscriptionId = session.subscription;
+        if (!customerId) return;
+
+        const customer = await stripe.customers.retrieve(customerId);
+        const email = customer.email?.toLowerCase().trim();
+        if (!email) return;
+
+        let userPlan = 'pro';
+        let subscriptionStatus = 'active';
+        let trialEndsAt = null;
+        let currentPeriodEnd = null;
+
+        if (subscriptionId) {
+            const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+            const planKey = subscription.metadata?.plan || customer.metadata?.plan || 'pro';
+            userPlan = PLAN_MAP[planKey] || 'pro';
+            subscriptionStatus = subscription.status;
+            if (subscription.trial_end) trialEndsAt = new Date(subscription.trial_end * 1000);
+            if (subscription.current_period_end) currentPeriodEnd = new Date(subscription.current_period_end * 1000);
+        }
+
+        const update = {
+            stripeCustomerId: customerId,
+            stripeSubscriptionId: subscriptionId || 'pending',
+            plan: userPlan,
+            subscriptionStatus,
+            updatedAt: new Date(),
+        };
+        if (trialEndsAt) update.trialEndsAt = trialEndsAt;
+        if (currentPeriodEnd) update.currentPeriodEnd = currentPeriodEnd;
+
+        const existing = await User.findOne({ email });
+        if (existing) {
+            await User.findOneAndUpdate({ email }, { $set: update });
+            console.log(`\ud83d\udd04 Synced Stripe data to existing user: ${email}`);
+        } else {
+            // User hasn't set a password yet — create a placeholder record
+            // They will complete registration on the CreateAccount page
+            const placeholder = new User({
+                email,
+                name: customer.name || email.split('@')[0],
+                passwordHash: 'PENDING_REGISTRATION',
+                ...update,
+                onboardingProgress: { step: 0, completedAt: null },
+            });
+            await placeholder.save();
+            console.log(`\ud83c\udd95 Created placeholder user for: ${email} (awaiting password setup)`);
+        }
+    } catch (error) {
+        console.error('Error handling checkout.session.completed:', error);
+    }
+}
+
 async function handleTrialWillEnd(subscription) {
     console.log(`⏰ Trial ending soon for subscription: ${subscription.id}`);
     try {
@@ -273,34 +344,84 @@ async function handleTrialWillEnd(subscription) {
 }
 
 async function handleSubscriptionUpdated(subscription) {
-    console.log(`🔄 Subscription updated: ${subscription.id} — status: ${subscription.status}`);
-    // Status tracked in Stripe; no local DB update needed
+    console.log(`\ud83d\udd04 Subscription updated: ${subscription.id} \u2014 status: ${subscription.status}`);
+    try {
+        const customer = await stripe.customers.retrieve(subscription.customer);
+        const email = customer.email?.toLowerCase().trim();
+        if (!email) return;
+        const planKey = subscription.metadata?.plan || customer.metadata?.plan || 'pro';
+        const userPlan = PLAN_MAP[planKey] || 'pro';
+        const update = {
+            plan: userPlan,
+            subscriptionStatus: subscription.status,
+            stripeSubscriptionId: subscription.id,
+            updatedAt: new Date(),
+        };
+        if (subscription.cancel_at_period_end) update.subscriptionStatus = 'canceling';
+        if (subscription.current_period_end) update.currentPeriodEnd = new Date(subscription.current_period_end * 1000);
+        await User.findOneAndUpdate({ email }, { $set: update });
+        console.log(`\u2705 Updated subscription status for ${email}: ${subscription.status}`);
+    } catch (error) {
+        console.error('Error handling subscription.updated:', error);
+    }
 }
 
 async function handleSubscriptionDeleted(subscription) {
-    console.log(`❌ Subscription canceled: ${subscription.id}`);
+    console.log(`\u274c Subscription canceled: ${subscription.id}`);
     try {
         const customer = await stripe.customers.retrieve(subscription.customer);
-        console.log(`Subscription canceled for: ${customer.email}`);
-        // TODO: Send cancellation email
+        const email = customer.email?.toLowerCase().trim();
+        if (!email) return;
+        await User.findOneAndUpdate(
+            { email },
+            { $set: { subscriptionStatus: 'canceled', subscriptionEndedAt: new Date(), updatedAt: new Date() } }
+        );
+        console.log(`\u274c Marked subscription as canceled for: ${email}`);
     } catch (error) {
         console.error('Error handling subscription.deleted:', error);
     }
 }
 
 async function handlePaymentSucceeded(invoice) {
-    console.log(`💰 Payment succeeded for invoice: ${invoice.id} — $${invoice.amount_paid / 100}`);
-    // Payment data available in Stripe dashboard; no local DB needed
+    console.log(`\ud83d\udcb0 Payment succeeded for invoice: ${invoice.id} \u2014 $${invoice.amount_paid / 100}`);
+    try {
+        if (!invoice.customer) return;
+        const customer = await stripe.customers.retrieve(invoice.customer);
+        const email = customer.email?.toLowerCase().trim();
+        if (!email) return;
+        await User.findOneAndUpdate(
+            { email },
+            { $set: {
+                subscriptionStatus: 'active',
+                lastPaymentDate: new Date(),
+                lastPaymentAmount: invoice.amount_paid / 100,
+                updatedAt: new Date(),
+            }}
+        );
+        console.log(`\u2705 Payment recorded for ${email}: $${invoice.amount_paid / 100}`);
+    } catch (error) {
+        console.error('Error handling invoice.payment_succeeded:', error);
+    }
 }
 
 async function handlePaymentFailed(invoice) {
-    console.log(`⚠️ Payment failed for invoice: ${invoice.id}`);
+    console.log(`\u26a0\ufe0f Payment failed for invoice: ${invoice.id}`);
     try {
+        if (!invoice.customer) return;
         const customer = await stripe.customers.retrieve(invoice.customer);
-        console.log(`📧 Should send payment failed email to: ${customer.email}`);
-        // TODO: Implement payment failed email
+        const email = customer.email?.toLowerCase().trim();
+        if (!email) return;
+        await User.findOneAndUpdate(
+            { email },
+            { $set: {
+                subscriptionStatus: 'past_due',
+                paymentFailedAt: new Date(),
+                updatedAt: new Date(),
+            }}
+        );
+        console.log(`\u26a0\ufe0f Marked payment_failed for ${email}`);
     } catch (error) {
-        console.error('Error handling payment_failed:', error);
+        console.error('Error handling invoice.payment_failed:', error);
     }
 }
 
