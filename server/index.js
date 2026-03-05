@@ -229,6 +229,7 @@ if (!process.env.NODE_ENV) {
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 import stripeRoutes from './routes/stripe.js'
+import mongoose from 'mongoose'
 
 const app = express()
 
@@ -437,6 +438,12 @@ app.use((req, res, next) => {
     }
   }
 })
+
+// Connect to MongoDB Atlas
+const MONGO_URI = process.env.MONGODB_URI || 'mongodb+srv://greg_db_user:ggeS08121989@ac-yaqbt9c.oeu8lvm.mongodb.net/talendro?retryWrites=true&w=majority';
+mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 10000 })
+  .then(() => console.log('✅ MongoDB Atlas connected'))
+  .catch(err => console.error('⚠️  MongoDB connection failed (non-fatal):', err.message));
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Talendro API server running on port ${PORT}`);

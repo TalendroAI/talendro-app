@@ -835,6 +835,19 @@
                 document.getElementById('paymentSection').style.display = 'none';
                 document.getElementById('successMessage').classList.add('active');
                 
+                // Build create-account URL with email and name pre-filled
+                const checkoutEmail = step1Data.email || step2Data.email || '';
+                const checkoutName = step2Data.fullLegalName ||
+                    (step1Data.firstName && step1Data.lastName ? `${step1Data.firstName} ${step1Data.lastName}` : '') || '';
+                const checkoutPlan = selectedPlan ? selectedPlan.name : 'pro';
+                const checkoutCustomerId = result && result.customerId ? result.customerId : '';
+                
+                const createAccountParams = new URLSearchParams();
+                if (checkoutEmail) createAccountParams.set('email', checkoutEmail);
+                if (checkoutName) createAccountParams.set('name', checkoutName);
+                if (checkoutPlan) createAccountParams.set('plan', checkoutPlan);
+                if (checkoutCustomerId) createAccountParams.set('customerId', checkoutCustomerId);
+                
                 // Clear localStorage
                 localStorage.removeItem('step1Data');
                 localStorage.removeItem('step2Data');
@@ -842,9 +855,9 @@
                 localStorage.removeItem('step4Data');
                 localStorage.removeItem('talendro_resume_data');
                 
-                // Redirect to Resume Gate (choose upload/update/build) after 3 seconds
+                // Redirect to Create Account page after 3 seconds
                 setTimeout(() => {
-                    window.location.href = '/app/resume-gate';
+                    window.location.href = '/app/create-account?' + createAccountParams.toString();
                 }, 3000);
                 
             } catch (error) {

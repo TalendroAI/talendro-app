@@ -24,6 +24,7 @@ import Terms from '../pages/Terms'
 
 import Onboarding from '../app/js/Onboarding'
 import SignIn from '../auth/SignIn'
+import CreateAccount from '../auth/CreateAccount'
 
 import Checkout from '../app/Checkout'
 import CheckoutSuccess from '../app/CheckoutSuccess'
@@ -43,7 +44,11 @@ import Agents from '../app/Agents'
 import Applications from '../app/Applications'
 import Billing from '../app/Billing'
 
-// Determine which routes should render without the public header/footer
+// Auth
+import { AuthProvider } from '../auth/AuthContext'
+import ProtectedRoute from '../auth/ProtectedRoute'
+
+// Routes that should render without the public header/footer
 const NO_CHROME_ROUTES = [
   '/interview-coach',
   '/interview-coach-final',
@@ -53,9 +58,11 @@ const NO_CHROME_ROUTES = [
   '/app/resume/create',
   '/app/resume/optimize',
   '/app/onboarding',
+  '/app/create-account',
+  '/auth/sign-in',
 ];
 
-export default function App(){
+function AppRoutes() {
   const location = useLocation();
   const isInterviewCoachPublic = location.pathname === '/interview-coach' || location.pathname === '/interview-coach-final';
   const isAppRoute = NO_CHROME_ROUTES.some(r => location.pathname.startsWith(r));
@@ -67,11 +74,11 @@ export default function App(){
       {!hideChrome && <Header />}
       <main className={hideChrome ? "" : "container py-10"}>
         <Routes>
-          {/* Public route - NO header/footer */}
+          {/* Public routes - NO header/footer */}
           <Route path="/interview-coach" element={<InterviewCoachPublic />} />
           <Route path="/interview-coach-final" element={<InterviewCoachPublic />} />
-          
-          {/* All other routes WITH header/footer */}
+
+          {/* Public marketing routes WITH header/footer */}
           <Route path="/" element={<Home />} />
           <Route path="/how-it-works" element={<How />} />
           <Route path="/services" element={<Services />} />
@@ -89,32 +96,68 @@ export default function App(){
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
 
-          {/* ── Resume Readiness Gate (post-payment, pre-onboarding) ── */}
-          <Route path="/app/resume-gate" element={<ResumeGate />} />
-          <Route path="/app/resume/upload" element={<ResumeUpload />} />
-          <Route path="/app/resume/update" element={<ResumeUpdate />} />
-          <Route path="/app/resume/create" element={<ResumeCreate />} />
-          <Route path="/app/resume/optimize" element={<ResumeOptimize />} />
-
-          {/* ── 10-Step Onboarding (after resume optimization) ── */}
-          <Route path="/app/onboarding/*" element={<Onboarding />} />
-          <Route path="/app/onboarding/welcome" element={<Onboarding />} />
-          
+          {/* Auth routes */}
           <Route path="/auth/sign-in" element={<SignIn />} />
+          <Route path="/app/create-account" element={<CreateAccount />} />
 
+          {/* Checkout (public — payment happens before account creation) */}
           <Route path="/app/checkout" element={<Checkout />} />
           <Route path="/app/checkout/success" element={<CheckoutSuccess />} />
           <Route path="/app/checkout/error" element={<CheckoutError />} />
           <Route path="/app/payment/success" element={<PaymentSuccess />} />
 
-          <Route path="/app/dashboard" element={<Dashboard />} />
-          <Route path="/app/profile" element={<Profile />} />
-          <Route path="/app/agents" element={<Agents />} />
-          <Route path="/app/applications" element={<Applications />} />
-          <Route path="/app/billing" element={<Billing />} />
+          {/* ── Protected: Resume Gate (post-payment, pre-onboarding) ── */}
+          <Route path="/app/resume-gate" element={
+            <ProtectedRoute><ResumeGate /></ProtectedRoute>
+          } />
+          <Route path="/app/resume/upload" element={
+            <ProtectedRoute><ResumeUpload /></ProtectedRoute>
+          } />
+          <Route path="/app/resume/update" element={
+            <ProtectedRoute><ResumeUpdate /></ProtectedRoute>
+          } />
+          <Route path="/app/resume/create" element={
+            <ProtectedRoute><ResumeCreate /></ProtectedRoute>
+          } />
+          <Route path="/app/resume/optimize" element={
+            <ProtectedRoute><ResumeOptimize /></ProtectedRoute>
+          } />
+
+          {/* ── Protected: Onboarding ── */}
+          <Route path="/app/onboarding/*" element={
+            <ProtectedRoute><Onboarding /></ProtectedRoute>
+          } />
+          <Route path="/app/onboarding/welcome" element={
+            <ProtectedRoute><Onboarding /></ProtectedRoute>
+          } />
+
+          {/* ── Protected: Dashboard and app pages ── */}
+          <Route path="/app/dashboard" element={
+            <ProtectedRoute><Dashboard /></ProtectedRoute>
+          } />
+          <Route path="/app/profile" element={
+            <ProtectedRoute><Profile /></ProtectedRoute>
+          } />
+          <Route path="/app/agents" element={
+            <ProtectedRoute><Agents /></ProtectedRoute>
+          } />
+          <Route path="/app/applications" element={
+            <ProtectedRoute><Applications /></ProtectedRoute>
+          } />
+          <Route path="/app/billing" element={
+            <ProtectedRoute><Billing /></ProtectedRoute>
+          } />
         </Routes>
       </main>
       {!hideChrome && <Footer />}
     </>
-  )
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppRoutes />
+    </AuthProvider>
+  );
 }
