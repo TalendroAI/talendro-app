@@ -663,7 +663,7 @@
         <div class="success-message" id="successMessage">
             <div class="success-icon">🎉</div>
             <h2>Welcome to Talendro!</h2>
-            <p>Your trial has started. We're setting up your account now...</p>
+            <p>Your subscription is active. We're setting up your account now...</p>
             <div class="loading"></div>
         </div>
     </div>
@@ -743,21 +743,16 @@
         function updatePaymentSection() {
             if (!selectedPlan) return;
             
-            const chargeDate = new Date();
-            chargeDate.setDate(chargeDate.getDate() + 7);
+            // Charge is today (immediate billing with 7-day money-back guarantee)
+            const today = new Date();
             
             document.getElementById('selectedPlanName').textContent = selectedPlan.displayName;
             document.getElementById('monthlyCharge').textContent = `$${selectedPlan.price}/month`;
-            document.getElementById('chargeDate').textContent = chargeDate.toLocaleDateString('en-US', { 
+            document.getElementById('chargeDate').textContent = today.toLocaleDateString('en-US', { 
                 month: 'long', 
                 day: 'numeric', 
                 year: 'numeric' 
             });
-            document.getElementById('trialEndDate').textContent = chargeDate.toLocaleDateString('en-US', { 
-                month: 'long', 
-                day: 'numeric' 
-            });
-            document.getElementById('trialEndCharge').textContent = `$${selectedPlan.price}`;
         }
         
         // Go back to plan selection

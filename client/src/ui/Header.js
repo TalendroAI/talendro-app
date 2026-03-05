@@ -177,8 +177,8 @@ const Header = () => {
                     <div className="user-dropdown">
                       <div className="dropdown-header">
                         <div className="dropdown-user-info">
-                          <div className="dropdown-name">Kenneth Jackson</div>
-                          <div className="dropdown-plan">Pro Plan • Trial</div>
+                          <div className="dropdown-name">{user?.firstName ? `${user.firstName} ${user.lastName}`.trim() : 'My Account'}</div>
+                          <div className="dropdown-plan">{user?.plan ? `${user.plan.charAt(0).toUpperCase() + user.plan.slice(1)} Plan` : 'Pro Plan'} • Active</div>
                         </div>
                       </div>
                       

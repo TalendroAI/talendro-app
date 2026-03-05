@@ -107,7 +107,7 @@ router.post('/lookup-customer', async (req, res) => {
             subscriptionStatus: activeSub.status,
             plan: planKey,
             planName: PLANS[planKey]?.name || planKey,
-            trialEnd: activeSub.trial_end ? new Date(activeSub.trial_end * 1000).toISOString() : null
+            guaranteeEnds: new Date(new Date(activeSub.created * 1000).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString()
         });
 
     } catch (error) {
@@ -288,15 +288,15 @@ async function handleCheckoutCompleted(session) {
 
         let userPlan = 'pro';
         let subscriptionStatus = 'active';
-        let trialEndsAt = null;
         let currentPeriodEnd = null;
 
         if (subscriptionId) {
             const subscription = await stripe.subscriptions.retrieve(subscriptionId);
             const planKey = subscription.metadata?.plan || customer.metadata?.plan || 'pro';
             userPlan = PLAN_MAP[planKey] || 'pro';
-            subscriptionStatus = subscription.status;
-            if (subscription.trial_end) trialEndsAt = new Date(subscription.trial_end * 1000);
+            // Normalize status: treat 'trialing' as 'active' (no-trial policy)
+            const rawStatus = subscription.status;
+            subscriptionStatus = rawStatus === 'trialing' ? 'active' : rawStatus;
             if (subscription.current_period_end) currentPeriodEnd = new Date(subscription.current_period_end * 1000);
         }
 
@@ -307,7 +307,6 @@ async function handleCheckoutCompleted(session) {
             subscriptionStatus,
             updatedAt: new Date(),
         };
-        if (trialEndsAt) update.trialEndsAt = trialEndsAt;
         if (currentPeriodEnd) update.currentPeriodEnd = currentPeriodEnd;
 
         const existing = await User.findOne({ email });
@@ -333,14 +332,9 @@ async function handleCheckoutCompleted(session) {
 }
 
 async function handleTrialWillEnd(subscription) {
-    console.log(`⏰ Trial ending soon for subscription: ${subscription.id}`);
-    try {
-        const customer = await stripe.customers.retrieve(subscription.customer);
-        console.log(`📧 Should send trial ending reminder to: ${customer.email}`);
-        // TODO: Implement email service
-    } catch (error) {
-        console.error('Error handling trial_will_end:', error);
-    }
+    // Talendro does not use free trials — immediate billing with 7-day money-back guarantee.
+    // This event is a no-op but kept to avoid unhandled event errors from Stripe.
+    console.log(`ℹ️  trial_will_end received for ${subscription.id} — no action taken (no-trial policy)`);
 }
 
 async function handleSubscriptionUpdated(subscription) {

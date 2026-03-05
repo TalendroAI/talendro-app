@@ -13,7 +13,7 @@ function Dashboard() {
   useEffect(() => {
     fetchUserData();
     const interval = setInterval(() => {
-      if (userData?.trialEndsAt) calculateDaysRemaining(userData.trialEndsAt);
+      if (userData?.createdAt) calculateGuaranteeDaysRemaining(userData.createdAt);
     }, 60000);
     return () => clearInterval(interval);
   }, []);
@@ -51,7 +51,7 @@ function Dashboard() {
         };
       }
       setUserData(user);
-      if (user.trialEndsAt) calculateDaysRemaining(user.trialEndsAt);
+      if (user.createdAt) calculateGuaranteeDaysRemaining(user.createdAt);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -59,11 +59,13 @@ function Dashboard() {
     }
   };
 
-  const calculateDaysRemaining = (trialEndDate) => {
-    if (!trialEndDate) return;
+  // 7-day money-back guarantee: calculated from account creation date
+  const calculateGuaranteeDaysRemaining = (createdAt) => {
+    if (!createdAt) return;
     const now = new Date();
-    const end = new Date(trialEndDate);
-    const diffTime = end - now;
+    const created = new Date(createdAt);
+    const guaranteeEnd = new Date(created.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const diffTime = guaranteeEnd - now;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     setDaysRemaining(diffDays > 0 ? diffDays : 0);
   };
@@ -151,15 +153,15 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Trial Banner */}
-      {userData.subscriptionStatus === 'trialing' && (
+      {/* 7-Day Money-Back Guarantee Banner — shown for first 7 days after signup */}
+      {daysRemaining > 0 && (
         <div className="trial-banner">
           <div className="trial-icon">🎉</div>
           <div className="trial-content">
             <h3 className="h3">7-day money-back guarantee active</h3>
             <p>
-              <strong>{daysRemaining} days remaining</strong> in your guarantee period.
-              Contact support for a full refund within 7 days.
+              <strong>{daysRemaining} day{daysRemaining !== 1 ? 's' : ''} remaining</strong> in your guarantee period.
+              Not satisfied? Contact support for a full refund — no questions asked.
             </p>
           </div>
           <div className="trial-action">
@@ -191,8 +193,8 @@ function Dashboard() {
         <div className="card subscription-card">
           <div className="card-header">
             <h2 className="h2">Your Subscription</h2>
-            <span className={`status-badge ${userData.subscriptionStatus || 'active'}`}>
-              {userData.subscriptionStatus === 'trialing' ? 'Trial' : 'Active'}
+            <span className={`status-badge ${userData.subscriptionStatus === 'active' || userData.subscriptionStatus === 'trialing' ? 'active' : (userData.subscriptionStatus || 'active')}`}>
+              {userData.subscriptionStatus === 'canceled' ? 'Canceled' : userData.subscriptionStatus === 'past_due' ? 'Past Due' : 'Active'}
             </span>
           </div>
           <div className="card-body">
@@ -209,11 +211,11 @@ function Dashboard() {
                 <span>Status:</span>
                 <strong>Active</strong>
               </div>
-              {userData.trialEndsAt && (
+              {userData.currentPeriodEnd && (
                 <div className="detail-row">
                   <span>Next billing:</span>
                   <strong>
-                    {new Date(userData.trialEndsAt).toLocaleDateString('en-US', {
+                    {new Date(userData.currentPeriodEnd).toLocaleDateString('en-US', {
                       month: 'long', day: 'numeric', year: 'numeric'
                     })}
                   </strong>
