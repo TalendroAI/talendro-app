@@ -1070,6 +1070,27 @@ export default function Onboarding() {
   const setSD = k => d => setFormData(p => ({ ...p, [k]:d }));
   const progress = ((step+1)/STEPS.length)*100;
 
+  // Save progress to MongoDB (fire-and-forget)
+  const saveProgress = async (nextStep, currentFormData) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) return;
+      await fetch('/api/auth/progress', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ step: nextStep, formData: currentFormData }),
+      });
+    } catch (e) {
+      console.warn('[Onboarding] Failed to save progress:', e);
+    }
+  };
+
+  // Advance to next step and save progress
+  const goToStep = (nextStep) => {
+    setStep(nextStep);
+    saveProgress(nextStep, formData);
+  };
+
   const handleResumeParsed = useCallback((parsedData) => {
     setFormData(prev => {
       const merged = { ...prev };
@@ -1091,9 +1112,11 @@ export default function Onboarding() {
     });
   }, []);
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
     // Save profile to localStorage for backend pickup
     localStorage.setItem("talendro_profile", JSON.stringify(formData));
+    // Save final completed state to MongoDB
+    await saveProgress(STEPS.length, formData);
     setSubmitted(true);
   };
 
@@ -1165,7 +1188,7 @@ export default function Onboarding() {
         {/* Step Nav */}
         <nav style={{ width:200,background:C.white,borderRight:"1px solid #e5e7eb",padding:"16px 0",overflowY:"auto",flexShrink:0 }}>
           {STEPS.map((s,i) => (
-            <button key={s.id} onClick={() => setStep(i)}
+            <button key={s.id} onClick={() => goToStep(i)}
               style={{ display:"block",width:"100%",padding:"10px 20px",border:"none",cursor:"pointer",fontSize:13,fontWeight:step===i?700:400,background:step===i?"rgba(47,109,246,0.06)":"transparent",color:step===i?C.blue:C.gray,borderLeft:step===i?`3px solid ${C.blue}`:"3px solid transparent",fontFamily:"'Inter', sans-serif",textAlign:"left",transition:"all 0.15s" }}>
               {i+1}. {s.label}
             </button>
@@ -1182,13 +1205,13 @@ export default function Onboarding() {
 
       {/* Footer Nav */}
       <footer style={{ background:C.white,borderTop:"1px solid #e5e7eb",padding:"14px 48px",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0 }}>
-        <button onClick={() => step>0&&setStep(step-1)} disabled={step===0}
+        <button onClick={() => step>0&&goToStep(step-1)} disabled={step===0}
           style={{ padding:"10px 28px",border:"1.5px solid #e5e7eb",borderRadius:8,fontSize:14,fontWeight:600,cursor:step===0?"not-allowed":"pointer",background:C.white,color:step===0?"#d1d5db":C.slate,fontFamily:"'Inter', sans-serif",opacity:step===0?0.5:1 }}>
           ← Back
         </button>
         <span style={{ fontSize:13,color:C.gray }}>Step {step+1} of {STEPS.length}</span>
         {step<STEPS.length-1 ? (
-          <button onClick={() => setStep(step+1)}
+          <button onClick={() => goToStep(step+1)}
             style={{ padding:"10px 28px",border:"none",borderRadius:8,fontSize:14,fontWeight:600,cursor:"pointer",background:C.blue,color:C.white,fontFamily:"'Inter', sans-serif",boxShadow:"0 2px 8px rgba(47,109,246,0.3)" }}>
             Continue →
           </button>

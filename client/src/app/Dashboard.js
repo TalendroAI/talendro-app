@@ -1,138 +1,109 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
 import './Dashboard.css';
-
-// Helper function to get auth token
-const getAuthToken = () => {
-  return localStorage.getItem('authToken');
-};
 
 function Dashboard() {
   const navigate = useNavigate();
+  const { user: authUser, logout } = useAuth();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [daysRemaining, setDaysRemaining] = useState(0);
 
   useEffect(() => {
     fetchUserData();
-    
     const interval = setInterval(() => {
-      calculateDaysRemaining();
+      if (userData?.trialEndsAt) calculateDaysRemaining(userData.trialEndsAt);
     }, 60000);
-    
     return () => clearInterval(interval);
   }, []);
 
   const fetchUserData = async () => {
     try {
-      const token = getAuthToken();
-      
+      const token = localStorage.getItem('authToken');
       if (!token) {
-        // No token, redirect to login
-        navigate('/login');
+        navigate('/auth/sign-in');
         return;
       }
-
-      const response = await fetch('/api/user/me', {
+      const response = await fetch('/api/auth/me', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
-      
       if (!response.ok) {
-        // If unauthorized, token is invalid
         if (response.status === 401) {
-          // Clear invalid token
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('user');
-          navigate('/login');
+          logout();
+          navigate('/auth/sign-in');
           return;
         }
         throw new Error('Failed to fetch user data');
       }
-      
-      const userData = await response.json();
-      setUserData(userData);
-      calculateDaysRemaining(userData.trialEndsAt);
+      const data = await response.json();
+      const user = data.user || data;
+      if (!user.stats) {
+        user.stats = {
+          totalApplications: 0,
+          applicationsThisMonth: 0,
+          totalJobsDiscovered: 0,
+          matchRate: 0,
+          tailoredMatchRate: 0,
+        };
+      }
+      setUserData(user);
+      if (user.trialEndsAt) calculateDaysRemaining(user.trialEndsAt);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching user data:', error);
-      // If token invalid, redirect to login
-      if (error.response?.status === 401 || error.message.includes('401')) {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('user');
-        navigate('/login');
-      } else {
-        setLoading(false);
-      }
+      setLoading(false);
     }
   };
 
   const calculateDaysRemaining = (trialEndDate) => {
     if (!trialEndDate) return;
-    
     const now = new Date();
     const end = new Date(trialEndDate);
     const diffTime = end - now;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
     setDaysRemaining(diffDays > 0 ? diffDays : 0);
   };
 
   const getPlanDisplayName = (plan) => {
-    const plans = {
-      basic: 'Basic',
-      pro: 'Pro',
-      premium: 'Premium'
-    };
-    return plans[plan] || plan;
+    const plans = { basic: 'Basic', pro: 'Pro', premium: 'Premium' };
+    return plans[plan] || (plan ? plan.charAt(0).toUpperCase() + plan.slice(1) : 'Pro');
   };
 
   const getPlanPrice = (plan) => {
-    const prices = {
-      basic: 29,
-      pro: 49,
-      premium: 99
-    };
-    return prices[plan] || 0;
+    const prices = { basic: 29, pro: 49, premium: 99 };
+    return prices[plan] || 49;
   };
 
   const handleManageSubscription = async () => {
     try {
-      // Get customer ID from user data
-      const response = await fetch('/api/user/subscription');
-      const data = await response.json();
-      
-      if (!data.stripeCustomerId) {
-        alert('Unable to access subscription management');
-        return;
-      }
-
-      // Create portal session
+      const token = localStorage.getItem('authToken');
       const portalResponse = await fetch('/api/stripe/create-portal-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ customerId: data.stripeCustomerId }),
+        body: JSON.stringify({ customerId: userData?.stripeCustomerId }),
       });
-
       const portalData = await portalResponse.json();
-
       if (portalData.url) {
-        // Redirect to Stripe Customer Portal
         window.location.href = portalData.url;
+      } else {
+        alert('Unable to open subscription management. Please contact support.');
       }
-
     } catch (error) {
       console.error('Error opening subscription portal:', error);
       alert('Failed to open subscription management. Please try again.');
     }
   };
 
-  const handleUpdatePayment = () => {
-    window.location.href = '/account/payment';
+  const handleSignOut = () => {
+    logout();
+    navigate('/');
   };
 
   if (loading) {
@@ -148,24 +119,34 @@ function Dashboard() {
     return (
       <div className="dashboard-error">
         <p className="body">Unable to load dashboard. Please try refreshing the page.</p>
+        <button className="btn-primary" onClick={() => { logout(); navigate('/auth/sign-in'); }}>
+          Sign In Again
+        </button>
       </div>
     );
   }
+
+  const firstName = (userData.name || authUser?.name || 'there').split(' ')[0];
+  const stats = userData.stats || {};
+  const onboardingDone = (userData.onboardingProgress?.step || 0) >= 11;
 
   return (
     <div className="dashboard-container">
       {/* Header */}
       <div className="dashboard-header">
         <div>
-          <h1 className="h1">Welcome back, {userData.name.split(' ')[0]}!</h1>
+          <h1 className="h1">Welcome back, {firstName}!</h1>
           <p className="body">Here's what's happening with your job search</p>
         </div>
         <div className="header-actions">
-          <button className="btn-secondary" onClick={handleUpdatePayment}>
-            Update Payment
+          <button className="btn-secondary" onClick={() => navigate('/app/onboarding')}>
+            {onboardingDone ? 'Edit Profile' : 'Complete Profile'}
           </button>
           <button className="btn-primary" onClick={handleManageSubscription}>
             Manage Subscription
+          </button>
+          <button className="btn-outline" onClick={handleSignOut} style={{ marginLeft: 8 }}>
+            Sign Out
           </button>
         </div>
       </div>
@@ -187,14 +168,30 @@ function Dashboard() {
         </div>
       )}
 
-      {/* Main Grid - 2 rows, 3 columns */}
+      {/* Onboarding nudge if not complete */}
+      {!onboardingDone && (
+        <div className="trial-banner" style={{ background: '#fffbeb', borderColor: '#fde68a' }}>
+          <div className="trial-icon">📋</div>
+          <div className="trial-content">
+            <h3 className="h3">Complete your profile to activate AI job search</h3>
+            <p>Your profile is {Math.round(((userData.onboardingProgress?.step || 0) / 11) * 100)}% complete. Finish onboarding so Talendro can start applying to jobs on your behalf.</p>
+          </div>
+          <div className="trial-action">
+            <button className="btn-primary" onClick={() => navigate('/app/onboarding')}>
+              Continue Profile →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Main Grid */}
       <div className="dashboard-grid">
-        
-        {/* COLUMN 1: Subscription Card (spans 2 rows) */}
+
+        {/* COLUMN 1: Subscription Card */}
         <div className="card subscription-card">
           <div className="card-header">
             <h2 className="h2">Your Subscription</h2>
-            <span className={`status-badge ${userData.subscriptionStatus}`}>
+            <span className={`status-badge ${userData.subscriptionStatus || 'active'}`}>
               {userData.subscriptionStatus === 'trialing' ? 'Trial' : 'Active'}
             </span>
           </div>
@@ -207,30 +204,26 @@ function Dashboard() {
                 ${getPlanPrice(userData.plan)}<span>/month</span>
               </div>
             </div>
-            
             <div className="subscription-details">
               <div className="detail-row">
                 <span>Status:</span>
-                <strong>
-                  {userData.subscriptionStatus === 'trialing' ? 'Active' : 'Active'}
-                </strong>
+                <strong>Active</strong>
               </div>
-              <div className="detail-row">
-                <span>Next billing:</span>
-                <strong>
-                  {new Date(userData.trialEndsAt).toLocaleDateString('en-US', {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric'
-                  })}
-                </strong>
-              </div>
+              {userData.trialEndsAt && (
+                <div className="detail-row">
+                  <span>Next billing:</span>
+                  <strong>
+                    {new Date(userData.trialEndsAt).toLocaleDateString('en-US', {
+                      month: 'long', day: 'numeric', year: 'numeric'
+                    })}
+                  </strong>
+                </div>
+              )}
               <div className="detail-row">
                 <span>Email:</span>
                 <strong>{userData.email}</strong>
               </div>
             </div>
-
             <button className="btn-manage" onClick={handleManageSubscription}>
               Manage Subscription →
             </button>
@@ -245,7 +238,7 @@ function Dashboard() {
           </div>
           <div className="card-body">
             <div className="stat-value stat-value-success">
-              {userData.stats.tailoredMatchRate || 0}%
+              {stats.tailoredMatchRate || 0}%
             </div>
             <div className="stat-label">AI-tailored score</div>
             <div className="stat-secondary">Personalized matching</div>
@@ -258,10 +251,10 @@ function Dashboard() {
             <h2 className="h2">Applications</h2>
           </div>
           <div className="card-body">
-            <div className="stat-value">{userData.stats.totalApplications}</div>
+            <div className="stat-value">{stats.totalApplications || 0}</div>
             <div className="stat-label">Total submitted</div>
             <div className="stat-secondary">
-              {userData.stats.applicationsThisMonth} this month
+              {stats.applicationsThisMonth || 0} this month
             </div>
           </div>
         </div>
@@ -272,7 +265,7 @@ function Dashboard() {
             <h2 className="h2">Jobs Discovered</h2>
           </div>
           <div className="card-body">
-            <div className="stat-value">{userData.stats.totalJobsDiscovered}</div>
+            <div className="stat-value">{stats.totalJobsDiscovered || 0}</div>
             <div className="stat-label">Total found</div>
             <div className="stat-secondary">Updated daily</div>
           </div>
@@ -285,7 +278,7 @@ function Dashboard() {
             <span className="info-icon" title="Match rate based on your raw resume">ℹ️</span>
           </div>
           <div className="card-body">
-            <div className="stat-value">{userData.stats.matchRate}%</div>
+            <div className="stat-value">{stats.matchRate || 0}%</div>
             <div className="stat-label">Avg. match score</div>
             <div className="stat-secondary">AI-powered matching</div>
           </div>
@@ -298,14 +291,20 @@ function Dashboard() {
           </div>
           <div className="card-body">
             <div className="steps-grid">
-              <div className="step completed">
-                <div className="step-icon">✓</div>
+              <div className={`step ${onboardingDone ? 'completed' : ''}`}>
+                <div className="step-icon">{onboardingDone ? '✓' : '1'}</div>
                 <div className="step-content">
                   <h3 className="h3">Complete Profile</h3>
-                  <p className="body text-sm">Your profile is complete and ready!</p>
+                  <p className="body text-sm">
+                    {onboardingDone ? 'Your profile is complete and ready!' : 'Finish your profile to activate AI job search.'}
+                  </p>
+                  {!onboardingDone && (
+                    <button className="step-action" onClick={() => navigate('/app/onboarding')}>
+                      Continue Profile →
+                    </button>
+                  )}
                 </div>
               </div>
-              
               <div className="step">
                 <div className="step-icon">2</div>
                 <div className="step-content">
@@ -314,7 +313,6 @@ function Dashboard() {
                   <button className="step-action">View Matches →</button>
                 </div>
               </div>
-              
               <div className="step">
                 <div className="step-icon">3</div>
                 <div className="step-content">
@@ -339,19 +337,16 @@ function Dashboard() {
                 <span className="action-text">View Job Matches</span>
                 <span className="action-arrow">→</span>
               </button>
-              
-              <button className="action-item">
+              <button className="action-item" onClick={() => navigate('/app/resume/update')}>
                 <span className="action-icon">📝</span>
                 <span className="action-text">Update Resume</span>
                 <span className="action-arrow">→</span>
               </button>
-              
-              <button className="action-item">
-                <span className="action-icon">⚙️</span>
-                <span className="action-text">Search Settings</span>
+              <button className="action-item" onClick={() => navigate('/app/onboarding')}>
+                <span className="action-icon">👤</span>
+                <span className="action-text">{onboardingDone ? 'Edit Profile' : 'Complete Profile'}</span>
                 <span className="action-arrow">→</span>
               </button>
-              
               <button className="action-item">
                 <span className="action-icon">💬</span>
                 <span className="action-text">Get Support</span>
@@ -368,32 +363,37 @@ function Dashboard() {
           </div>
           <div className="card-body">
             <div className="activity-list">
+              {onboardingDone && (
+                <div className="activity-item">
+                  <div className="activity-icon success">✓</div>
+                  <div className="activity-content">
+                    <div className="activity-title">Profile completed</div>
+                    <div className="activity-time">Profile ready for AI job search</div>
+                  </div>
+                </div>
+              )}
               <div className="activity-item">
                 <div className="activity-icon success">✓</div>
                 <div className="activity-content">
-                  <div className="activity-title">Trial started</div>
-                  <div className="activity-time">Today at 2:13 PM</div>
+                  <div className="activity-title">Account created</div>
+                  <div className="activity-time">
+                    {userData.createdAt
+                      ? new Date(userData.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+                      : 'Recently'}
+                  </div>
                 </div>
               </div>
-              
               <div className="activity-item">
                 <div className="activity-icon info">ℹ️</div>
                 <div className="activity-content">
-                  <div className="activity-title">Profile completed</div>
-                  <div className="activity-time">Today at 2:10 PM</div>
-                </div>
-              </div>
-              
-              <div className="activity-item">
-                <div className="activity-icon">👤</div>
-                <div className="activity-content">
-                  <div className="activity-title">Account created</div>
-                  <div className="activity-time">Today at 2:05 PM</div>
+                  <div className="activity-title">Subscription active</div>
+                  <div className="activity-time">Talendro™ {getPlanDisplayName(userData.plan)} plan</div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );
