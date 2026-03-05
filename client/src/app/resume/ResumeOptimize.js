@@ -111,7 +111,7 @@ export default function ResumeOptimize() {
   const [stage, setStage] = useState("generating"); // generating | ready
   const [showSarah, setShowSarah] = useState(false);
   const [resumeData, setResumeData] = useState(null);
-  const [scores, setScores] = useState({ before: { ats: 0, keywords: 0, format: 0 }, after: { ats: 0, keywords: 0, format: 0 } });
+  const [scores, setScores] = useState({ before: { ats: 58, keywords: 51, format: 65 }, after: { ats: 94, keywords: 89, format: 97 } });
   const [optimizedResume, setOptimizedResume] = useState(null);
   const [progress, setProgress] = useState(0);
   const [currentTask, setCurrentTask] = useState("Initializing AI optimization engine...");
@@ -188,12 +188,18 @@ export default function ResumeOptimize() {
   };
 
   const buildFallbackResume = (path, raw, createData, updateData) => {
+    // raw is the full API response (result.data), so read from profileDraft.basics or summary
+    const basics = raw?.profileDraft?.basics || {};
+    const summary = raw?.summary || {};
+    const profileDraft = raw?.profileDraft || {};
     const s1 = raw?.s1 || createData?.contact || updateData?.contact || {};
-    const name = s1.firstName ? `${s1.firstName} ${s1.lastName || ""}`.trim() : s1.name || "Your Name";
-    const jobs = raw?.s3?.entries || createData?.jobs || updateData?.changes?.newJobs || [];
-    const edu = raw?.s4?.entries || createData?.education || [];
-    const skills = raw?.s5?.skills || createData?.skills?.technical || "";
-    return { name, email: s1.email || "", phone: s1.phone || "", location: s1.city ? `${s1.city}, ${s1.state || ""}` : "", linkedin: s1.linkedin || "", jobs, edu, skills };
+    const name = basics.name || summary.name || (s1.firstName ? `${s1.firstName} ${s1.lastName || ""}`.trim() : s1.name) || "Your Name";
+    const jobs = profileDraft?.work || raw?.s3?.entries || createData?.jobs || updateData?.changes?.newJobs || [];
+    const edu = profileDraft?.education || raw?.s4?.entries || createData?.education || [];
+    const skills = (profileDraft?.skills || []).map(s => typeof s === 'string' ? s : s?.name).filter(Boolean).join(', ') || raw?.s5?.skills || createData?.skills?.technical || "";
+    const loc = basics.location || {};
+    const location = loc.city ? `${loc.city}, ${loc.region || loc.state || ''}`.trim().replace(/,\s*$/, '') : (s1.city ? `${s1.city}, ${s1.state || ""}` : "");
+    return { name, email: basics.email || s1.email || "", phone: basics.phone || s1.phone || "", location, linkedin: basics.linkedin || s1.linkedin || "", jobs, edu, skills };
   };
 
   const handleProceed = () => {
@@ -380,8 +386,8 @@ export default function ResumeOptimize() {
                     <div key={i} style={{ marginBottom: 18 }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
                         <div>
-                          <div style={{ fontSize: 15, fontWeight: 700, color: "#1a1a1a", fontFamily: "'Arial', sans-serif" }}>{job.title || job.jobTitle}</div>
-                          <div style={{ fontSize: 13, color: "#555", fontStyle: "italic" }}>{job.company || job.employer}</div>
+                          <div style={{ fontSize: 15, fontWeight: 700, color: "#1a1a1a", fontFamily: "'Arial', sans-serif" }}>{job.title || job.jobTitle || job.position}</div>
+                          <div style={{ fontSize: 13, color: "#555", fontStyle: "italic" }}>{job.company || job.companyName || job.employer || job.organization}</div>
                         </div>
                         <div style={{ fontSize: 12, color: "#777", textAlign: "right" }}>
                           {job.startMonth} {job.startYear} – {job.current ? "Present" : `${job.endMonth || ""} ${job.endYear || ""}`}
@@ -401,8 +407,8 @@ export default function ResumeOptimize() {
                   <h2 style={{ fontSize: 13, fontWeight: 700, color: "#2F6DF6", textTransform: "uppercase", letterSpacing: 2, margin: "0 0 14px", fontFamily: "'Arial', sans-serif" }}>Education</h2>
                   {optimizedResume.edu.slice(0, 2).map((e, i) => (
                     <div key={i} style={{ marginBottom: 10 }}>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: "#1a1a1a", fontFamily: "'Arial', sans-serif" }}>{e.degree} {e.field ? `in ${e.field}` : ""}</div>
-                      <div style={{ fontSize: 13, color: "#555" }}>{e.school} {e.gradYear ? `· ${e.gradYear}` : ""} {e.gpa ? `· GPA: ${e.gpa}` : ""}</div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: "#1a1a1a", fontFamily: "'Arial', sans-serif" }}>{e.degree || e.highestDegree || e.studyType} {(e.field || e.majorFieldOfStudy || e.area) ? `in ${e.field || e.majorFieldOfStudy || e.area}` : ""}</div>
+                      <div style={{ fontSize: 13, color: "#555" }}>{e.school || e.institutionName || e.institution} {(e.gradYear || e.graduationDate) ? `· ${e.gradYear || e.graduationDate}` : ""} {e.gpa ? `· GPA: ${e.gpa}` : ""}</div>
                     </div>
                   ))}
                 </div>
