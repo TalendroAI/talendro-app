@@ -542,4 +542,53 @@ router.post('/change-plan', async (req, res) => {
     }
 });
 
+// ============================================
+// STRIPE CUSTOMER PORTAL
+// ============================================
+
+/**
+ * POST /api/stripe/create-portal-session
+ * Creates a Stripe Customer Portal session so users can manage billing,
+ * update payment methods, download invoices, or cancel.
+ * Requires a valid JWT in the Authorization header.
+ */
+router.post('/create-portal-session', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ success: false, message: 'Authentication required' });
+        }
+        const token = authHeader.split(' ')[1];
+
+        let userId;
+        try {
+            const { default: jwt } = await import('jsonwebtoken');
+            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'talendro-secret-key');
+            userId = decoded.userId;
+        } catch (err) {
+            return res.status(401).json({ success: false, message: 'Invalid or expired token' });
+        }
+
+        const user = await User.findById(userId).select('stripeCustomerId email');
+        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+        if (!user.stripeCustomerId) {
+            return res.status(400).json({
+                success: false,
+                message: 'No billing account found. Please contact support@talendro.com.'
+            });
+        }
+
+        const { returnUrl } = req.body;
+        const session = await stripe.billingPortal.sessions.create({
+            customer: user.stripeCustomerId,
+            return_url: returnUrl || `${process.env.CLIENT_URL || 'https://talendro-app-1.onrender.com'}/app/billing`,
+        });
+
+        res.json({ success: true, url: session.url });
+    } catch (error) {
+        console.error('Error creating portal session:', error);
+        res.status(500).json({ success: false, message: 'Failed to open billing portal. Please try again.' });
+    }
+});
+
 export default router;
