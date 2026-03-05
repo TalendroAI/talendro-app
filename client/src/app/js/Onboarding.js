@@ -971,6 +971,78 @@ export default function Onboarding() {
     window.scrollTo({ top:0, behavior:"smooth" });
   }, [step]);
 
+  // Bridge: if user came from the new ResumeUpload flow, pre-populate and skip step 0
+  useEffect(() => {
+    const resumeParsed = localStorage.getItem('resumeParsed');
+    const raw = localStorage.getItem('resumeData');
+    if (!resumeParsed || !raw) return;
+    try {
+      const rd = JSON.parse(raw);
+      const prefill = rd?.prefill || {};
+      const profileDraft = rd?.profileDraft || {};
+      const basics = profileDraft?.basics || {};
+      const work = Array.isArray(profileDraft?.work) ? profileDraft.work : [];
+      const edu = Array.isArray(profileDraft?.education) ? profileDraft.education : [];
+      const skills = Array.isArray(profileDraft?.skills) ? profileDraft.skills : [];
+      const step1 = prefill?.step1 || {};
+      const names = (step1.fullLegalName || basics.name || '').split(' ').filter(Boolean);
+
+      // Map to s1 (Personal)
+      const s1 = {
+        firstName: step1.firstName || names[0] || '',
+        lastName: step1.lastName || names.slice(1).join(' ') || '',
+        email: step1.email || basics.email || '',
+        phone: step1.phone || basics.phone || '',
+        linkedin: step1.linkedinUrl || basics.linkedin || '',
+      };
+
+      // Map to s3 (Employment) — use profileDraft.work for richer data
+      const jobEntries = work.length > 0
+        ? work.map(job => ({
+            ...EMPTY_JOB,
+            company: job.companyName || job.company || job.name || '',
+            title: job.jobTitle || job.title || job.position || '',
+            startDate: (job.startDate || '').slice(0, 7),
+            endDate: job.current ? '' : (job.endDate || '').slice(0, 7),
+            currentlyHere: !!job.current,
+            city: (job.location || '').split(',')[0]?.trim() || '',
+            state: (job.location || '').split(',')[1]?.trim() || '',
+            duties: job.description || job.summary || '',
+          }))
+        : [{ ...EMPTY_JOB }];
+
+      // Map to s5 (Education)
+      const eduEntries = edu.length > 0
+        ? edu.map(e => ({
+            ...EMPTY_EDU,
+            institution: e.institutionName || e.institution || '',
+            degreeType: e.highestDegree || e.degree || e.studyType || '',
+            major: e.majorFieldOfStudy || e.major || e.area || '',
+            endDate: (e.graduationDate || '').slice(0, 7),
+            gpa: e.gpa || '',
+          }))
+        : [{ ...EMPTY_EDU }];
+
+      // Map to s6 (Certs & Skills)
+      const skillEntries = skills.map(s =>
+        typeof s === 'string' ? { ...EMPTY_SKILL, name: s } : { ...EMPTY_SKILL, ...s }
+      );
+
+      handleResumeParsed({
+        s1,
+        s3: { entries: jobEntries },
+        s5: { schools: eduEntries },
+        s6: { skills: skillEntries, certs: [], languages: [], software: [] },
+      });
+
+      // Skip step 0 (resume upload) since resume is already processed
+      setStep(1);
+    } catch (e) {
+      console.warn('Could not pre-populate from resumeData:', e);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const setSD = k => d => setFormData(p => ({ ...p, [k]:d }));
   const progress = ((step+1)/STEPS.length)*100;
 
