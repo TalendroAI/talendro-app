@@ -143,4 +143,42 @@ router.put('/progress', authenticateToken, async (req, res) => {
   }
 });
 
+// PUT /api/auth/profile
+// Updates account info or onboarding data sections from the Profile page
+router.put('/profile', authenticateToken, async (req, res) => {
+  try {
+    const { section, data } = req.body;
+    if (!section || !data) return res.status(400).json({ error: 'section and data are required' });
+    if (!isMongoConnected()) return res.status(503).json({ error: 'Database unavailable.' });
+
+    let update = { updatedAt: new Date() };
+
+    if (section === 'account') {
+      if (data.name) update.name = data.name.trim();
+      if (data.email) {
+        const emailLower = data.email.toLowerCase().trim();
+        const existing = await User.findOne({ email: emailLower, _id: { $ne: req.userId } });
+        if (existing) return res.status(400).json({ error: 'That email address is already in use.' });
+        update.email = emailLower;
+      }
+    } else if (section === 'personal') {
+      // Merge each field individually so we don't overwrite unrelated s1 fields
+      Object.keys(data).forEach(key => { update[`onboardingData.s1.${key}`] = data[key]; });
+      if (data.firstName || data.lastName) {
+        update.name = `${data.firstName || ''} ${data.lastName || ''}`.trim();
+      }
+    } else if (section === 'preferences') {
+      Object.keys(data).forEach(key => { update[`onboardingData.s8.${key}`] = data[key]; });
+    } else {
+      return res.status(400).json({ error: `Unknown section: ${section}` });
+    }
+
+    await User.findByIdAndUpdate(req.userId, { $set: update });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('[auth/profile]', err);
+    res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
+
 export default router;
