@@ -37,6 +37,7 @@ export default function SignIn() {
         body: JSON.stringify({ email, password })
       });
       const data = await res.json();
+      if (!res.ok) {
         setError(data.error || 'Invalid email or password');
         return;
       }
@@ -44,6 +45,7 @@ export default function SignIn() {
       const savedStep = data.user?.onboardingProgress?.step;
       if (savedStep && savedStep > 0 && savedStep < 11) {
         navigate('/app/onboarding', { replace: true });
+      } else if (!data.user?.onboardingProgress?.resumeUploaded) {
         navigate('/app/resume-gate', { replace: true });
       } else {
         navigate(nextPath, { replace: true });
@@ -80,17 +82,36 @@ export default function SignIn() {
         </p>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#374151', marginBottom: '6px' }}>Email Address *</label>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-              placeholder="you@example.com" required autoComplete="email"
-              style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #e5e7eb', borderRadius: '10px', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }} />
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#374151', marginBottom: '6px' }}>
+              Email Address *
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              required
+              autoComplete="email"
+              style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #e5e7eb', borderRadius: '10px', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }}
+            />
           </div>
           <div>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#374151', marginBottom: '6px' }}>Password *</label>
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#374151', marginBottom: '6px' }}>
+              Password *
+            </label>
             <div style={{ position: 'relative' }}>
-              <input type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
-                placeholder="Your password" required autoComplete="current-password"
-                style={{ width: '100%', padding: '10px 44px 10px 14px', border: '1.5px solid #e5e7eb', borderRadius: '10px', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }} />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="Your password"
+                required
+                autoComplete="current-password"
+                style={{ width: '100%', padding: '10px 44px 10px 14px', border: '1.5px solid #e5e7eb', borderRadius: '10px', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(v => !v)}
                 style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', fontSize: '13px' }}>
                 {showPassword ? 'Hide' : 'Show'}
               </button>
@@ -101,7 +122,9 @@ export default function SignIn() {
               {error}
             </div>
           )}
-          <button type="submit" disabled={loading}
+          <button
+            type="submit"
+            disabled={loading}
             style={{ width: '100%', padding: '13px', background: loading ? '#93c5fd' : 'linear-gradient(135deg, #2F6DF6, #00C4CC)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '16px', fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', marginTop: '4px' }}>
             {loading ? 'Signing in...' : 'Sign In →'}
           </button>
