@@ -879,7 +879,7 @@ const StepDisclosures = ({ data, set }) => {
 
 const StepReview = ({ formData, setStep }) => {
   const sections = [
-    { label:"Resume Upload", step:0, check:() => !!formData.s0?.resume },
+    { label:"Resume Upload", step:0, check:() => !!formData.s0?.resume || !!localStorage.getItem('resumeParsed') },
     { label:"Personal Information", step:1, check:() => {
       const d=formData.s1||{};
       return !!(d.firstName&&d.lastName&&d.email&&d.phone&&d.dob&&d.ssn4&&(d.dlNumber||d.dlNumber==="N/A"));
@@ -953,8 +953,8 @@ export default function Onboarding() {
   const [step, setStep] = useState(0);
   const [formData, setFormData] = useState({
     s0: {},
-    s1: {},
-    s2: {},
+    s1: { suffix: 'N/A' },
+    s2: { visaType: 'N/A' },
     s3: { entries: [{ ...EMPTY_JOB }] },
     s4: { current: { ...EMPTY_ADDR, isCurrent:true }, history:[] },
     s5: { schools: [{ ...EMPTY_EDU }] },
@@ -1028,11 +1028,18 @@ export default function Onboarding() {
         typeof s === 'string' ? { ...EMPTY_SKILL, name: s } : { ...EMPTY_SKILL, ...s }
       );
 
+      // Build suggested target job titles from current job title + top work titles
+      const currentTitle = basics.currentJobTitle || (work[0]?.jobTitle) || (work[0]?.title) || '';
+      const relatedTitles = work.slice(0, 3).map(j => j.jobTitle || j.title || '').filter(Boolean);
+      const uniqueTitles = [...new Set([currentTitle, ...relatedTitles])].filter(Boolean);
+      const suggestedTargetTitles = uniqueTitles.join(', ');
       handleResumeParsed({
         s1,
+        s2: { visaType: 'N/A' },
         s3: { entries: jobEntries },
         s5: { schools: eduEntries },
         s6: { skills: skillEntries, certs: [], languages: [], software: [] },
+        s8: { targetTitles: suggestedTargetTitles },
       });
 
       // Skip step 0 (resume upload) since resume is already processed
