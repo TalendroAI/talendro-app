@@ -363,6 +363,7 @@ import express from 'express';
 import { parseWithClaude, claudeStatus } from '../vendor/claudeAdapter.js';
 import { parseWithLocal, localParserStatus } from '../vendor/localParser.js';
 import mapToProfileDraft from '../mappers/mapToProfileDraft.js';
+import { normalizeLinkedIn } from '../mappers/transforms.js';
 import { createJob, setJobStatus, getJob, getDraft, saveDraft } from '../profileDraftStore.js';
 import crypto from 'crypto';
 import { formatProtectionMiddleware, validateFormatIntegrity } from '../middleware/formatProtection.js';
@@ -749,7 +750,7 @@ router.post('/resume/parse', formatProtectionMiddleware, (req, res) => {
           previousNames: personalDetails.previousNames || '',
           email: email || basics.email || '',
           phone: phone || basics.phone || '',
-          linkedinUrl: personalDetails.linkedinUrl || basics.linkedinUrl || '',
+          linkedinUrl: normalizeLinkedIn(personalDetails.linkedinUrl, basics.linkedinUrl) || '',
           website: personalDetails.personalWebsite || basics.website || '',
           
           // Current Address

@@ -1243,6 +1243,7 @@ function extractBasics(data, yearsExperience, currentJob) {
   );
 
   const linkedinUrl = normalizeLinkedIn(
+    data.personalDetails?.linkedinUrl,
     data.linkedin,
     data.linkedinUrl,
     ...socialArray
