@@ -5,7 +5,10 @@ import './Dashboard.css';
 
 function Dashboard() {
   const navigate = useNavigate();
-  const { user: authUser, logout } = useAuth();
+  const { user: authUser, logout, resendVerification } = useAuth();
+  const [verifyResent, setVerifyResent] = useState(false);
+  const [verifyLoading, setVerifyLoading] = useState(false);
+  const [verifyError, setVerifyError] = useState('');
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [daysRemaining, setDaysRemaining] = useState(0);
@@ -152,6 +155,41 @@ function Dashboard() {
           </button>
         </div>
       </div>
+
+      {/* Email Verification Banner — shown until user verifies */}
+      {userData && !userData.isEmailVerified && (
+        <div className="trial-banner" style={{ background: '#eff6ff', borderColor: '#bfdbfe' }}>
+          <div className="trial-icon">📧</div>
+          <div className="trial-content">
+            <h3 className="h3">Verify your email address</h3>
+            <p>
+              We sent a verification link to <strong>{userData.email}</strong>. Check your inbox and click the link to fully activate your account.
+              {verifyResent && <span style={{ color: '#10B981', marginLeft: 8 }}>✓ Sent!</span>}
+              {verifyError && <span style={{ color: '#EF4444', marginLeft: 8 }}>{verifyError}</span>}
+            </p>
+          </div>
+          <div className="trial-action">
+            <button
+              className="btn-outline"
+              disabled={verifyLoading || verifyResent}
+              onClick={async () => {
+                setVerifyLoading(true);
+                setVerifyError('');
+                const result = await resendVerification();
+                setVerifyLoading(false);
+                if (result?.success) {
+                  setVerifyResent(true);
+                  setTimeout(() => setVerifyResent(false), 60000);
+                } else {
+                  setVerifyError(result?.error || 'Failed to send');
+                }
+              }}
+            >
+              {verifyLoading ? 'Sending...' : verifyResent ? 'Email Sent ✓' : 'Resend Email'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 7-Day Money-Back Guarantee Banner — shown for first 7 days after signup */}
       {daysRemaining > 0 && (

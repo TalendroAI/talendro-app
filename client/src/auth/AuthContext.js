@@ -90,6 +90,21 @@ export function AuthProvider({ children }) {
     }
   }, [token]);
 
+  // Resend verification email
+  const resendVerification = useCallback(async () => {
+    if (!token) return { error: 'Not logged in' };
+    try {
+      const res = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      return data;
+    } catch (err) {
+      return { error: 'Network error' };
+    }
+  }, [token]);
+
   const isAuthenticated = !!token && !!user;
 
   return (
@@ -102,6 +117,7 @@ export function AuthProvider({ children }) {
       logout,
       refreshUser,
       saveProgress,
+      resendVerification,
     }}>
       {children}
     </AuthContext.Provider>

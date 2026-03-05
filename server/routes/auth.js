@@ -1,9 +1,11 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import mongoose from 'mongoose';
 import User from '../models/User.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { sendVerificationEmail, sendWelcomeEmail } from '../utils/email.js';
 
 const router = express.Router();
 
@@ -62,10 +64,15 @@ router.post('/register', async (req, res) => {
         subscriptionStatus: 'active',
         onboardingProgress: { step: 0, completedAt: null },
       });
+      // Generate email verification token
+      const verifyToken = crypto.randomBytes(32).toString('hex');
+      user.emailVerificationToken = verifyToken;
+      user.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
       await user.save();
       console.log(`[auth/register] New user created: ${normalizedEmail}`);
+      // Send verification email (fire-and-forget — don't block registration)
+      sendVerificationEmail(user, verifyToken).catch(e => console.error('[auth/register] Failed to send verification email:', e));
     }
-
     const token = makeToken(user._id.toString(), user.email);
     res.status(201).json({
       success: true, token,
@@ -120,7 +127,19 @@ router.get('/me', authenticateToken, async (req, res) => {
     if (!user) return res.status(404).json({ error: 'User not found' });
     res.json({
       success: true,
-      user: { id: user._id, email: user.email, name: user.name, plan: user.plan, subscriptionStatus: user.subscriptionStatus, onboardingProgress: user.onboardingProgress, onboardingData: user.onboardingData }
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        plan: user.plan,
+        subscriptionStatus: user.subscriptionStatus,
+        onboardingProgress: user.onboardingProgress,
+        onboardingData: user.onboardingData,
+        isEmailVerified: user.isEmailVerified,
+        stats: user.stats,
+        createdAt: user.createdAt,
+        currentPeriodEnd: user.currentPeriodEnd,
+      }
     });
   } catch (err) {
     console.error('[auth/me]', err);
@@ -193,6 +212,56 @@ router.put('/profile', authenticateToken, async (req, res) => {
   } catch (err) {
     console.error('[auth/profile]', err);
     res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
+
+// GET /api/auth/verify-email?token=...
+// Verifies the user's email address and redirects to the app
+router.get('/verify-email', async (req, res) => {
+  try {
+    const { token } = req.query;
+    if (!token) return res.redirect('/app/dashboard?verified=error&reason=missing_token');
+    if (!isMongoConnected()) return res.redirect('/app/dashboard?verified=error&reason=db_unavailable');
+    const user = await User.findOne({
+      emailVerificationToken: token,
+      emailVerificationExpires: { $gt: new Date() },
+    });
+    if (!user) return res.redirect('/app/dashboard?verified=error&reason=invalid_or_expired');
+    user.isEmailVerified = true;
+    user.emailVerificationToken = null;
+    user.emailVerificationExpires = null;
+    await user.save();
+    console.log(`[auth/verify-email] Email verified for: ${user.email}`);
+    // Send welcome email (fire-and-forget)
+    sendWelcomeEmail(user).catch(e => console.error('[auth/verify-email] Failed to send welcome email:', e));
+    res.redirect('/app/dashboard?verified=success');
+  } catch (err) {
+    console.error('[auth/verify-email]', err);
+    res.redirect('/app/dashboard?verified=error&reason=server_error');
+  }
+});
+
+// POST /api/auth/resend-verification
+// Resends the verification email for the authenticated user
+router.post('/resend-verification', authenticateToken, async (req, res) => {
+  try {
+    if (!isMongoConnected()) return res.status(503).json({ error: 'Database unavailable.' });
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (user.isEmailVerified) return res.status(400).json({ error: 'Email is already verified' });
+    // Rate limit: only allow resend every 2 minutes
+    if (user.emailVerificationExpires && user.emailVerificationExpires > new Date(Date.now() - 2 * 60 * 1000)) {
+      return res.status(429).json({ error: 'Please wait 2 minutes before requesting another verification email.' });
+    }
+    const verifyToken = crypto.randomBytes(32).toString('hex');
+    user.emailVerificationToken = verifyToken;
+    user.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    await user.save();
+    await sendVerificationEmail(user, verifyToken);
+    res.json({ success: true, message: 'Verification email sent.' });
+  } catch (err) {
+    console.error('[auth/resend-verification]', err);
+    res.status(500).json({ error: 'Failed to send verification email.' });
   }
 });
 
