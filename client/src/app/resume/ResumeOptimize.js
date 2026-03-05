@@ -11,15 +11,15 @@ function ScoreRing({ score, label, color, size = 100, before }) {
   return (
     <div style={{ textAlign: "center" }}>
       <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
-        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={8} />
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#E5E7EB" strokeWidth={8} />
         <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={8}
           strokeDasharray={circ} strokeDashoffset={circ * (1 - pct)} strokeLinecap="round"
           style={{ transition: "stroke-dashoffset 1.2s ease" }} />
       </svg>
-      <div style={{ marginTop: -size * 0.6, fontSize: size * 0.26, fontWeight: 800, color: "#fff", fontFamily: "'Montserrat', sans-serif", lineHeight: 1 }}>{score}</div>
-      <div style={{ marginTop: size * 0.08, fontSize: 11, color: "rgba(255,255,255,0.4)" }}>{label}</div>
+      <div style={{ marginTop: -size * 0.6, fontSize: size * 0.26, fontWeight: 800, color: "#2C2F38", fontFamily: "'Montserrat', sans-serif", lineHeight: 1 }}>{score}</div>
+      <div style={{ marginTop: size * 0.08, fontSize: 11, color: "#9FA6B2" }}>{label}</div>
       {before !== undefined && (
-        <div style={{ marginTop: 4, fontSize: 11, color: score > before ? C.green : "rgba(255,255,255,0.3)" }}>
+        <div style={{ marginTop: 4, fontSize: 11, color: score > before ? C.green : "#9FA6B2" }}>
           {score > before ? `▲ +${score - before}` : `= ${score}`} from {before}
         </div>
       )}

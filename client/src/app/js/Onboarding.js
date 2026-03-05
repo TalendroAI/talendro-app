@@ -1040,8 +1040,7 @@ export default function Onboarding() {
     } catch (e) {
       console.warn('Could not pre-populate from resumeData:', e);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, []); // intentionally empty deps — runs once on mount
 
   const setSD = k => d => setFormData(p => ({ ...p, [k]:d }));
   const progress = ((step+1)/STEPS.length)*100;
