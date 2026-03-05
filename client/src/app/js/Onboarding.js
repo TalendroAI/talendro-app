@@ -973,11 +973,31 @@ export default function Onboarding() {
 
   // Bridge: if user came from the new ResumeUpload flow, pre-populate and skip step 0
   useEffect(() => {
-    const resumeParsed = localStorage.getItem('resumeParsed');
-    const raw = localStorage.getItem('resumeData');
-    if (!resumeParsed || !raw) return;
-    try {
-      const rd = JSON.parse(raw);
+    async function loadResumeData() {
+      let raw = localStorage.getItem('resumeData');
+      const resumeParsed = localStorage.getItem('resumeParsed');
+      // If localStorage is empty, try to load from MongoDB
+      if (!raw || !resumeParsed) {
+        try {
+          const token = localStorage.getItem('authToken');
+          if (token) {
+            const res = await fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + token } });
+            if (res.ok) {
+              const data = await res.json();
+              if (data.success && data.user?.resumeData) {
+                raw = JSON.stringify(data.user.resumeData);
+                localStorage.setItem('resumeData', raw);
+                localStorage.setItem('resumeParsed', 'true');
+              }
+            }
+          }
+        } catch (fetchErr) {
+          console.warn('[Onboarding] Could not load resume from MongoDB:', fetchErr);
+        }
+      }
+      if (!raw) return;
+      try {
+        const rd = JSON.parse(raw);
       const prefill = rd?.prefill || {};
       const profileDraft = rd?.profileDraft || {};
       const basics = profileDraft?.basics || {};
@@ -1062,9 +1082,11 @@ export default function Onboarding() {
 
       // Skip step 0 (resume upload) since resume is already processed
       setStep(1);
-    } catch (e) {
-      console.warn('Could not pre-populate from resumeData:', e);
-    }
+      } catch (e) {
+        console.warn('Could not pre-populate from resumeData:', e);
+      }
+    } // end loadResumeData
+    loadResumeData();
   }, []); // intentionally empty deps — runs once on mount
 
   const setSD = k => d => setFormData(p => ({ ...p, [k]:d }));

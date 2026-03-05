@@ -45,6 +45,19 @@ export default function ResumeUpload() {
       // Also save under 'resumeData' key so Onb1/Onb3/Onb4 can find the prefill data
       localStorage.setItem("resumeData", JSON.stringify(result.data));
       localStorage.setItem("resumeParsed", "true");
+      // Persist parsed resume data to MongoDB so it survives across devices/sessions
+      try {
+        const token = localStorage.getItem('authToken');
+        if (token) {
+          await fetch('/api/auth/resume', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+            body: JSON.stringify({ resumeData: result.data }),
+          });
+        }
+      } catch (saveErr) {
+        console.warn('[ResumeUpload] Could not persist resume to MongoDB:', saveErr);
+      }
       // Map from actual API response shape: result.data.summary + result.data.profileDraft
       const summary = result.data?.summary || {};
       const profileDraft = result.data?.profileDraft || {};

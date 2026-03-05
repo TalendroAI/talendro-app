@@ -143,6 +143,21 @@ router.put('/progress', authenticateToken, async (req, res) => {
   }
 });
 
+// PUT /api/auth/resume
+// Saves parsed resume data to the user's MongoDB record
+router.put('/resume', authenticateToken, async (req, res) => {
+  try {
+    const { resumeData } = req.body;
+    if (!resumeData) return res.status(400).json({ error: 'resumeData is required' });
+    if (!isMongoConnected()) return res.status(503).json({ error: 'Database unavailable.' });
+    await User.findByIdAndUpdate(req.userId, { $set: { resumeData, updatedAt: new Date() } });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('[auth/resume]', err);
+    res.status(500).json({ error: 'Failed to save resume data' });
+  }
+});
+
 // PUT /api/auth/profile
 // Updates account info or onboarding data sections from the Profile page
 router.put('/profile', authenticateToken, async (req, res) => {
