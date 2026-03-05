@@ -898,7 +898,7 @@ const StepReview = ({ formData, setStep }) => {
     }},
     { label:"Education", step:5, check:() => {
       const schools=formData.s5?.schools||[];
-      return schools.some(s => s.institution&&s.degreeType&&s.major&&s.startDate&&s.endDate);
+      return schools.some(s => s.institution&&s.degreeType&&s.major);
     }},
     { label:"Certs & Skills", step:6, check:() => true },
     { label:"References", step:7, check:() => {
@@ -1033,13 +1033,31 @@ export default function Onboarding() {
       const relatedTitles = work.slice(0, 3).map(j => j.jobTitle || j.title || '').filter(Boolean);
       const uniqueTitles = [...new Set([currentTitle, ...relatedTitles])].filter(Boolean);
       const suggestedTargetTitles = uniqueTitles.join(', ');
+
+      // Infer seniority from job titles
+      const titleText = suggestedTargetTitles.toLowerCase();
+      const seniority = [];
+      if (titleText.match(/\bceo\b|\bcoo\b|\bcto\b|\bcfo\b|\bc-level\b|\bchief\b|\bpresident\b/)) seniority.push('C-Level');
+      if (titleText.match(/\bvp\b|\bvice president\b/)) seniority.push('VP');
+      if (titleText.match(/\bdirector\b/)) seniority.push('Director');
+      if (titleText.match(/\bmanager\b|\bmanaging\b/)) seniority.push('Manager');
+      if (titleText.match(/\blead\b|\bprincipal\b/)) seniority.push('Lead');
+      if (titleText.match(/\bsenior\b|\bsr\.?\b/)) seniority.push('Senior');
+      if (seniority.length === 0) seniority.push('Mid Level');
+
       handleResumeParsed({
         s1,
         s2: { visaType: 'N/A' },
         s3: { entries: jobEntries },
         s5: { schools: eduEntries },
         s6: { skills: skillEntries, certs: [], languages: [], software: [] },
-        s8: { targetTitles: suggestedTargetTitles },
+        s8: {
+          targetTitles: suggestedTargetTitles,
+          seniority,
+          empType: ['Full-Time'],
+          workArrangement: ['No Preference'],
+          salaryType: 'Annual',
+        },
       });
 
       // Skip step 0 (resume upload) since resume is already processed

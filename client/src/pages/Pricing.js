@@ -70,7 +70,7 @@ export default function Page() {
       price: billing === 'monthly' ? plans[planKey].monthly : plans[planKey].annual
     };
     localStorage.setItem('selectedPlan', JSON.stringify(selection));
-    navigate('/app/checkout');
+    navigate(`/app/checkout?plan=${planKey}`);
   };
 
   // Get current price for a plan

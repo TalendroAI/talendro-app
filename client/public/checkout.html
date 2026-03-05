@@ -842,7 +842,7 @@
                 localStorage.removeItem('step4Data');
                 localStorage.removeItem('talendro_resume_data');
                 
-                // Redirect to Resume Readiness Gate after 3 seconds
+                // Redirect to Resume Gate (choose upload/update/build) after 3 seconds
                 setTimeout(() => {
                     window.location.href = '/app/resume-gate';
                 }, 3000);
@@ -857,16 +857,29 @@
             }
         });
         
-        // Auto-select Pro plan on load (recommended)
+        // Auto-select plan from URL param or default to Pro
         window.addEventListener('load', () => {
             // Pre-fill cardholder name if available
             const step1Data = JSON.parse(localStorage.getItem('step1Data') || '{}');
             const step2Data = JSON.parse(localStorage.getItem('step2Data') || '{}');
+            const resumeData = JSON.parse(localStorage.getItem('resumeData') || '{}');
+            const basics = resumeData.profileDraft && resumeData.profileDraft.basics ? resumeData.profileDraft.basics : {};
             
-            if (step2Data.fullLegalName) {
-                document.getElementById('cardholderName').value = step2Data.fullLegalName;
-            } else if (step1Data.firstName && step1Data.lastName) {
-                document.getElementById('cardholderName').value = `${step1Data.firstName} ${step1Data.lastName}`;
+            const fullName = step2Data.fullLegalName ||
+                (step1Data.firstName && step1Data.lastName ? `${step1Data.firstName} ${step1Data.lastName}` : null) ||
+                basics.name || '';
+            if (fullName) document.getElementById('cardholderName').value = fullName;
+
+            // Pre-select plan from URL ?plan= parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const planParam = urlParams.get('plan');
+            if (planParam) {
+                const card = document.querySelector(`[data-plan="${planParam}"]`);
+                if (card) card.click();
+            } else {
+                // Default to Pro
+                const proCard = document.querySelector('[data-plan="pro"]');
+                if (proCard) proCard.click();
             }
         });
     </script>

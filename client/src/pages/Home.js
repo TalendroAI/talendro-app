@@ -70,7 +70,7 @@ const Home = () => {
       price: getPrice(planKey)
     };
     localStorage.setItem('selectedPlan', JSON.stringify(selection));
-    navigate('/app/resume-gate');
+    navigate(`/app/checkout?plan=${planKey}`);
   };
 
   return (
