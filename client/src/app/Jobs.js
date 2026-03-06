@@ -7,14 +7,12 @@ const API_BASE = '/api';
 
 function timeAgo(dateStr) {
   if (!dateStr) return 'Unknown';
-  const now = Date.now();
-  const then = new Date(dateStr).getTime();
-  const diffMs = now - then;
-  const diffMins = Math.floor(diffMs / 60000);
+  const diffMs    = Date.now() - new Date(dateStr).getTime();
+  const diffMins  = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-  if (diffMins < 2) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
+  const diffDays  = Math.floor(diffMs / 86400000);
+  if (diffMins < 2)   return 'Just now';
+  if (diffMins < 60)  return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
   return `${diffDays}d ago`;
 }
@@ -22,40 +20,79 @@ function timeAgo(dateStr) {
 function freshnessLabel(dateStr) {
   if (!dateStr) return null;
   const hoursOld = (Date.now() - new Date(dateStr).getTime()) / 3600000;
-  if (hoursOld <= 2) return { label: '🔥 Just Posted', color: '#dc2626', bg: '#fef2f2' };
-  if (hoursOld <= 6) return { label: '⚡ New Today', color: '#d97706', bg: '#fffbeb' };
-  if (hoursOld <= 24) return { label: '✨ Today', color: '#059669', bg: '#f0fdf4' };
-  if (hoursOld <= 48) return { label: 'Yesterday', color: '#6b7280', bg: '#f9fafb' };
+  if (hoursOld <= 2)  return { label: 'Just Posted', color: '#dc2626', bg: '#fef2f2' };
+  if (hoursOld <= 6)  return { label: 'New Today',   color: '#d97706', bg: '#fffbeb' };
+  if (hoursOld <= 24) return { label: 'Today',        color: '#059669', bg: '#f0fdf4' };
+  if (hoursOld <= 48) return { label: 'Yesterday',    color: '#6b7280', bg: '#f9fafb' };
   return { label: '2+ days ago', color: '#9ca3af', bg: '#f9fafb' };
 }
 
 function matchBadge(score) {
-  if (score >= 80) return { label: `${score}% Match`, color: '#059669', bg: '#f0fdf4' };
-  if (score >= 60) return { label: `${score}% Match`, color: '#2F6DF6', bg: '#eff6ff' };
-  if (score >= 40) return { label: `${score}% Match`, color: '#d97706', bg: '#fffbeb' };
-  return null;
+  if (score == null) return null;
+  if (score >= 90) return { label: `${score}% Match`, color: '#059669', bg: '#f0fdf4', border: '#bbf7d0' };
+  if (score >= 75) return { label: `${score}% Match`, color: '#2F6DF6', bg: '#eff6ff', border: '#bfdbfe' };
+  return { label: `${score}% Match`, color: '#9ca3af', bg: '#f9fafb', border: '#e5e7eb' };
+}
+
+function BreakdownTooltip({ breakdown }) {
+  if (!breakdown) return null;
+  const rows = [
+    { label: 'Title',       key: 'title',       max: 35 },
+    { label: 'Seniority',   key: 'seniority',   max: 20 },
+    { label: 'Arrangement', key: 'arrangement', max: 15 },
+    { label: 'Emp. Type',   key: 'empType',     max: 10 },
+    { label: 'Skills',      key: 'skills',      max: 10 },
+    { label: 'Location',    key: 'location',    max: 5  },
+    { label: 'Recency',     key: 'recency',     max: 5  },
+  ];
+  return (
+    <div style={{
+      position: 'absolute', top: '100%', right: 0, zIndex: 100,
+      background: '#1f2937', color: '#fff', borderRadius: '10px',
+      padding: '12px 16px', minWidth: '210px', boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+      fontSize: '12px', marginTop: '4px', pointerEvents: 'none'
+    }}>
+      <div style={{ fontWeight: '700', marginBottom: '8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#9ca3af' }}>
+        Score Breakdown
+      </div>
+      {rows.map(({ label, key, max }) => {
+        const val = breakdown[key] != null ? breakdown[key] : 0;
+        const pct = Math.round((val / max) * 100);
+        return (
+          <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px' }}>
+            <span style={{ width: '80px', color: '#d1d5db', flexShrink: 0 }}>{label}</span>
+            <div style={{ flex: 1, background: '#374151', borderRadius: '3px', height: '4px' }}>
+              <div style={{
+                width: `${pct}%`,
+                background: pct >= 80 ? '#10b981' : pct >= 50 ? '#3b82f6' : '#6b7280',
+                height: '100%', borderRadius: '3px'
+              }} />
+            </div>
+            <span style={{ width: '36px', textAlign: 'right', color: '#e5e7eb', flexShrink: 0 }}>{val}/{max}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 function JobCard({ job, onApply, onSave, savedIds }) {
   const freshness = freshnessLabel(job.firstSeenAt);
-  const match = matchBadge(job.matchScore);
-  const isSaved = savedIds.has(job._id);
+  const badge     = matchBadge(job.matchScore);
+  const isSaved   = savedIds.has(job._id);
+  const [showBreakdown, setShowBreakdown] = useState(false);
 
   return (
-    <div style={{
-      background: '#fff',
-      border: '1px solid #e5e7eb',
-      borderRadius: '12px',
-      padding: '20px 24px',
-      marginBottom: '12px',
-      transition: 'box-shadow 0.2s',
-      cursor: 'default',
-      position: 'relative',
-    }}
-    onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)'}
-    onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
+    <div
+      style={{
+        background: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px',
+        padding: '20px 24px', marginBottom: '12px', transition: 'box-shadow 0.2s',
+        cursor: 'default', position: 'relative',
+      }}
+      onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)'}
+      onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
     >
-      {/* Top row: company + badges */}
+      {/* Top row */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '13px', fontWeight: '600', color: '#6b7280' }}>
@@ -69,13 +106,21 @@ function JobCard({ job, onApply, onSave, savedIds }) {
               {freshness.label}
             </span>
           )}
-          {match && (
-            <span style={{
-              fontSize: '11px', fontWeight: '700', padding: '2px 8px', borderRadius: '20px',
-              color: match.color, background: match.bg
-            }}>
-              {match.label}
-            </span>
+          {badge && (
+            <div style={{ position: 'relative' }}>
+              <span
+                style={{
+                  fontSize: '11px', fontWeight: '700', padding: '2px 8px', borderRadius: '20px',
+                  color: badge.color, background: badge.bg, border: `1px solid ${badge.border}`,
+                  cursor: 'help', userSelect: 'none'
+                }}
+                onMouseEnter={() => setShowBreakdown(true)}
+                onMouseLeave={() => setShowBreakdown(false)}
+              >
+                {badge.label} ▾
+              </span>
+              {showBreakdown && <BreakdownTooltip breakdown={job.scoreBreakdown} />}
+            </div>
           )}
         </div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -84,8 +129,7 @@ function JobCard({ job, onApply, onSave, savedIds }) {
             title={isSaved ? 'Saved' : 'Save job'}
             style={{
               background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px',
-              color: isSaved ? '#2F6DF6' : '#d1d5db', padding: '2px 4px',
-              transition: 'color 0.2s'
+              color: isSaved ? '#2F6DF6' : '#d1d5db', padding: '2px 4px', transition: 'color 0.2s'
             }}
           >
             {isSaved ? '★' : '☆'}
@@ -109,20 +153,14 @@ function JobCard({ job, onApply, onSave, savedIds }) {
             📍 {job.location}
           </span>
         )}
-        {job.remote && (
-          <span style={{ fontSize: '13px', color: '#059669', fontWeight: '600' }}>🌐 Remote</span>
-        )}
-        {job.hybrid && !job.remote && (
-          <span style={{ fontSize: '13px', color: '#7c3aed', fontWeight: '600' }}>🏢 Hybrid</span>
-        )}
-        {job.employmentType && (
-          <span style={{ fontSize: '13px', color: '#6b7280' }}>⏱ {job.employmentType}</span>
-        )}
-        {(job.salaryMin || job.salaryMax) && (
+        {job.remote && <span style={{ fontSize: '13px', color: '#059669', fontWeight: '600' }}>🌐 Remote</span>}
+        {job.hybrid && !job.remote && <span style={{ fontSize: '13px', color: '#7c3aed', fontWeight: '600' }}>🏢 Hybrid</span>}
+        {job.employmentType && <span style={{ fontSize: '13px', color: '#6b7280' }}>⏱ {job.employmentType}</span>}
+        {job.salary && (job.salary.min || job.salary.max) && (
           <span style={{ fontSize: '13px', color: '#059669', fontWeight: '600' }}>
-            💰 {job.salaryMin ? `$${(job.salaryMin/1000).toFixed(0)}k` : ''}
-            {job.salaryMin && job.salaryMax ? ' – ' : ''}
-            {job.salaryMax ? `$${(job.salaryMax/1000).toFixed(0)}k` : ''}
+            💰 {job.salary.min ? `$${(job.salary.min / 1000).toFixed(0)}k` : ''}
+            {job.salary.min && job.salary.max ? ' – ' : ''}
+            {job.salary.max ? `$${(job.salary.max / 1000).toFixed(0)}k` : ''}
           </span>
         )}
         <span style={{
@@ -138,9 +176,8 @@ function JobCard({ job, onApply, onSave, savedIds }) {
       {/* Description snippet */}
       {job.descriptionText && (
         <p style={{
-          fontSize: '13px', color: '#6b7280', lineHeight: '1.5',
-          margin: '0 0 14px 0', display: '-webkit-box',
-          WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden'
+          fontSize: '13px', color: '#6b7280', lineHeight: '1.5', margin: '0 0 14px 0',
+          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden'
         }}>
           {job.descriptionText}
         </p>
@@ -160,18 +197,6 @@ function JobCard({ job, onApply, onSave, savedIds }) {
         >
           Apply Now →
         </button>
-        <a
-          href={`/api/jobs/${job._id}`}
-          onClick={e => { e.preventDefault(); }}
-          style={{
-            background: 'none', border: '1px solid #e5e7eb', borderRadius: '8px',
-            padding: '9px 16px', fontSize: '13px', fontWeight: '600', cursor: 'pointer',
-            color: '#6b7280', textDecoration: 'none', display: 'inline-block',
-            transition: 'border-color 0.2s'
-          }}
-        >
-          View Details
-        </a>
       </div>
     </div>
   );
@@ -187,29 +212,29 @@ function StatsBar({ stats }) {
     }}>
       <div style={{ textAlign: 'center' }}>
         <div style={{ fontSize: '22px', fontWeight: '800', color: '#2F6DF6' }}>
-          {stats.totalActiveJobs?.toLocaleString() || '—'}
+          {stats.totalActiveJobs != null ? stats.totalActiveJobs.toLocaleString() : '—'}
         </div>
         <div style={{ fontSize: '11px', color: '#6b7280', fontWeight: '600', textTransform: 'uppercase' }}>Total Jobs</div>
       </div>
       <div style={{ textAlign: 'center' }}>
         <div style={{ fontSize: '22px', fontWeight: '800', color: '#dc2626' }}>
-          {stats.newLast24h?.toLocaleString() || '—'}
+          {stats.newLast24h != null ? stats.newLast24h.toLocaleString() : '—'}
         </div>
         <div style={{ fontSize: '11px', color: '#6b7280', fontWeight: '600', textTransform: 'uppercase' }}>New Today</div>
       </div>
       <div style={{ textAlign: 'center' }}>
         <div style={{ fontSize: '22px', fontWeight: '800', color: '#059669' }}>
-          {stats.remoteJobs?.toLocaleString() || '—'}
+          {stats.remoteJobs != null ? stats.remoteJobs.toLocaleString() : '—'}
         </div>
         <div style={{ fontSize: '11px', color: '#6b7280', fontWeight: '600', textTransform: 'uppercase' }}>Remote</div>
       </div>
       <div style={{ textAlign: 'center' }}>
         <div style={{ fontSize: '22px', fontWeight: '800', color: '#7c3aed' }}>
-          {stats.companiesTracked?.toLocaleString() || '—'}
+          {stats.companiesTracked != null ? stats.companiesTracked.toLocaleString() : '—'}
         </div>
         <div style={{ fontSize: '11px', color: '#6b7280', fontWeight: '600', textTransform: 'uppercase' }}>Companies</div>
       </div>
-      {stats.crawler?.lastCrawlAt && (
+      {stats.crawler && stats.crawler.lastCrawlAt && (
         <div style={{ marginLeft: 'auto', fontSize: '12px', color: '#9ca3af' }}>
           Last crawl: {timeAgo(stats.crawler.lastCrawlAt)}
         </div>
@@ -218,29 +243,57 @@ function StatsBar({ stats }) {
   );
 }
 
+function OnboardingBanner({ navigate }) {
+  return (
+    <div style={{
+      background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '10px',
+      padding: '16px 20px', marginBottom: '20px',
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px',
+      flexWrap: 'wrap'
+    }}>
+      <div>
+        <div style={{ fontWeight: '700', color: '#92400e', fontSize: '14px', marginBottom: '4px' }}>
+          ⚠️ Complete your job preferences to unlock personalized matching
+        </div>
+        <div style={{ color: '#78350f', fontSize: '13px' }}>
+          Your feed is showing all jobs. Set your target titles, seniority, and work arrangement
+          to activate the 75% match threshold and see only relevant jobs.
+        </div>
+      </div>
+      <button
+        onClick={() => navigate('/app/onboarding')}
+        style={{
+          background: '#d97706', color: '#fff', border: 'none', borderRadius: '8px',
+          padding: '9px 18px', fontSize: '13px', fontWeight: '700', cursor: 'pointer',
+          whiteSpace: 'nowrap', flexShrink: 0
+        }}
+      >
+        Complete Profile →
+      </button>
+    </div>
+  );
+}
+
 export default function Jobs() {
   const navigate = useNavigate();
   const { logout } = useAuth();
-  const [jobs, setJobs] = useState([]);
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [jobs, setJobs]               = useState([]);
+  const [stats, setStats]             = useState(null);
+  const [feedMeta, setFeedMeta]       = useState(null);
+  const [loading, setLoading]         = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState('');
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [savedIds, setSavedIds] = useState(new Set());
+  const [error, setError]             = useState('');
+  const [page, setPage]               = useState(1);
+  const [hasMore, setHasMore]         = useState(true);
+  const [savedIds, setSavedIds]       = useState(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [searchInput, setSearchInput] = useState('');
-  const [filters, setFilters] = useState({
-    remote: false,
-    hybrid: false,
-    onsite: false,
-    fullTime: false,
-    partTime: false,
-    contract: false,
-    postedWithin: '48', // hours
+  const [filters, setFilters]         = useState({
+    remote: false, hybrid: false, onsite: false,
+    fullTime: false, partTime: false, contract: false,
+    postedWithin: '48',
   });
-  const [activeTab, setActiveTab] = useState('feed'); // 'feed' | 'search'
+  const [activeTab, setActiveTab] = useState('feed');
   const searchTimeout = useRef(null);
 
   const getToken = () => localStorage.getItem('authToken');
@@ -262,29 +315,25 @@ export default function Jobs() {
       if (pageNum === 1) setLoading(true);
       else setLoadingMore(true);
 
-      const params = new URLSearchParams({
-        page: pageNum,
-        limit: 25,
-        postedWithin: filters.postedWithin,
-      });
-      if (filters.remote) params.set('remote', 'true');
-      if (filters.hybrid) params.set('hybrid', 'true');
-      if (filters.onsite) params.set('onsite', 'true');
+      const params = new URLSearchParams({ page: pageNum, limit: 25, postedWithin: filters.postedWithin });
+      if (filters.remote)   params.set('remote', 'true');
+      if (filters.hybrid)   params.set('hybrid', 'true');
+      if (filters.onsite)   params.set('onsite', 'true');
       if (filters.fullTime) params.set('empType', 'full');
-      else if (filters.partTime) params.set('empType', 'part');
-      else if (filters.contract) params.set('empType', 'contract');
+      else if (filters.partTime)  params.set('empType', 'part');
+      else if (filters.contract)  params.set('empType', 'contract');
 
       const res = await fetch(`${API_BASE}/jobs/feed?${params}`, {
         headers: { Authorization: `Bearer ${getToken()}` }
       });
-
       if (res.status === 401) { logout(); navigate('/auth/sign-in'); return; }
       if (!res.ok) throw new Error('Failed to load jobs');
 
       const data = await res.json();
       const newJobs = data.jobs || [];
       setJobs(prev => append ? [...prev, ...newJobs] : newJobs);
-      setHasMore(data.pagination?.hasMore || false);
+      setHasMore(data.pagination ? data.pagination.hasMore : false);
+      setFeedMeta(data.meta || null);
       setError('');
     } catch (e) {
       setError('Unable to load jobs. Please try again.');
@@ -300,25 +349,20 @@ export default function Jobs() {
       if (pageNum === 1) setLoading(true);
       else setLoadingMore(true);
 
-      const params = new URLSearchParams({
-        q: query,
-        page: pageNum,
-        limit: 25,
-        postedWithin: filters.postedWithin,
-      });
+      const params = new URLSearchParams({ q: query, page: pageNum, limit: 25, postedWithin: filters.postedWithin });
       if (filters.remote) params.set('remote', 'true');
 
       const res = await fetch(`${API_BASE}/jobs/search?${params}`, {
         headers: { Authorization: `Bearer ${getToken()}` }
       });
-
       if (res.status === 401) { logout(); navigate('/auth/sign-in'); return; }
       if (!res.ok) throw new Error('Failed to search jobs');
 
       const data = await res.json();
       const newJobs = data.jobs || [];
       setJobs(prev => append ? [...prev, ...newJobs] : newJobs);
-      setHasMore(data.pagination?.hasMore || false);
+      setHasMore(data.pagination ? data.pagination.hasMore : false);
+      setFeedMeta(null);
       setError('');
     } catch (e) {
       setError('Search failed. Please try again.');
@@ -333,14 +377,10 @@ export default function Jobs() {
     fetchFeed(1);
   }, []);
 
-  // Re-fetch when filters change
   useEffect(() => {
     setPage(1);
-    if (activeTab === 'search' && searchQuery) {
-      fetchSearch(searchQuery, 1);
-    } else {
-      fetchFeed(1);
-    }
+    if (activeTab === 'search' && searchQuery) fetchSearch(searchQuery, 1);
+    else fetchFeed(1);
   }, [filters]);
 
   const handleSearchInput = (e) => {
@@ -359,11 +399,8 @@ export default function Jobs() {
   const handleLoadMore = () => {
     const nextPage = page + 1;
     setPage(nextPage);
-    if (activeTab === 'search' && searchQuery) {
-      fetchSearch(searchQuery, nextPage, true);
-    } else {
-      fetchFeed(nextPage, true);
-    }
+    if (activeTab === 'search' && searchQuery) fetchSearch(searchQuery, nextPage, true);
+    else fetchFeed(nextPage, true);
   };
 
   const handleApply = (job) => {
@@ -390,9 +427,7 @@ export default function Jobs() {
     } catch (e) { /* silent */ }
   };
 
-  const toggleFilter = (key) => {
-    setFilters(prev => ({ ...prev, [key]: !prev[key] }));
-  };
+  const toggleFilter = (key) => setFilters(prev => ({ ...prev, [key]: !prev[key] }));
 
   const filterBtn = (key, label) => (
     <button
@@ -410,6 +445,8 @@ export default function Jobs() {
     </button>
   );
 
+  const showOnboardingBanner = feedMeta && !feedMeta.userHasPrefs && activeTab === 'feed';
+
   return (
     <div className="dashboard-container" style={{ maxWidth: '900px' }}>
       {/* Header */}
@@ -419,7 +456,9 @@ export default function Jobs() {
             Job Feed
           </h1>
           <p style={{ color: '#6b7280', fontSize: '14px', margin: '4px 0 0 0' }}>
-            Fresh jobs from Greenhouse &amp; Lever — updated every 30 minutes
+            {feedMeta && feedMeta.userHasPrefs
+              ? 'Showing jobs with 75%+ match to your profile — updated every 30 minutes'
+              : 'Fresh jobs from Greenhouse & Lever — updated every 30 minutes'}
           </p>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
@@ -438,6 +477,24 @@ export default function Jobs() {
       {/* Stats bar */}
       <StatsBar stats={stats} />
 
+      {/* Onboarding incomplete banner */}
+      {showOnboardingBanner && <OnboardingBanner navigate={navigate} />}
+
+      {/* Threshold info bar */}
+      {feedMeta && feedMeta.userHasPrefs && feedMeta.passedThreshold != null && activeTab === 'feed' && !loading && (
+        <div style={{
+          background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px',
+          padding: '10px 16px', marginBottom: '16px', fontSize: '13px', color: '#065f46',
+          display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap'
+        }}>
+          <span style={{ fontWeight: '700' }}>✓ 75% threshold active</span>
+          <span style={{ color: '#6b7280' }}>—</span>
+          <span>
+            {feedMeta.passedThreshold} of {feedMeta.candidatesEvaluated} evaluated jobs matched your profile
+          </span>
+        </div>
+      )}
+
       {/* Search bar */}
       <div style={{ marginBottom: '16px' }}>
         <input
@@ -448,8 +505,7 @@ export default function Jobs() {
           style={{
             width: '100%', padding: '12px 16px', fontSize: '15px', borderRadius: '10px',
             border: '1px solid #e5e7eb', outline: 'none', fontFamily: 'Inter, sans-serif',
-            boxSizing: 'border-box', background: '#fff',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.04)'
+            boxSizing: 'border-box', background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.04)'
           }}
           onFocus={e => e.target.style.borderColor = '#2F6DF6'}
           onBlur={e => e.target.style.borderColor = '#e5e7eb'}
@@ -459,9 +515,9 @@ export default function Jobs() {
       {/* Filters */}
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px', alignItems: 'center' }}>
         <span style={{ fontSize: '12px', color: '#9ca3af', fontWeight: '600', marginRight: '4px' }}>FILTERS:</span>
-        {filterBtn('remote', '🌐 Remote')}
-        {filterBtn('hybrid', '🏢 Hybrid')}
-        {filterBtn('onsite', '🏙 On-site')}
+        {filterBtn('remote',   '🌐 Remote')}
+        {filterBtn('hybrid',   '🏢 Hybrid')}
+        {filterBtn('onsite',   '🏙 On-site')}
         {filterBtn('fullTime', '⏱ Full-time')}
         {filterBtn('partTime', '⏰ Part-time')}
         {filterBtn('contract', '📋 Contract')}
@@ -484,8 +540,8 @@ export default function Jobs() {
       {!loading && (
         <div style={{ fontSize: '13px', color: '#9ca3af', marginBottom: '12px' }}>
           {jobs.length > 0
-            ? `Showing ${jobs.length} job${jobs.length !== 1 ? 's' : ''}${activeTab === 'search' ? ` for "${searchQuery}"` : ' — sorted by newest first'}`
-            : activeTab === 'search' ? `No results for "${searchQuery}"` : 'No jobs found with current filters'
+            ? `Showing ${jobs.length} job${jobs.length !== 1 ? 's' : ''}${activeTab === 'search' ? ` for "${searchQuery}"` : ' — sorted by newest first, then match score'}`
+            : activeTab === 'search' ? `No results for "${searchQuery}"` : 'No matching jobs found'
           }
         </div>
       )}
@@ -518,21 +574,57 @@ export default function Jobs() {
           padding: '48px', textAlign: 'center'
         }}>
           <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</div>
-          <h3 style={{ fontFamily: 'Montserrat, sans-serif', color: '#1f2937', marginBottom: '8px' }}>
-            No jobs found yet
-          </h3>
-          <p style={{ color: '#6b7280', fontSize: '14px', maxWidth: '400px', margin: '0 auto 20px' }}>
-            The crawler is actively discovering companies and fetching fresh jobs. Check back in a few minutes, or try adjusting your filters.
-          </p>
-          <button
-            onClick={() => { setFilters(f => ({ ...f, postedWithin: '72' })); fetchFeed(1); }}
-            style={{
-              background: '#2F6DF6', color: '#fff', border: 'none', borderRadius: '8px',
-              padding: '10px 20px', cursor: 'pointer', fontSize: '14px', fontWeight: '600'
-            }}
-          >
-            Expand to 3 Days
-          </button>
+          {feedMeta && feedMeta.userHasPrefs ? (
+            <>
+              <h3 style={{ fontFamily: 'Montserrat, sans-serif', color: '#1f2937', marginBottom: '8px' }}>
+                No jobs matched your profile yet
+              </h3>
+              <p style={{ color: '#6b7280', fontSize: '14px', maxWidth: '440px', margin: '0 auto 20px' }}>
+                The 75% threshold is active. {feedMeta.candidatesEvaluated > 0
+                  ? `${feedMeta.candidatesEvaluated} jobs were evaluated but none scored high enough against your target titles, seniority, and preferences.`
+                  : 'No jobs were found in this time window.'}
+                {' '}Try expanding the time window or updating your profile.
+              </p>
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => { setFilters(f => ({ ...f, postedWithin: '72' })); fetchFeed(1); }}
+                  style={{
+                    background: '#2F6DF6', color: '#fff', border: 'none', borderRadius: '8px',
+                    padding: '10px 20px', cursor: 'pointer', fontSize: '14px', fontWeight: '600'
+                  }}
+                >
+                  Expand to 3 Days
+                </button>
+                <button
+                  onClick={() => navigate('/app/profile')}
+                  style={{
+                    background: '#fff', color: '#6b7280', border: '1px solid #e5e7eb', borderRadius: '8px',
+                    padding: '10px 20px', cursor: 'pointer', fontSize: '14px', fontWeight: '600'
+                  }}
+                >
+                  Update Profile
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <h3 style={{ fontFamily: 'Montserrat, sans-serif', color: '#1f2937', marginBottom: '8px' }}>
+                No jobs found yet
+              </h3>
+              <p style={{ color: '#6b7280', fontSize: '14px', maxWidth: '400px', margin: '0 auto 20px' }}>
+                The crawler is actively discovering companies and fetching fresh jobs. Check back in a few minutes, or try adjusting your filters.
+              </p>
+              <button
+                onClick={() => { setFilters(f => ({ ...f, postedWithin: '72' })); fetchFeed(1); }}
+                style={{
+                  background: '#2F6DF6', color: '#fff', border: 'none', borderRadius: '8px',
+                  padding: '10px 20px', cursor: 'pointer', fontSize: '14px', fontWeight: '600'
+                }}
+              >
+                Expand to 3 Days
+              </button>
+            </>
+          )}
         </div>
       ) : (
         <>
