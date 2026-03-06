@@ -182,21 +182,25 @@ export function initCrawlerScheduler() {
     cleanupStaleJobs();
   });
 
-  // Run an initial crawl on startup (after a 10-second delay to let DB connect)
+  // Run an initial crawl on startup (after a 30-second delay to let DB connect)
   setTimeout(async () => {
-    const companyCount = await Company.countDocuments({ isActive: true });
-    console.log(`[Scheduler] Startup: ${companyCount} companies in DB`);
+    try {
+      const companyCount = await Company.countDocuments({ isActive: true });
+      console.log(`[Scheduler] Startup: ${companyCount} companies in DB`);
 
-    if (companyCount === 0) {
-      // First run — discover companies first, then crawl
-      console.log('[Scheduler] No companies found — running initial discovery...');
-      await runDiscovery();
+      if (companyCount === 0) {
+        // First run — discover companies first, then crawl
+        console.log('[Scheduler] No companies found — running initial discovery...');
+        await runDiscovery();
+      }
+
+      // Run initial crawl
+      console.log('[Scheduler] Running initial crawl batch...');
+      await runCrawlBatch();
+    } catch (err) {
+      console.error('[Scheduler] Startup crawl skipped — MongoDB not ready:', err.message);
     }
-
-    // Run initial crawl
-    console.log('[Scheduler] Running initial crawl batch...');
-    await runCrawlBatch();
-  }, 10000);
+  }, 30000);
 
   console.log('[Scheduler] Crawler scheduler initialized');
 }

@@ -440,11 +440,28 @@ app.use((req, res, next) => {
   }
 })
 
-// Connect to MongoDB Atlas
+// Connect to MongoDB Atlas with retry logic
 const MONGO_URI = process.env.MONGODB_URI || 'mongodb+srv://greg_db_user:ggeS08121989@ac-yaqbt9c.oeu8lvm.mongodb.net/talendro?retryWrites=true&w=majority';
-mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 10000 })
-  .then(() => console.log('✅ MongoDB Atlas connected'))
-  .catch(err => console.error('⚠️  MongoDB connection failed (non-fatal):', err.message));
+
+async function connectMongoDB(retries = 5, delayMs = 5000) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      await mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 15000 });
+      console.log('✅ MongoDB Atlas connected');
+      return;
+    } catch (err) {
+      console.error(`⚠️  MongoDB connection attempt ${attempt}/${retries} failed:`, err.message);
+      if (attempt < retries) {
+        console.log(`⏳ Retrying in ${delayMs / 1000}s...`);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      } else {
+        console.error('❌ MongoDB connection failed after all retries. Server continues without DB.');
+      }
+    }
+  }
+}
+
+connectMongoDB();
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Talendro API server running on port ${PORT}`);
