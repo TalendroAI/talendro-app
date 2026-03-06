@@ -372,7 +372,7 @@ function Dashboard() {
           </div>
           <div className="card-body">
             <div className="action-list">
-              <button className="action-item">
+              <button className="action-item" onClick={() => navigate('/app/jobs')}>
                 <span className="action-icon">🔍</span>
                 <span className="action-text">View Job Matches</span>
                 <span className="action-arrow">→</span>

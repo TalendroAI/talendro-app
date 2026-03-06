@@ -43,6 +43,7 @@ import Profile from '../app/Profile'
 import Agents from '../app/Agents'
 import Applications from '../app/Applications'
 import Billing from '../app/Billing'
+import Jobs from '../app/Jobs'
 
 // Auth
 import { AuthProvider } from '../auth/AuthContext'
@@ -146,6 +147,9 @@ function AppRoutes() {
           } />
           <Route path="/app/billing" element={
             <ProtectedRoute><Billing /></ProtectedRoute>
+          } />
+          <Route path="/app/jobs" element={
+            <ProtectedRoute><Jobs /></ProtectedRoute>
           } />
         </Routes>
       </main>
