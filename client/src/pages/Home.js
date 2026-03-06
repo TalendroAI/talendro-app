@@ -6,32 +6,62 @@ const Home = () => {
   const navigate = useNavigate();
 
   const plans = {
-    concierge: {
-      name: "ASAN Concierge",
-      price: { monthly: 99, annual: 990 },
-      description: "The complete white-glove, fully autonomous job search experience.",
+    starter: {
+      name: "Starter",
+      price: { monthly: 49, annual: 39 },
+      description: "For professionals ready to put their job search on autopilot.",
       features: [
-        "Autonomous job search & application submission",
-        "AI-powered resume optimization & tailoring",
-        "175,000+ employer career sites searched 24/7",
-        "75%+ match threshold enforcement",
-        "Real-time application tracking dashboard",
-        "Dedicated email & chat support",
+        "24/7 automated job search across 175,000+ employers",
+        "Up to 100 auto-applications per month",
+        "AI resume tailoring for each application",
+        "75%+ match threshold filtering",
+        "Application tracking dashboard",
+        "Email notifications on every submission",
+      ],
+      popular: false,
+    },
+    pro: {
+      name: "Pro",
+      price: { monthly: 99, annual: 79 },
+      description: "For serious job seekers who want maximum reach and speed.",
+      features: [
+        "Everything in Starter",
+        "Unlimited auto-applications",
+        "Priority apply — among the first to submit",
+        "Real-time job alerts every 30 minutes",
+        "Advanced AI match scoring & insights",
+        "Detailed analytics dashboard",
+        "Priority email & chat support",
       ],
       popular: true,
+    },
+    concierge: {
+      name: "Concierge",
+      price: { monthly: 249, annual: 199 },
+      description: "Full-service, done-for-you job placement with a dedicated success manager.",
+      features: [
+        "Everything in Pro",
+        "Dedicated success manager",
+        "Custom outreach to hiring managers",
+        "LinkedIn profile optimization",
+        "Salary negotiation support",
+        "Weekly strategy calls",
+        "Interview preparation coaching",
+      ],
+      popular: false,
     },
   };
 
   const getPrice = (planKey) => {
-    return billing === "monthly" ? plans[planKey].price.monthly : Math.round(plans[planKey].price.annual / 12);
+    return billing === "monthly" ? plans[planKey].price.monthly : plans[planKey].price.annual;
   };
 
   const calculateSavings = (planKey) => {
-    return plans[planKey].price.monthly * 12 - plans[planKey].price.annual;
+    return (plans[planKey].price.monthly - plans[planKey].price.annual) * 12;
   };
 
   const handleSelectPlan = (planKey) => {
-    const selection = { ...plans[planKey], billing, price: getPrice(planKey) };
+    const selection = { plan: planKey, billing, price: getPrice(planKey) };
     localStorage.setItem("selectedPlan", JSON.stringify(selection));
     navigate(`/app/checkout?plan=${planKey}`);
   };
@@ -109,44 +139,94 @@ const Home = () => {
       <section className="py-24 bg-blue-600 text-white">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-4xl md:text-5xl font-bold leading-tight">
-            “While you were living your life, we were building your career.”
+            "While you are living your life, we are building your career."
           </h2>
         </div>
       </section>
 
       {/* Pricing Section */}
       <section id="pricing" className="py-20 bg-slate-50">
-        <div className="max-w-4xl mx-auto px-4">
+        <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-slate-800 mb-4">Simple, All-Inclusive Pricing</h2>
+            <h2 className="text-4xl font-bold text-slate-800 mb-4">Choose Your Plan</h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              One plan. Every feature. Your entire job search, fully automated.
+              Every plan includes 24/7 job search, AI resume tailoring, and autonomous application submission. Choose the level of reach and support that fits your search.
             </p>
-          </div>
-          <div className="max-w-lg mx-auto bg-white rounded-2xl shadow-2xl p-8 border-2 border-blue-600">
-            <h3 className="text-3xl font-bold text-blue-600 mb-2">ASAN Concierge</h3>
-            <div className="mb-6">
-              <span className="text-5xl font-extrabold text-slate-900">$99</span>
-              <span className="text-xl text-slate-500 ml-2">/month</span>
+            {/* Billing Toggle */}
+            <div className="flex items-center justify-center gap-4 mt-8">
+              <span className={billing === "monthly" ? "text-blue-600 font-semibold" : "text-slate-500"}>Monthly</span>
+              <button
+                onClick={() => setBilling(billing === "monthly" ? "annual" : "monthly")}
+                className={`w-14 h-8 rounded-full border-none cursor-pointer relative transition-colors outline-none ${billing === "annual" ? "bg-blue-600" : "bg-slate-300"}`}
+                aria-label="Toggle billing period"
+              >
+                <span className={`absolute top-1 w-6 h-6 rounded-full bg-white transition-all shadow-sm ${billing === "monthly" ? "left-1" : "left-7"}`} />
+              </button>
+              <span className={billing === "annual" ? "text-blue-600 font-semibold" : "text-slate-500"}>Annual</span>
+              {billing === "annual" && (
+                <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold ml-2">Save up to ${calculateSavings("concierge")}/year</span>
+              )}
             </div>
-            <p className="text-slate-600 mb-8">The complete white-glove, fully autonomous job search experience. Everything you need to land your next role, without the manual work.</p>
-            <ul className="list-none p-0 m-0 mb-10 space-y-4">
-              {plans.concierge.features.map((feature, index) => (
-                <li key={index} className="flex items-start">
-                  <svg className="w-6 h-6 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                  <span>{feature}</span>
-                </li>
-              ))}
-            </ul>
-            <button
-              onClick={() => handleSelectPlan("concierge")}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg text-lg transition-transform transform hover:scale-105">
-              Get Started Now
-            </button>
           </div>
-          <div className="text-center mt-12">
-            <h3 className="text-xl font-semibold text-slate-700 mb-4">All Plans Include Our Ironclad Guarantee</h3>
-            <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 text-slate-600">
+
+          {/* Pricing Cards */}
+          <div className="grid md:grid-cols-3 gap-8 items-start">
+            {Object.entries(plans).map(([key, plan]) => {
+              const price = getPrice(key);
+              const savings = calculateSavings(key);
+              const isPopular = plan.popular;
+              return (
+                <div
+                  key={key}
+                  className={`bg-white rounded-2xl p-8 flex flex-col relative ${
+                    isPopular
+                      ? "border-2 border-blue-600 shadow-2xl scale-105"
+                      : "border border-slate-200 shadow-md"
+                  }`}
+                >
+                  {isPopular && (
+                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-6 py-1 rounded-full text-sm font-bold whitespace-nowrap">
+                      Most Popular
+                    </div>
+                  )}
+                  <h3 className={`text-2xl font-bold mb-2 ${isPopular ? "text-blue-600" : "text-slate-800"}`}>
+                    {plan.name}
+                  </h3>
+                  <div className="mb-2">
+                    <span className={`text-4xl font-extrabold ${isPopular ? "text-blue-600" : "text-slate-900"}`}>${price}</span>
+                    <span className="text-slate-500 ml-1">/month</span>
+                    {billing === "annual" && <span className="text-slate-400 text-sm block">billed annually</span>}
+                  </div>
+                  {billing === "annual" && savings > 0 && (
+                    <p className="text-green-600 text-sm font-semibold mb-3">Save ${savings}/year</p>
+                  )}
+                  <p className="text-slate-600 text-sm mb-6">{plan.description}</p>
+                  <ul className="list-none p-0 m-0 mb-8 flex-1 space-y-3">
+                    {plan.features.map((feature, index) => (
+                      <li key={index} className="flex items-start">
+                        <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                        <span className="text-sm text-slate-700">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    onClick={() => handleSelectPlan(key)}
+                    className={`w-full font-bold py-3 px-6 rounded-lg text-base transition-transform transform hover:scale-105 ${
+                      isPopular
+                        ? "bg-blue-600 hover:bg-blue-700 text-white"
+                        : "bg-slate-100 hover:bg-slate-200 text-slate-800"
+                    }`}
+                  >
+                    Get Started
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Trust Signals */}
+          <div className="text-center mt-16">
+            <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 text-slate-500 text-sm">
               <span>✓ 7-day money-back guarantee</span>
               <span>✓ Cancel anytime</span>
               <span>✓ No hidden fees or contracts</span>
