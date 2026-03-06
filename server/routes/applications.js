@@ -1,11 +1,11 @@
 import express from 'express';
 import Application from '../models/Application.js';
-import { requireAuth } from '../middleware/auth.js';
+import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
 // GET /api/applications — list all applications for the authenticated user
-router.get('/', requireAuth, async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
   try {
     const { status, search, sort = 'recent', page = 1, limit = 20 } = req.query;
     const query = { userId: req.user._id };
@@ -64,7 +64,7 @@ router.get('/', requireAuth, async (req, res) => {
 });
 
 // GET /api/applications/:id — get a single application
-router.get('/:id', requireAuth, async (req, res) => {
+router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const app = await Application.findOne({ _id: req.params.id, userId: req.user._id });
     if (!app) return res.status(404).json({ error: 'Application not found' });
@@ -75,7 +75,7 @@ router.get('/:id', requireAuth, async (req, res) => {
 });
 
 // POST /api/applications — create a new application
-router.post('/', requireAuth, async (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
   try {
     const {
       jobId, jobTitle, company, location, remote, hybrid, employmentType,
@@ -128,7 +128,7 @@ router.post('/', requireAuth, async (req, res) => {
 });
 
 // PATCH /api/applications/:id — update status, notes, or other fields
-router.patch('/:id', requireAuth, async (req, res) => {
+router.patch('/:id', authenticateToken, async (req, res) => {
   try {
     const app = await Application.findOne({ _id: req.params.id, userId: req.user._id });
     if (!app) return res.status(404).json({ error: 'Application not found' });
@@ -170,7 +170,7 @@ router.patch('/:id', requireAuth, async (req, res) => {
 });
 
 // POST /api/applications/:id/activity — add an activity/note to an application
-router.post('/:id/activity', requireAuth, async (req, res) => {
+router.post('/:id/activity', authenticateToken, async (req, res) => {
   try {
     const app = await Application.findOne({ _id: req.params.id, userId: req.user._id });
     if (!app) return res.status(404).json({ error: 'Application not found' });
@@ -192,7 +192,7 @@ router.post('/:id/activity', requireAuth, async (req, res) => {
 });
 
 // DELETE /api/applications/:id — delete an application
-router.delete('/:id', requireAuth, async (req, res) => {
+router.delete('/:id', authenticateToken, async (req, res) => {
   try {
     const app = await Application.findOneAndDelete({ _id: req.params.id, userId: req.user._id });
     if (!app) return res.status(404).json({ error: 'Application not found' });
@@ -209,7 +209,7 @@ router.delete('/:id', requireAuth, async (req, res) => {
 });
 
 // GET /api/applications/stats/summary — get application statistics
-router.get('/stats/summary', requireAuth, async (req, res) => {
+router.get('/stats/summary', authenticateToken, async (req, res) => {
   try {
     const userId = req.user._id;
 
