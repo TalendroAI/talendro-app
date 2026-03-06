@@ -205,6 +205,7 @@ import userRoutes from './routes.user.js'
 import parseRoutes from './routes/parse.js'
 import dashboardRoutes from './routes/dashboard.js'
 import jobsRoutes from './routes/jobs.js'
+import applicationsRoutes from './routes/applications.js'
 import aiRoutes from './routes/ai.js'
 import authRoutes from './routes/auth.js'
 import webhookRoutes from './routes/webhooks.js'
@@ -303,6 +304,9 @@ app.use('/api/dashboard', dashboardRoutes)
 
 // --- Job Search Routes ---
 app.use('/api/jobs', jobsRoutes)
+
+// --- Applications Tracker Routes ---
+app.use('/api/applications', applicationsRoutes)
 
 // --- AI Routes (OpenAI API Proxy) ---
 app.use('/api/ai', aiRoutes)
