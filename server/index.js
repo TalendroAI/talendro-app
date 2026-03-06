@@ -211,6 +211,7 @@ import webhookRoutes from './routes/webhooks.js'
 import resumeRoutes from './routes/resume.js'
 import { parseResumeData } from './resume-parser-ultimate.js'
 import crypto from 'crypto'
+import { initCrawlerScheduler } from './services/crawlerScheduler.js'
 
 // Simple traceId generator without external dependencies
 function generateTraceId() {
@@ -449,4 +450,7 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Talendro API server running on port ${PORT}`);
   console.log(`✅ OpenAI API key configured: ${!!process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.startsWith('sk-')}`);
   console.log(`✅ CORS enabled for: http://localhost:3000, http://localhost:3001`);
+  // Initialize the ATS job crawler scheduler
+  initCrawlerScheduler();
+  console.log('✅ ATS crawler scheduler initialized');
 })
