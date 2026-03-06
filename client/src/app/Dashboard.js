@@ -53,6 +53,20 @@ function Dashboard() {
           tailoredMatchRate: 0,
         };
       }
+      // Fetch live stats from the database (overwrites stored stats with real-time values)
+      try {
+        const statsRes = await fetch('/api/auth/stats', {
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+        });
+        if (statsRes.ok) {
+          const statsData = await statsRes.json();
+          if (statsData.stats) {
+            user.stats = { ...user.stats, ...statsData.stats };
+          }
+        }
+      } catch (statsErr) {
+        console.warn('[Dashboard] Could not fetch live stats:', statsErr);
+      }
       setUserData(user);
       if (user.createdAt) calculateGuaranteeDaysRemaining(user.createdAt);
       setLoading(false);

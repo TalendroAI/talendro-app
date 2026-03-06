@@ -4,6 +4,8 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import mongoose from 'mongoose';
 import User from '../models/User.js';
+import Application from '../models/Application.js';
+import Job from '../models/Job.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { sendVerificationEmail, sendWelcomeEmail } from '../utils/email.js';
 
@@ -262,6 +264,63 @@ router.post('/resend-verification', authenticateToken, async (req, res) => {
   } catch (err) {
     console.error('[auth/resend-verification]', err);
     res.status(500).json({ error: 'Failed to send verification email.' });
+  }
+});
+
+// GET /api/auth/stats — real-time dashboard stats computed from live DB queries
+router.get('/stats', authenticateToken, async (req, res) => {
+  try {
+    if (!isMongoConnected()) return res.status(503).json({ error: 'Database unavailable.' });
+    const userId = new mongoose.Types.ObjectId(req.userId);
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const [statusBreakdown, applicationsThisMonth, totalJobsDiscovered] = await Promise.all([
+      Application.aggregate([
+        { $match: { userId } },
+        { $group: { _id: '$status', count: { $sum: 1 } } }
+      ]),
+      Application.countDocuments({ userId, appliedAt: { $gte: startOfMonth } }),
+      Job.countDocuments({ isActive: true })
+    ]);
+
+    const summary = {};
+    let totalApplications = 0;
+    statusBreakdown.forEach(s => {
+      summary[s._id] = s.count;
+      totalApplications += s.count;
+    });
+
+    const interviews = (summary.interview || 0) + (summary.phone_screen || 0) + (summary.technical || 0);
+    const offers = summary.offer || 0;
+    const matchRate = totalApplications > 0 ? Math.round((interviews / totalApplications) * 100) : 0;
+
+    // Update stored stats on user document for quick access
+    await User.findByIdAndUpdate(req.userId, {
+      $set: {
+        'stats.totalApplications': totalApplications,
+        'stats.applicationsThisMonth': applicationsThisMonth,
+        'stats.totalJobsDiscovered': totalJobsDiscovered,
+        'stats.matchRate': matchRate,
+        updatedAt: now
+      }
+    });
+
+    res.json({
+      success: true,
+      stats: {
+        totalApplications,
+        applicationsThisMonth,
+        totalJobsDiscovered,
+        matchRate,
+        interviews,
+        offers,
+        statusBreakdown: summary
+      }
+    });
+  } catch (err) {
+    console.error('[auth/stats]', err);
+    res.status(500).json({ error: 'Failed to fetch stats' });
   }
 });
 
