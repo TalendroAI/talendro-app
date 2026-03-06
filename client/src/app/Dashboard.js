@@ -391,9 +391,14 @@ function Dashboard() {
                 <span className="action-text">View Job Matches</span>
                 <span className="action-arrow">→</span>
               </button>
-              <button className="action-item" onClick={() => navigate('/app/resume/update')}>
-                <span className="action-icon">📝</span>
-                <span className="action-text">Update Resume</span>
+              <button className="action-item" onClick={() => navigate('/app/resume')}>
+                <span className="action-icon">📄</span>
+                <span className="action-text">My Resume</span>
+                <span className="action-arrow">→</span>
+              </button>
+              <button className="action-item" onClick={() => navigate('/app/applications')}>
+                <span className="action-icon">📋</span>
+                <span className="action-text">View Applications</span>
                 <span className="action-arrow">→</span>
               </button>
               <button className="action-item" onClick={() => navigate('/app/onboarding')}>

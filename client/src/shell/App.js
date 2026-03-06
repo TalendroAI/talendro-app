@@ -37,6 +37,7 @@ import ResumeUpload from '../app/resume/ResumeUpload'
 import ResumeUpdate from '../app/resume/ResumeUpdate'
 import ResumeCreate from '../app/resume/ResumeCreate'
 import ResumeOptimize from '../app/resume/ResumeOptimize'
+import ResumeReview from '../app/ResumeReview'
 
 import Dashboard from '../pages/app/Dashboard'
 import Profile from '../app/Profile'
@@ -58,6 +59,7 @@ const NO_CHROME_ROUTES = [
   '/app/resume/update',
   '/app/resume/create',
   '/app/resume/optimize',
+  '/app/resume',
   '/app/onboarding',
   '/app/create-account',
   '/auth/sign-in',
@@ -150,6 +152,9 @@ function AppRoutes() {
           } />
           <Route path="/app/jobs" element={
             <ProtectedRoute><Jobs /></ProtectedRoute>
+          } />
+          <Route path="/app/resume" element={
+            <ProtectedRoute><ResumeReview /></ProtectedRoute>
           } />
         </Routes>
       </main>
