@@ -45,6 +45,7 @@ import Agents from '../app/Agents'
 import Applications from '../app/Applications'
 import Billing from '../app/Billing'
 import Jobs from '../app/Jobs'
+import InterviewPrep from '../app/InterviewPrep'
 
 // Auth
 import { AuthProvider } from '../auth/AuthContext'
@@ -156,6 +157,9 @@ function AppRoutes() {
           } />
           <Route path="/app/resume" element={
             <ProtectedRoute><ResumeReview /></ProtectedRoute>
+          } />
+          <Route path="/app/interview" element={
+            <ProtectedRoute><InterviewPrep /></ProtectedRoute>
           } />
         </Routes>
       </main>

@@ -337,6 +337,49 @@ export default function Dashboard() {
           </section>
         )}
 
+        {/* Interview Prep Quick Access */}
+        <section className="mb-8">
+          <h2 className="h2 mb-4">Interview Preparation</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a href="/app/interview?type=quick_prep" className="block">
+              <Card className="hover:shadow-md transition-shadow cursor-pointer border-2 border-blue-100 hover:border-blue-300">
+                <div className="flex items-start gap-4">
+                  <div className="text-2xl">⚡</div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Quick Prep</h3>
+                    <p className="text-sm text-gray-500 mt-1">AI-generated prep packet with tailored questions &amp; answers</p>
+                    <span className="inline-block mt-2 text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">All Plans</span>
+                  </div>
+                </div>
+              </Card>
+            </a>
+            <a href="/app/interview?type=full_mock" className="block">
+              <Card className="hover:shadow-md transition-shadow cursor-pointer border-2 border-indigo-100 hover:border-indigo-300">
+                <div className="flex items-start gap-4">
+                  <div className="text-2xl">🎯</div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Full Mock Interview</h3>
+                    <p className="text-sm text-gray-500 mt-1">10-question text interview with AI feedback from Sarah</p>
+                    <span className="inline-block mt-2 text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">Pro &amp; Concierge</span>
+                  </div>
+                </div>
+              </Card>
+            </a>
+            <a href="/app/interview?type=premium_audio" className="block">
+              <Card className="hover:shadow-md transition-shadow cursor-pointer border-2 border-purple-100 hover:border-purple-300">
+                <div className="flex items-start gap-4">
+                  <div className="text-2xl">🎙️</div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Audio Mock Interview</h3>
+                    <p className="text-sm text-gray-500 mt-1">Voice-to-voice interview with Sarah &mdash; the most realistic practice</p>
+                    <span className="inline-block mt-2 text-xs font-medium text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">Concierge Only</span>
+                  </div>
+                </div>
+              </Card>
+            </a>
+          </div>
+        </section>
+
         {/* Empty state for new users */}
         {jobs.length === 0 && applications.length === 0 && (
           <section className="mb-8">

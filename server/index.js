@@ -207,6 +207,7 @@ import dashboardRoutes from './routes/dashboard.js'
 import jobsRoutes from './routes/jobs.js'
 import applicationsRoutes from './routes/applications.js'
 import aiRoutes from './routes/ai.js'
+import interviewRoutes from './routes/interview.js'
 import authRoutes from './routes/auth.js'
 import webhookRoutes from './routes/webhooks.js'
 import resumeRoutes from './routes/resume.js'
@@ -310,6 +311,8 @@ app.use('/api/applications', applicationsRoutes)
 
 // --- AI Routes (OpenAI API Proxy) ---
 app.use('/api/ai', aiRoutes)
+// --- Interview Coach Routes ---
+app.use('/api/interview', interviewRoutes)
 
 app.use('/api/stripe', stripeRoutes)
 

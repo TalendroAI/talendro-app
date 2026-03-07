@@ -74,6 +74,26 @@ const UserSchema = new mongoose.Schema({
   isEmailVerified: { type: Boolean, default: false },
   emailVerificationToken: { type: String, default: null },
   emailVerificationExpires: { type: Date, default: null },
+  // Interview coaching sessions
+  interviewSessions: [
+    {
+      sessionType: { type: String, enum: ['quick_prep', 'full_mock', 'premium_audio'] },
+      status: { type: String, enum: ['active', 'completed', 'abandoned'], default: 'active' },
+      documents: { type: mongoose.Schema.Types.Mixed, default: {} },
+      chatHistory: [
+        {
+          role: { type: String, enum: ['user', 'assistant'] },
+          content: { type: String },
+          timestamp: { type: Date, default: Date.now },
+        },
+      ],
+      prepPacket: { type: String, default: null },
+      results: { type: String, default: null },
+      pausedAt: { type: Date, default: null },
+      createdAt: { type: Date, default: Date.now },
+      updatedAt: { type: Date, default: Date.now },
+    },
+  ],
   isPhoneVerified: { type: Boolean, default: false },
   preferences: {
     emailNotifications: { type: Boolean, default: true },
