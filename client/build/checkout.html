@@ -663,7 +663,7 @@
         <div class="success-message" id="successMessage">
             <div class="success-icon">🎉</div>
             <h2>Welcome to Talendro!</h2>
-            <p>Your trial has started. We're setting up your account now...</p>
+            <p>Your subscription is active. We're setting up your account now...</p>
             <div class="loading"></div>
         </div>
     </div>
@@ -743,21 +743,16 @@
         function updatePaymentSection() {
             if (!selectedPlan) return;
             
-            const chargeDate = new Date();
-            chargeDate.setDate(chargeDate.getDate() + 7);
+            // Charge is today (immediate billing with 7-day money-back guarantee)
+            const today = new Date();
             
             document.getElementById('selectedPlanName').textContent = selectedPlan.displayName;
             document.getElementById('monthlyCharge').textContent = `$${selectedPlan.price}/month`;
-            document.getElementById('chargeDate').textContent = chargeDate.toLocaleDateString('en-US', { 
+            document.getElementById('chargeDate').textContent = today.toLocaleDateString('en-US', { 
                 month: 'long', 
                 day: 'numeric', 
                 year: 'numeric' 
             });
-            document.getElementById('trialEndDate').textContent = chargeDate.toLocaleDateString('en-US', { 
-                month: 'long', 
-                day: 'numeric' 
-            });
-            document.getElementById('trialEndCharge').textContent = `$${selectedPlan.price}`;
         }
         
         // Go back to plan selection
@@ -835,6 +830,19 @@
                 document.getElementById('paymentSection').style.display = 'none';
                 document.getElementById('successMessage').classList.add('active');
                 
+                // Build create-account URL with email and name pre-filled
+                const checkoutEmail = step1Data.email || step2Data.email || '';
+                const checkoutName = step2Data.fullLegalName ||
+                    (step1Data.firstName && step1Data.lastName ? `${step1Data.firstName} ${step1Data.lastName}` : '') || '';
+                const checkoutPlan = selectedPlan ? selectedPlan.name : 'pro';
+                const checkoutCustomerId = result && result.customerId ? result.customerId : '';
+                
+                const createAccountParams = new URLSearchParams();
+                if (checkoutEmail) createAccountParams.set('email', checkoutEmail);
+                if (checkoutName) createAccountParams.set('name', checkoutName);
+                if (checkoutPlan) createAccountParams.set('plan', checkoutPlan);
+                if (checkoutCustomerId) createAccountParams.set('customerId', checkoutCustomerId);
+                
                 // Clear localStorage
                 localStorage.removeItem('step1Data');
                 localStorage.removeItem('step2Data');
@@ -842,9 +850,9 @@
                 localStorage.removeItem('step4Data');
                 localStorage.removeItem('talendro_resume_data');
                 
-                // Redirect to Resume Readiness Gate after 3 seconds
+                // Redirect to Create Account page after 3 seconds
                 setTimeout(() => {
-                    window.location.href = '/app/resume-gate';
+                    window.location.href = '/app/create-account?' + createAccountParams.toString();
                 }, 3000);
                 
             } catch (error) {
@@ -857,16 +865,29 @@
             }
         });
         
-        // Auto-select Pro plan on load (recommended)
+        // Auto-select plan from URL param or default to Pro
         window.addEventListener('load', () => {
             // Pre-fill cardholder name if available
             const step1Data = JSON.parse(localStorage.getItem('step1Data') || '{}');
             const step2Data = JSON.parse(localStorage.getItem('step2Data') || '{}');
+            const resumeData = JSON.parse(localStorage.getItem('resumeData') || '{}');
+            const basics = resumeData.profileDraft && resumeData.profileDraft.basics ? resumeData.profileDraft.basics : {};
             
-            if (step2Data.fullLegalName) {
-                document.getElementById('cardholderName').value = step2Data.fullLegalName;
-            } else if (step1Data.firstName && step1Data.lastName) {
-                document.getElementById('cardholderName').value = `${step1Data.firstName} ${step1Data.lastName}`;
+            const fullName = step2Data.fullLegalName ||
+                (step1Data.firstName && step1Data.lastName ? `${step1Data.firstName} ${step1Data.lastName}` : null) ||
+                basics.name || '';
+            if (fullName) document.getElementById('cardholderName').value = fullName;
+
+            // Pre-select plan from URL ?plan= parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const planParam = urlParams.get('plan');
+            if (planParam) {
+                const card = document.querySelector(`[data-plan="${planParam}"]`);
+                if (card) card.click();
+            } else {
+                // Default to Pro
+                const proCard = document.querySelector('[data-plan="pro"]');
+                if (proCard) proCard.click();
             }
         });
     </script>
