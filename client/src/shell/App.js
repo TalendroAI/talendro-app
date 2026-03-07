@@ -86,6 +86,7 @@ function AppRoutes() {
           <Route path="/how-it-works" element={<How />} />
           <Route path="/services" element={<Services />} />
           <Route path="/services/navigator" element={<Navigator />} />
+          <Route path="/services/asan" element={<Navigator />} />
           <Route path="/services/optional" element={<Optional />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/interview-coach-future" element={<InterviewCoachWithNav />} />

@@ -5,7 +5,6 @@ export default function Page() {
   const navigate = useNavigate();
   const [billing, setBilling] = useState('monthly'); // 'monthly' or 'annual'
 
-  // Pricing configuration — Talendro unified platform tiers
   const plans = {
     starter: {
       name: 'Starter',
@@ -13,12 +12,12 @@ export default function Page() {
       annual: 39,
       description: 'For professionals ready to automate their job search',
       features: [
-        '24/7 automated job search',
-        'Up to 100 auto-applications/month',
-        'AI resume tailoring for each job',
+        'Automated job search every 4 hours',
+        'Up to 50 applications/month',
+        'ATS-optimized plain text resume',
+        'Quick Prep Interview Report',
         '75%+ match threshold filtering',
-        'Email & SMS job alerts',
-        'Application tracking dashboard'
+        'Applications audit trail dashboard'
       ]
     },
     pro: {
@@ -27,174 +26,128 @@ export default function Page() {
       annual: 79,
       description: 'For serious job seekers who want maximum reach',
       features: [
-        'Everything in Starter',
-        'Unlimited auto-applications',
-        'Real-time job alerts (every 30 min)',
-        'Priority apply — first to submit',
-        'Advanced AI matching & scoring',
-        'Interview prep resources',
-        'Detailed analytics & insights'
+        'Everything in Starter, plus:',
+        'Automated job search every 60 minutes',
+        'Up to 200 applications/month',
+        'Professionally formatted PDF resume',
+        'Full Mock Interview (AI-coached chat)',
+        'AI salary negotiation support'
       ],
       popular: true
     },
     concierge: {
       name: 'Concierge',
-      monthly: 499,
-      annual: 399,
-      description: 'Full-service, done-for-you job placement',
+      monthly: 249,
+      annual: 199,
+      description: 'Full-service, done-for-you career advancement',
       features: [
-        'Everything in Pro',
-        'Dedicated success manager',
-        'Custom outreach to hiring managers',
-        'Salary negotiation support',
+        'Everything in Pro, plus:',
+        'Automated job search every 30 minutes',
+        'Unlimited applications',
         'LinkedIn profile optimization',
-        'Weekly strategy calls',
-        'Priority 24/7 support'
+        'Premium Audio Mock Interview (voice sim)',
+        'Advanced salary negotiation support',
+        'Weekly AI strategy session'
       ]
     }
   };
 
-  // Calculate savings for annual billing
   const calculateSavings = (planKey) => {
     const plan = plans[planKey];
     const monthlyTotal = plan.monthly * 12;
     const annualTotal = plan.annual * 12;
-    return monthlyTotal - annualTotal;
+    return Math.round(((monthlyTotal - annualTotal) / monthlyTotal) * 100);
   };
 
-  // Handle plan selection — store plan and go to checkout
   const handleSelectPlan = (planKey) => {
-    const selection = {
-      plan: planKey,
-      billing: billing,
-      price: billing === 'monthly' ? plans[planKey].monthly : plans[planKey].annual
-    };
-    localStorage.setItem('selectedPlan', JSON.stringify(selection));
-    navigate(`/app/checkout?plan=${planKey}`);
-  };
-
-  // Get current price for a plan
-  const getPrice = (planKey) => {
-    return billing === 'monthly' ? plans[planKey].monthly : plans[planKey].annual;
+    navigate(`/app/checkout?plan=${planKey}&billing=${billing}`);
   };
 
   return (
-    <section className="py-10 px-4 max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="text-center mb-12">
-        <h1 className="h1 mb-2">
-          Choose Your Plan
-        </h1>
-        <p className="body mb-8">
-          Talendro searches for jobs 24/7, tailors your resume, and applies on your behalf — automatically.
-        </p>
+    <section>
+      <div className="text-center">
+        <h1 className="h1">Choose Your Plan</h1>
+        <p className="tagline mt-2">Talendro searches for jobs 24/7, tailors your resume, and applies on your behalf — automatically.</p>
+      </div>
 
-        {/* Billing Toggle */}
-        <div className="flex items-center justify-center gap-4 mb-8">
-          <span className={billing === 'monthly' ? 'text-talBlue font-semibold' : 'text-gray-600'}>
-            Monthly
-          </span>
+      <div className="mt-8 flex justify-center">
+        <div className="relative flex items-center p-1 bg-gray-200 rounded-full">
           <button
-            onClick={() => setBilling(billing === 'monthly' ? 'annual' : 'monthly')}
-            className={`w-14 h-8 rounded-full border-none cursor-pointer relative transition-colors outline-none ${
-              billing === 'annual' ? 'bg-talBlue' : 'bg-gray-300'
-            }`}
-            aria-label="Toggle billing period"
+            className={`relative w-1/2 py-2 text-sm font-medium rounded-full transition-colors ${billing === 'monthly' ? 'text-white' : 'text-gray-500'}`}
+            onClick={() => setBilling('monthly')}
           >
-            <span
-              className={`absolute top-1 w-6 h-6 rounded-full bg-white transition-all shadow-sm ${
-                billing === 'monthly' ? 'left-1' : 'left-7'
-              }`}
-            />
+            Monthly
           </button>
-          <span className={billing === 'annual' ? 'text-talBlue font-semibold' : 'text-gray-600'}>
+          <button
+            className={`relative w-1/2 py-2 text-sm font-medium rounded-full transition-colors ${billing === 'annual' ? 'text-white' : 'text-gray-500'}`}
+            onClick={() => setBilling('annual')}
+          >
             Annual
-          </span>
-          {billing === 'annual' && (
-            <span className="bg-green-50 text-green-700 px-3 py-1 rounded-lg text-sm font-semibold ml-2">
-              Save up to ${calculateSavings('concierge')}/year
-            </span>
-          )}
+          </button>
+          <span className={`absolute top-1 left-1 h-10 w-1/2 bg-talBlue rounded-full transition-transform duration-300 ease-in-out ${billing === 'annual' ? 'transform translate-x-full' : ''}`} />
         </div>
       </div>
 
-      {/* Pricing Cards */}
-      <div className="grid md:grid-cols-3 gap-8 mb-12">
-        {Object.entries(plans).map(([key, plan]) => {
-          const price = getPrice(key);
-          const savings = calculateSavings(key);
+      <div className="mt-16 grid md:grid-cols-3 gap-8 items-start" style={{paddingTop: '1.5rem'}}>
+        {Object.keys(plans).map((key) => {
+          const plan = plans[key];
           const isPopular = plan.popular;
-
           return (
-            <div
-              key={key}
-              className={`card relative flex flex-col ${isPopular ? 'border-2 border-talBlue transform scale-105 md:scale-105' : 'border-2 border-gray-200'}`}
-            >
+            <div key={key} className={`relative card ${isPopular ? 'border-2 border-talBlue scale-105 mt-0' : ''}`} style={isPopular ? {paddingTop: '2.5rem'} : {}}>
               {isPopular && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-talBlue text-white px-6 py-1 rounded-full text-sm font-semibold">
-                  Most Popular
+                <div className="absolute left-1/2 transform -translate-x-1/2" style={{top: '-1rem'}}>
+                  <div className="inline-block px-4 py-1 text-sm font-semibold tracking-wider text-white uppercase bg-talBlue rounded-full whitespace-nowrap">Most Popular</div>
                 </div>
               )}
-
-              <h3 className={`h3 mb-2 ${isPopular ? 'text-talBlue' : ''}`}>
-                {plan.name}
-              </h3>
-
-              <div className="mb-2">
-                <span className="text-4xl font-bold text-talBlue">
-                  ${price}
-                </span>
-                <span className="text-lg text-gray-600 ml-2">
-                  /month
-                </span>
-                {billing === 'annual' && (
-                  <span className="body text-sm text-gray-600 block mt-1">
-                    billed annually
-                  </span>
-                )}
+              <h3 className="h3 mb-2">{plan.name}</h3>
+              <p className="body text-sm mb-4">{plan.description}</p>
+              <div className="text-4xl font-bold mb-4">
+                ${billing === 'monthly' ? plan.monthly : plan.annual}<span className="text-lg font-normal">/month</span>
               </div>
-
               {billing === 'annual' && (
-                <p className="body text-sm text-green-700 font-semibold mb-4">
-                  Save ${savings}/year
-                </p>
+                <p className="text-sm text-green-600 mb-4">Save {calculateSavings(key)}% with annual billing</p>
               )}
-
-              <p className="body text-sm mb-6">
-                {plan.description}
-              </p>
-
-              <ul className="list-none p-0 m-0 mb-8 flex-1">
+              <button onClick={() => handleSelectPlan(key)} className={`btn w-full ${isPopular ? 'btn-primary' : 'btn-secondary'}`}>
+                Get Started
+              </button>
+              <ul className="mt-6 space-y-3 text-sm">
                 {plan.features.map((feature, index) => (
-                  <li key={index} className="flex items-start mb-3">
-                    <span className="text-talAqua mr-3 text-xl leading-none">●</span>
-                    <span className="body text-sm">{feature}</span>
+                  <li key={index} className="flex items-start">
+                    <svg className="w-4 h-4 mr-2 mt-1 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    <span>{feature}</span>
                   </li>
                 ))}
               </ul>
-
-              <button
-                onClick={() => handleSelectPlan(key)}
-                className={`btn w-full mt-auto ${isPopular ? 'btn-primary' : 'btn-secondary'}`}
-              >
-                Get Started
-              </button>
             </div>
           );
         })}
       </div>
 
-      {/* Additional Info Section */}
-      <div className="bg-gray-50 rounded-2xl p-8 mt-12 text-center">
-        <h2 className="h2 mb-4">
-          All Plans Include
-        </h2>
-        <p className="body mb-6">
-          24/7 job discovery • AI-tailored resumes • 75%+ match threshold • Autonomous application submission
-        </p>
-        <p className="body text-sm text-gray-500">
-          Cancel anytime. No contracts. No commitments.
-        </p>
+      <div className="mt-16 text-center">
+        <div className="card bg-gray-50">
+          <h3 className="h3 mb-3">Veterans Support</h3>
+          <p className="body max-w-2xl mx-auto">Talendro is proud to offer a 20% discount to active military members and veterans. Your service to our country deserves our service to your career. Verification is handled securely at checkout.</p>
+        </div>
+      </div>
+
+      <div className="mt-16 text-center">
+        <h2 className="h2 mb-4">Frequently Asked Questions</h2>
+        <div className="max-w-3xl mx-auto space-y-4">
+          <details className="p-4 border rounded-lg">
+            <summary className="font-medium cursor-pointer">Can I cancel anytime?</summary>
+            <p className="body mt-2">Yes. You can cancel your subscription at any time from your profile. Your service will remain active until the end of your current billing period.</p>
+          </details>
+          <details className="p-4 border rounded-lg">
+            <summary className="font-medium cursor-pointer">What if I find a job?</summary>
+            <p className="body mt-2">Congratulations! You can pause or cancel your subscription. Many subscribers choose to keep their subscription active to continue monitoring the market for even better opportunities.</p>
+          </details>
+          <details className="p-4 border rounded-lg">
+            <summary className="font-medium cursor-pointer">Is my data secure?</summary>
+            <p className="body mt-2">Yes. We use enterprise-grade security and privacy-by-design principles. Your data is never sold or shared. We only use it to find and apply for jobs on your behalf.</p>
+          </details>
+        </div>
       </div>
     </section>
   );

@@ -19,12 +19,12 @@ export default function Page(){
           
           <div className="card">
             <h3 className="h3 mb-3">Will Talendro™ apply for me?</h3>
-            <p className="body">Yes—after your profile is complete. You can choose auto-apply for pre-approved criteria or approve-then-apply for more control. Each application includes a tailored résumé optimized for the specific role and company.</p>
+            <p className="body">Yes—after your profile is complete. ASAN applies fully automatically on your behalf. You set your criteria once during onboarding (job titles, location, work arrangement, seniority, employment type), and ASAN handles everything from there. You are notified after each application is submitted, not before.</p>
           </div>
           
           <div className="card">
             <h3 className="h3 mb-3">What does it cost?</h3>
-            <p className="body">$39/month for complete access to Talendro™ Navigator. No hidden fees, no tier limitations, no upsells. Cancel anytime with no penalties or commitments.</p>
+            <p className="body">Plans start at $49/month (Starter), with Pro at $99/month and Concierge at $249/month. All tiers include ASAN automated job search and application submission. Higher tiers unlock faster search frequency, more monthly applications, PDF resume formatting, and advanced interview and salary negotiation tools. Cancel anytime.</p>
           </div>
           
           <div className="card">
@@ -49,7 +49,7 @@ export default function Page(){
           
           <div className="card">
             <h3 className="h3 mb-3">What about veteran benefits?</h3>
-            <p className="body">We provide free access to eligible veterans as part of our commitment to those who served. Veterans also receive priority onboarding and access to specialized transition resources.</p>
+            <p className="body">We offer a 20% discount on all plans for active military members and veterans. Verification is handled securely at checkout using your DD-214 or other proof of service. Veterans also receive priority onboarding and access to specialized transition resources.</p>
           </div>
         </div>
       </div>

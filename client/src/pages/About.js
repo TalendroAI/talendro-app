@@ -2,7 +2,7 @@ export default function Page(){
   return (
     <section>
       <h1 className="h1">About Talendro™</h1>
-      <p className='tagline mt-2'>Precision Matches. Faster Results.</p>
+      <p className='tagline mt-2'>Your job search, automated on steroids.</p>
       
       <div className="mt-6">
         <p className='body mb-6'>We exist to level the playing field for experienced professionals.</p>
@@ -32,7 +32,7 @@ export default function Page(){
             <div className="grid gap-6 md:grid-cols-2">
               <div>
                 <h4 className="font-medium mb-2 text-talBlue">To Veterans</h4>
-                <p className="body text-sm">Free access for eligible veterans, priority onboarding, and specialized transition resources. Your service to our country deserves our service to your career.</p>
+                <p className="body text-sm">A 20% discount for active military and veterans, priority onboarding, and specialized transition resources. Your service to our country deserves our service to your career.</p>
               </div>
               <div>
                 <h4 className="font-medium mb-2 text-talBlue">To Privacy</h4>
@@ -40,7 +40,7 @@ export default function Page(){
               </div>
               <div>
                 <h4 className="font-medium mb-2 text-talBlue">To Transparency</h4>
-                <p className="body text-sm">One simple price, no hidden fees, no tier limitations. What you see is what you get, with the ability to cancel anytime.</p>
+                <p className="body text-sm">Three clear tiers, no hidden fees. Every tier delivers the core promise — ASAN working on your behalf. Higher tiers unlock faster search frequency, more applications, deeper resume optimization, and advanced interview and negotiation support. Cancel anytime.</p>
               </div>
               <div>
                 <h4 className="font-medium mb-2 text-talBlue">To Results</h4>

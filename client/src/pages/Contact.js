@@ -10,7 +10,7 @@ export default function Page(){
           <div className="card text-center">
             <div className="text-3xl mb-3">💬</div>
             <h3 className="h3 mb-3">Customer Support</h3>
-            <p className="body mb-4">Questions about your account, billing, or how to use Talendro™ Navigator? Our support team is ready to help.</p>
+            <p className="body mb-4">Questions about your account, billing, or how Talendro works? Our support team is ready to help.</p>
             <p className="font-medium text-talBlue">support@talendro.com</p>
           </div>
           
@@ -45,7 +45,7 @@ export default function Page(){
         
         <div className="mt-12 p-6 bg-gray-50 rounded-2xl">
           <h3 className="h3 mb-3 text-center">Ready to Transform Your Job Search?</h3>
-          <p className="body mb-6 text-center">Don't wait for opportunities to find you. Let Talendro™ Navigator work around the clock to advance your career.</p>
+          <p className="body mb-6 text-center">Don't wait for opportunities to find you. Let ASAN work around the clock to advance your career.</p>
           <a href='/pricing'><button className='btn btn-primary text-lg px-8 py-3'>Get Started</button></a>
         </div>
       </div>

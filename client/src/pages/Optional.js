@@ -60,7 +60,7 @@ export default function Page(){
         
         <div className="mt-12 p-6 bg-gray-50 rounded-2xl">
           <h3 className="h3 mb-4 text-center">Flexible Add-On Pricing</h3>
-          <p className="body text-center mb-6">Choose the services you need, when you need them. All add-ons require an active Navigator subscription.</p>
+          <p className="body text-center mb-6">Choose the services you need, when you need them. All add-ons require an active Talendro subscription.</p>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="text-center">
               <p className="font-medium mb-2">Individual Add-Ons</p>
@@ -76,7 +76,7 @@ export default function Page(){
       
       <div className='mt-8 flex flex-wrap gap-3'>
         <a href='/contact'><button className='btn btn-primary mr-3'>Add to My Plan</button></a>
-        <a href='/app/onboarding/welcome'><button className='btn btn-secondary mr-3'>Start with Navigator</button></a>
+        <a href='/app/onboarding/welcome'><button className='btn btn-secondary mr-3'>Get Started</button></a>
       </div>
     </section>
   )

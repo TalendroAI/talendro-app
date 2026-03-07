@@ -3,10 +3,10 @@ import CitationsFooter from '../ui/CitationsFooter'
 export default function Page(){
   return (
     <section>
-      <h1 className="h1">Talendro™ Navigator</h1>
+      <h1 className="h1">Meet ASAN</h1>
       
       <div className="mt-6">
-        <p className='tagline mb-4'>Fully autonomous job search AI that works 24/7 on your behalf.</p>
+        <p className='tagline mb-4'>Your Autonomous Search and Apply Navigator — working 24/7 on your behalf.</p>
         
         <p className='body mb-2'>
           Search millions of jobs • AI-tailored resume for every application • Intelligent match scoring • <strong className="text-talBlue">Autonomous submission for 90% of applications</strong> • Comprehensive analytics
@@ -88,7 +88,7 @@ export default function Page(){
         </div>
         
         <div className="mt-8 p-6 bg-gray-50 rounded-2xl">
-          <h3 className="h3 mb-3">Why Choose Navigator?</h3>
+          <h3 className="h3 mb-3">Why Choose Talendro™?</h3>
           <div className="grid gap-4 md:grid-cols-2">
             <div>
               <p className="body font-medium mb-2">For Experienced Professionals</p>
@@ -96,8 +96,7 @@ export default function Page(){
             </div>
             <div>
               <p className="body font-medium mb-2">Flexible Pricing Plans</p>
-              <p className="body text-sm">Choose Basic ($29), Pro ($49), or Premium ($99) based on your job search intensity. 
-                All plans include autonomous submission and self-learning AI.</p>
+              <p className="body text-sm">Choose Starter ($49), Pro ($99), or Concierge ($249) based on your job search intensity. All tiers include ASAN autonomous submission.</p>
             </div>
             <div>
               <p className="body font-medium mb-2">Proven Results</p>
