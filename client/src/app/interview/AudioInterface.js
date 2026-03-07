@@ -5,28 +5,9 @@ import { cn } from './utils.js';
 // supabase removed - using Express API
 import { useToast } from './useToast.js';
 import sarahHeadshot from './sarah-headshot.jpg';
-import { AudioDeviceSelect } from './audio/AudioDeviceSelect.tsx';
-import { useAudioDevices } from './audio/useAudioDevices.ts';
+import { AudioDeviceSelect } from './audio/AudioDeviceSelect';
 import { useAudioSessionPersistence } from './useAudioSessionPersistence.js';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface AudioInterfaceProps {
-  isActive: boolean;
-  sessionId?: string;
-  documents?: {
-    firstName: string;
-    resume: string;
-    jobDescription: string;
-    companyUrl: string;
-  };
-  isDocumentsSaved?: boolean;
-  resumeFromPause?: boolean;
-  onInterviewStarted?: () => void;
-  onInterviewComplete?: () => void;
-  onSessionComplete?: (resultsData: { transcript: string; prepPacket: string | null }) => void;
-  userEmail?: string;
-}
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -38,11 +19,10 @@ const SILENCE_TIMEOUT = 180000;  // 3 minutes before silence warning
 const MAX_RECONNECT_ATTEMPTS = 3;
 const AUDIO_SAMPLE_RATE = 24000;
 
-type ConnectionQuality = 'excellent' | 'good' | 'poor' | 'disconnected';
 
 // ─── Helper functions (preserved from original) ──────────────────────────────
 
-const isInterviewQuestion = (text: string): boolean => {
+const isInterviewQuestion = (text) => {
   if (!text || !text.includes('?')) return false;
 
   const skipPatterns = [
@@ -66,13 +46,13 @@ const isInterviewQuestion = (text: string): boolean => {
   return false;
 };
 
-const extractQuestionNumber = (text: string): number | null => {
+const extractQuestionNumber = (text) => {
   if (!text) return null;
   const match = text.match(/question\s*(\d+)/i);
   return match?.[1] ? parseInt(match[1], 10) : null;
 };
 
-const getHighestQuestionNumber = (transcript: Array<{ role: string; text: string }>): number => {
+const getHighestQuestionNumber = (transcript) => {
   let highestNumbered = 0;
   let questionCount = 0;
   for (const entry of transcript) {
@@ -85,11 +65,11 @@ const getHighestQuestionNumber = (transcript: Array<{ role: string; text: string
   return highestNumbered > 0 ? highestNumbered : questionCount;
 };
 
-const extractQuestionOnly = (text: string): string | null => {
+const extractQuestionOnly = (text) => {
   if (!text) return null;
   const questionLeadIns = [
-    /(?:let's move to our next question:|next question:|question \d+:|here's (?:the|our) (?:next |first )?question:)\s*(.+\?)/i,
-    /(?:can you tell me|tell me about|what|why|how|describe|walk me through|explain|share|have you)[\s\S]*\?/i,
+    /(:let's move to our next question:|next question:|question \d+:|here's (:the|our) (:next |first )?question:)\s*(.+\?)/i,
+    /(:can you tell me|tell me about|what|why|how|describe|walk me through|explain|share|have you)[\s\S]*\?/i,
   ];
   for (const pattern of questionLeadIns) {
     const match = text.match(pattern);
@@ -105,7 +85,7 @@ const extractQuestionOnly = (text: string): string | null => {
 // ─── PCM Audio Helpers ───────────────────────────────────────────────────────
 
 /** Encode Float32 PCM to Int16 base64 for xAI */
-function float32ToBase64PCM16(float32: Float32Array): string {
+function float32ToBase64PCM16(float32) {
   const int16 = new Int16Array(float32.length);
   for (let i = 0; i < float32.length; i++) {
     const s = Math.max(-1, Math.min(1, float32[i]));
@@ -120,7 +100,7 @@ function float32ToBase64PCM16(float32: Float32Array): string {
 }
 
 /** Decode base64 PCM16 from xAI to Float32 for Web Audio playback */
-function base64PCM16ToFloat32(base64: string): Float32Array {
+function base64PCM16ToFloat32(base64): Float32Array {
   const binary = atob(base64);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) {
@@ -156,7 +136,7 @@ export function AudioInterface({
   const [connectionDropped, setConnectionDropped] = useState(false);
   const [isReconnecting, setIsReconnecting] = useState(false);
   const [isSendingResults, setIsSendingResults] = useState(false);
-  const [connectionQuality, setConnectionQuality] = useState<ConnectionQuality>('disconnected');
+  const [connectionQuality, setConnectionQuality] = useState('disconnected');
   const [showSilenceWarning, setShowSilenceWarning] = useState(false);
   const [lastActivityTime, setLastActivityTime] = useState(Date.now());
   const lastActivityTimeRef = useRef(Date.now());
@@ -184,19 +164,19 @@ export function AudioInterface({
 
   // ── Refs ───────────────────────────────────────────────────────────────────
 
-  const wsRef = useRef<WebSocket | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const mediaStreamRef = useRef<MediaStream | null>(null);
-  const processorRef = useRef<ScriptProcessorNode | null>(null);
-  const playbackQueueRef = useRef<Float32Array[]>([]);
+  const wsRef = useRef(null);
+  const audioContextRef = useRef(null);
+  const mediaStreamRef = useRef(null);
+  const processorRef = useRef(null);
+  const playbackQueueRef = useRef([]);
   const isPlayingRef = useRef(false);
   const userEndedSession = useRef(false);
   const interviewStarted = useRef(false);
-  const heartbeatRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const silenceWarningTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const heartbeatRef = useRef | null>(null);
+  const silenceWarningTimeoutRef = useRef | null>(null);
 
-  const transcriptRef = useRef<Array<{ role: 'user' | 'assistant'; text: string; ts: number }>>([]);
-  const lastAssistantTurnRef = useRef<string | null>(null);
+  const transcriptRef = useRef>([]);
+  const lastAssistantTurnRef = useRef(null);
   const questionCountRef = useRef(0);
   const isResumingRef = useRef(false);
   const currentResponseTextRef = useRef('');  // accumulates streaming response text
@@ -204,7 +184,7 @@ export function AudioInterface({
 
   // ── Transcript helpers ─────────────────────────────────────────────────────
 
-  const appendTranscriptTurn = useCallback((role: 'user' | 'assistant', text: unknown) => {
+  const appendTranscriptTurn = useCallback((role: 'user' | 'assistant', text) => {
     const clean = typeof text === 'string' ? text.trim() : '';
     if (!clean) return;
 
@@ -221,7 +201,7 @@ export function AudioInterface({
     appendTurn({
       role,
       text: clean,
-      questionNumber: role === 'assistant' && isInterviewQuestion(clean) ? questionCountRef.current + 1 : null,
+      questionNumber: role === 'assistant' && isInterviewQuestion(clean) ? questionCountRef.current + 1 : undefined,
     });
   }, [appendTurn]);
 
@@ -254,7 +234,7 @@ export function AudioInterface({
     if (!ctx || isPlayingRef.current || playbackQueueRef.current.length === 0) return;
 
     isPlayingRef.current = true;
-    const chunk = playbackQueueRef.current.shift()!;
+    const chunk = playbackQueueRef.current.shift();
     const buffer = ctx.createBuffer(1, chunk.length, AUDIO_SAMPLE_RATE);
     buffer.getChannelData(0).set(chunk);
     const source = ctx.createBufferSource();
@@ -272,7 +252,7 @@ export function AudioInterface({
     setIsSpeaking(true);
   }, []);
 
-  const enqueueAudio = useCallback((base64: string) => {
+  const enqueueAudio = useCallback((base64) => {
     const float32 = base64PCM16ToFloat32(base64);
     playbackQueueRef.current.push(float32);
     if (!isPlayingRef.current) playNextChunk();
@@ -334,8 +314,8 @@ export function AudioInterface({
     setIsConnected(false);
     setIsSpeaking(false);
 
-    const messages: Record<string, { title: string; description: string }> = {
-      user_ended: { title: 'Interview Complete', description: 'Great job! Preparing your results...' },
+    const messages = {
+      user_ended: { title: 'Interview Complete', description: 'Great job Preparing your results...' },
       connection_lost: { title: 'Session Ended', description: 'The connection was lost. Preparing your results...' },
       timeout: { title: 'Session Timed Out', description: 'The session ended due to inactivity. Preparing your results...' },
       error: { title: 'Session Ended Unexpectedly', description: 'Something went wrong. Preparing your results...' },
@@ -365,7 +345,6 @@ export function AudioInterface({
 
       if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
         setConnectionQuality('disconnected');
-        return;
       }
 
       if (timeSinceActivity < 10000) setConnectionQuality('excellent');
@@ -394,7 +373,7 @@ export function AudioInterface({
   // ── Connect / Reconnect ────────────────────────────────────────────────────
 
   const reconnect = useCallback(
-    async (options?: { mode?: 'initial' | 'resume' }) => {
+    async (options: { mode: 'initial' | 'resume' }) => {
       const mode: 'initial' | 'resume' = options?.mode === 'initial' ? 'initial' : 'resume';
       const isInitial = mode === 'initial';
 
@@ -437,7 +416,7 @@ export function AudioInterface({
           dbHistory = await getHistory();
           if (dbHistory.length > 0) {
             transcriptRef.current = dbHistory.map(h => ({
-              role: h.role === 'user' ? 'user' as const : 'assistant' as const,
+              role: h.role === 'user' ? 'user' : 'assistant',
               text: h.content,
               ts: new Date(h.created_at).getTime(),
             }));
@@ -500,7 +479,7 @@ INTERVIEW RULES:
         }
 
         // Build the first message (what Sarah says first)
-        let firstMessage: string;
+        let firstMessage;
         if (isInitial) {
           firstMessage = `Hi ${nameForGreeting}, I'm Sarah, your interview coach today. I've reviewed your materials and I'm ready to put you through a realistic mock interview. Process-wise, I'll ask one question at a time and give you a short pause to think before you answer—just like a real interview. After you respond, I'll take a quick beat to assess your answer, then I'll share feedback and a stronger version of how you could say it. We'll cover 16 questions across different categories. If you need me to repeat anything, just ask. Ready to begin?`;
         } else {
@@ -634,7 +613,6 @@ INTERVIEW RULES:
                   enqueueAudio(msg.delta);
                   setIsWaitingForGreeting(false);
                 }
-                break;
 
               case 'response.audio_transcript.delta':
               case 'response.output_audio_transcript.delta':
@@ -642,7 +620,6 @@ INTERVIEW RULES:
                 if (msg.delta) {
                   currentResponseTextRef.current += msg.delta;
                 }
-                break;
 
               case 'response.audio_transcript.done':
               case 'response.output_audio_transcript.done':
@@ -663,20 +640,17 @@ INTERVIEW RULES:
                   }
                 }
                 currentResponseTextRef.current = '';
-                break;
 
               case 'conversation.item.input_audio_transcription.completed':
                 // User's speech transcribed
                 if (msg.transcript) {
                   appendTranscriptTurn('user', msg.transcript);
                 }
-                break;
 
               case 'input_audio_buffer.speech_started':
                 // User started speaking — interrupt playback
                 playbackQueueRef.current = [];
                 setIsSpeaking(false);
-                break;
 
               case 'error':
                 console.error('[AudioInterface] Grok error:', msg.error);
@@ -686,22 +660,18 @@ INTERVIEW RULES:
                   code: msg.error?.code || null,
                   context: { errorRaw: JSON.stringify(msg.error) },
                 });
-                break;
 
               case 'session.created':
               case 'session.updated':
                 console.log('[AudioInterface] Session event:', msg.type);
-                break;
 
               case 'response.done':
                 // Response complete
                 console.log('[AudioInterface] response.done received. Full msg:', JSON.stringify(msg).substring(0, 500));
                 setIsSpeaking(false);
-                break;
 
               default:
                 // Other events: response.created, rate_limits.updated, etc.
-                break;
             }
           } catch (e) {
             console.warn('[AudioInterface] Failed to parse WS message:', e);
@@ -779,7 +749,6 @@ INTERVIEW RULES:
   const pauseInterview = useCallback(async () => {
     if (!sessionId || !userEmail) {
       toast({ variant: 'destructive', title: 'Cannot Pause', description: 'Session information is missing.' });
-      return;
     }
 
     isPausedRef.current = true;
@@ -797,7 +766,7 @@ INTERVIEW RULES:
     setIsSpeaking(false);
 
     try {
-      const appUrl = typeof window !== 'undefined' ? window.location.origin : undefined;
+      const appUrl = typeof window !== 'undefined' ? window.location.origin  : null;
       const lastEntry = transcriptRef.current[transcriptRef.current.length - 1];
       const userAnsweredLast = lastEntry?.role === 'user';
       const completedQuestions = userAnsweredLast ? questionCountRef.current : Math.max(questionCountRef.current - 1, 0);
@@ -821,7 +790,6 @@ INTERVIEW RULES:
   const resumeInterview = useCallback(async () => {
     if (!sessionId || !userEmail) {
       toast({ variant: 'destructive', title: 'Cannot Resume', description: 'Session information is missing.' });
-      return;
     }
 
     setIsWaitingForGreeting(true);
@@ -845,19 +813,18 @@ INTERVIEW RULES:
         setIsPaused(false);
         setIsReconnecting(false);
         isResumingRef.current = false;
-        return;
       }
 
       const messages = data?.messages || [];
       const savedQuestionsAsked = data?.questionsAsked || data?.question_number || 0;
 
       if (messages.length > 0) {
-        transcriptRef.current = messages.map((m: any) => ({
-          role: m.role === 'user' ? 'user' as const : 'assistant' as const,
+        transcriptRef.current = messages.map((m) => ({
+          role: m.role === 'user' ? 'user' : 'assistant',
           text: m.content,
           ts: new Date(m.created_at).getTime(),
         }));
-        const assistantMsgs = messages.filter((m: any) => m.role === 'assistant');
+        const assistantMsgs = messages.filter((m) => m.role === 'assistant');
         if (assistantMsgs.length > 0) {
           lastAssistantTurnRef.current = assistantMsgs[assistantMsgs.length - 1].content;
         }
@@ -1059,3 +1026,5 @@ INTERVIEW RULES:
     </div>
   );
 }
+
+export default AudioInterface;

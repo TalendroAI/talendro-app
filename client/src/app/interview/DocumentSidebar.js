@@ -1,30 +1,7 @@
 import { Save, Check } from 'lucide-react';
-import { Button } // Button -> use <button> with Tailwind;
-import { Textarea } // Textarea -> use <textarea> with Tailwind;
-import { Input } // Input -> use <input> with Tailwind;
-import { Label } // Label -> use <label> with Tailwind;
-import { Progress } // Progress -> use <div> with Tailwind;
-import { DocumentInputs, SessionType, SESSION_CONFIGS } from './session.ts';
 import { cn } from './utils.js';
 import { ProInterviewTypeSelector, ProInterviewType } from './ProInterviewTypeSelector';
 import { CompleteSessionButton } from './CompleteSessionButton';
-
-interface DocumentSidebarProps {
-  documents: DocumentInputs;
-  onDocumentsChange: (documents: DocumentInputs) => void;
-  onStartSession: () => void;
-  isLoading: boolean;
-  sessionType: SessionType | null;
-  isSessionStarted: boolean;
-  isPaymentVerified?: boolean;
-  onSaveDocuments?: () => void;
-  isDocumentsSaved?: boolean;
-  isContentReady?: boolean;
-  isSessionCompleted?: boolean;
-  // Pro-specific props
-  selectedProInterviewType?: ProInterviewType | null;
-  onProInterviewTypeSelect?: (type: ProInterviewType) => void;
-}
 
 export function DocumentSidebar({
   documents,
@@ -41,7 +18,7 @@ export function DocumentSidebar({
   selectedProInterviewType,
   onProInterviewTypeSelect,
 }: DocumentSidebarProps) {
-  const config = sessionType ? SESSION_CONFIGS[sessionType] : null;
+  const config = sessionType ? SESSION_CONFIGS[sessionType] ;
   const isPro = sessionType === 'pro';
   const isAudio = sessionType === 'premium_audio';
   const isMock = sessionType === 'full_mock';

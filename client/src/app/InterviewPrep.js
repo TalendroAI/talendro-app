@@ -10,9 +10,12 @@
  * This component replaces the Supabase-dependent InterviewCoach.tsx with a clean
  * Express API integration using the existing AuthContext.
  */
-import React, { useState, useContext, useEffect, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useState, useContext, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import AuthContext from '../auth/AuthContext';
+import { ChatInterface } from './interview/ChatInterface';
+import { QuickPrepContent } from './interview/QuickPrepContent';
+import AudioInterface from './interview/AudioInterface';
 
 // ─── API helpers ─────────────────────────────────────────────────────────────
 
@@ -199,9 +202,13 @@ function SessionTypeSelector({ userPlan, onSelect }) {
   );
 }
 
-// ─── Quick Prep View ──────────────────────────────────────────────────────────
+// ─── Quick Prep View — wraps QuickPrepContent.tsx ───────────────────────────
 
-function QuickPrepView({ documents, sessionId, onDone }) {
+function QuickPrepView({ documents, sessionId, onDone }) {  // eslint-disable-line no-unused-vars
+// REPLACED: now handled inline in main render using QuickPrepContent
+return null; }
+
+function _QuickPrepView_UNUSED({ documents, sessionId, onDone }) {
   const [content, setContent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -262,9 +269,13 @@ function QuickPrepView({ documents, sessionId, onDone }) {
   );
 }
 
-// ─── Chat Mock Interview View ─────────────────────────────────────────────────
+// ─── Chat Mock View — replaced by ChatInterface.tsx ─────────────────────────
 
-function ChatMockView({ documents, sessionId, userEmail, onDone }) {
+function ChatMockView({ documents, sessionId, userEmail, onDone }) {  // eslint-disable-line no-unused-vars
+// REPLACED: now handled inline in main render using ChatInterface
+return null; }
+
+function _ChatMockView_UNUSED({ documents, sessionId, userEmail, onDone }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -391,15 +402,19 @@ function ChatMockView({ documents, sessionId, userEmail, onDone }) {
   );
 }
 
-// ─── Audio Mock View (lazy-loads AudioInterface.tsx) ─────────────────────────
+// ─── Audio Mock View — replaced by AudioInterface.tsx ───────────────────────
 
-function AudioMockView({ documents, sessionId, userEmail, onDone }) {
+function AudioMockView({ documents, sessionId, userEmail, onDone }) {  // eslint-disable-line no-unused-vars
+// REPLACED: now handled inline in main render using AudioInterface
+return null; }
+
+function _AudioMockView_UNUSED({ documents, sessionId, userEmail, onDone }) {
   const [AudioInterface, setAudioInterface] = useState(null);
   const [loadError, setLoadError] = useState(null);
 
   useEffect(() => {
     // Dynamically import the TypeScript AudioInterface component
-    import('./interview/AudioInterface.tsx')
+    import('./interview/AudioInterface')
       .then(mod => setAudioInterface(() => mod.AudioInterface))
       .catch(err => {
         console.error('Failed to load AudioInterface:', err);
@@ -449,8 +464,6 @@ function AudioMockView({ documents, sessionId, userEmail, onDone }) {
 
 export default function InterviewPrep() {
   const { user } = useContext(AuthContext);
-  const navigate = useNavigate();
-
   const [step, setStep] = useState('select'); // 'select' | 'documents' | 'session'
   const [selectedType, setSelectedType] = useState(null);
   const [documents, setDocuments] = useState({
@@ -462,6 +475,15 @@ export default function InterviewPrep() {
   const [isSaving, setIsSaving] = useState(false);
   const [sessionId, setSessionId] = useState(null);
   const [sessionDone, setSessionDone] = useState(false);
+
+  // Quick Prep state — managed here, passed to QuickPrepContent
+  const [quickPrepContent, setQuickPrepContent] = useState(null);
+  const [quickPrepLoading, setQuickPrepLoading] = useState(false);
+  const [quickPrepError, setQuickPrepError] = useState(null);
+
+  // Session completion state
+  const [isCompletingSession, setIsCompletingSession] = useState(false);
+  const [isSessionCompleted, setIsSessionCompleted] = useState(false);
 
   const userPlan = user?.plan || 'basic';
   const [searchParams] = useSearchParams();
@@ -480,25 +502,63 @@ export default function InterviewPrep() {
   const handleSelectType = (typeId) => {
     setSelectedType(typeId);
     setStep('documents');
+    setSessionDone(false);
+    setQuickPrepContent(null);
+    setQuickPrepError(null);
+    setIsSessionCompleted(false);
   };
 
   const handleSaveDocuments = async () => {
     setIsSaving(true);
     try {
-      // Create a new interview session on the backend
       const data = await apiPost('/api/interview/session/create', {
         sessionType: selectedType,
         documents,
       });
       setSessionId(data.sessionId);
-      setStep('session');
     } catch (err) {
       console.error('Failed to create session:', err);
-      // Proceed anyway with a local session ID
       setSessionId(`local_${Date.now()}`);
-      setStep('session');
     } finally {
       setIsSaving(false);
+      setStep('session');
+    }
+  };
+
+  // Generate Quick Prep content once sessionId is available
+  const generateQuickPrep = useCallback(async (sid) => {
+    setQuickPrepLoading(true);
+    setQuickPrepError(null);
+    try {
+      const data = await apiPost('/api/interview/chat', {
+        session_type: 'quick_prep',
+        session_id: sid,
+        documents,
+        is_initial: true,
+      });
+      setQuickPrepContent(data.message);
+    } catch (err) {
+      setQuickPrepError(err.message);
+    } finally {
+      setQuickPrepLoading(false);
+    }
+  }, [documents]);
+
+  useEffect(() => {
+    if (step === 'session' && selectedType === 'quick_prep' && sessionId && !quickPrepContent && !quickPrepLoading) {
+      generateQuickPrep(sessionId);
+    }
+  }, [step, selectedType, sessionId, quickPrepContent, quickPrepLoading, generateQuickPrep]);
+
+  const handleCompleteSession = async () => {
+    setIsCompletingSession(true);
+    try {
+      await apiPost('/api/interview/session/complete', { sessionId });
+    } catch (err) {
+      console.error('Failed to mark session complete:', err);
+    } finally {
+      setIsCompletingSession(false);
+      setIsSessionCompleted(true);
     }
   };
 
@@ -507,6 +567,9 @@ export default function InterviewPrep() {
     setStep('select');
     setSelectedType(null);
     setSessionId(null);
+    setQuickPrepContent(null);
+    setQuickPrepError(null);
+    setIsSessionCompleted(false);
   };
 
   return (
@@ -548,15 +611,65 @@ export default function InterviewPrep() {
         </div>
       )}
 
-      {/* Step: Active Session */}
+      {/* Step: Quick Prep — uses QuickPrepContent.tsx */}
       {step === 'session' && selectedType === 'quick_prep' && (
-        <QuickPrepView documents={documents} sessionId={sessionId} onDone={handleSessionDone} />
+        <div className="space-y-4">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-xl font-bold text-gray-900">⚡ Quick Prep</h2>
+            <button onClick={handleSessionDone} className="text-sm text-gray-500 hover:text-gray-700">← New Session</button>
+          </div>
+          <QuickPrepContent
+            content={quickPrepContent}
+            isLoading={quickPrepLoading}
+            error={quickPrepError}
+            onCompleteSession={handleCompleteSession}
+            isCompletingSession={isCompletingSession}
+            isSessionCompleted={isSessionCompleted}
+            isContentReady={!!quickPrepContent}
+            companyUrl={documents.companyUrl}
+          />
+        </div>
       )}
-      {step === 'session' && selectedType === 'full_mock' && (
-        <ChatMockView documents={documents} sessionId={sessionId} userEmail={user?.email} onDone={handleSessionDone} />
+
+      {/* Step: Full Mock Interview — uses ChatInterface.tsx */}
+      {step === 'session' && selectedType === 'full_mock' && sessionId && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-xl font-bold text-gray-900">💬 Full Mock Interview</h2>
+            <button onClick={handleSessionDone} className="text-sm text-gray-500 hover:text-gray-700">← End Session</button>
+          </div>
+          <ChatInterface
+            sessionType="full_mock"
+            isActive={true}
+            sessionId={sessionId}
+            documents={documents}
+            userEmail={user?.email}
+            onInterviewComplete={(msgs) => console.log('[InterviewPrep] Full mock complete, messages:', msgs?.length)}
+            onCompleteSession={handleCompleteSession}
+            isCompletingSession={isCompletingSession}
+            isSessionCompleted={isSessionCompleted}
+            isContentReady={true}
+          />
+        </div>
       )}
-      {step === 'session' && selectedType === 'premium_audio' && (
-        <AudioMockView documents={documents} sessionId={sessionId} userEmail={user?.email} onDone={handleSessionDone} />
+
+      {/* Step: Audio Mock Interview — uses AudioInterface.tsx (Grok Realtime) */}
+      {step === 'session' && selectedType === 'audio_mock' && sessionId && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-xl font-bold text-gray-900">🎙️ Audio Mock Interview</h2>
+            <button onClick={handleSessionDone} className="text-sm text-gray-500 hover:text-gray-700">← End Session</button>
+          </div>
+          <AudioInterface
+            isActive={true}
+            sessionId={sessionId}
+            documents={documents}
+            isDocumentsSaved={true}
+            userEmail={user?.email}
+            onInterviewComplete={handleSessionDone}
+            onSessionComplete={handleSessionDone}
+          />
+        </div>
       )}
     </div>
   );

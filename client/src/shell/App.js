@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import Header from '../ui/Header'
 import Footer from '../ui/Footer'
 import ScrollToTop from '../ui/ScrollToTop'
@@ -9,9 +9,8 @@ import Services from '../pages/Services'
 import Navigator from '../pages/Navigator'
 import Optional from '../pages/Optional'
 import Pricing from '../pages/Pricing'
-import InterviewCoach from '../pages/InterviewCoach'
-import InterviewCoachWithNav from '../pages/InterviewCoachWithNav'
-import InterviewCoachPublic from '../pages/InterviewCoachPublic'
+// InterviewCoach public pages removed — interview prep is now at /app/interview (subscriber-only)
+// Old routes /interview-coach and /interview-coach-final redirect to /pricing
 import About from '../pages/About'
 import Story from '../pages/Story'
 import Team from '../pages/Team'
@@ -53,8 +52,6 @@ import ProtectedRoute from '../auth/ProtectedRoute'
 
 // Routes that should render without the public header/footer
 const NO_CHROME_ROUTES = [
-  '/interview-coach',
-  '/interview-coach-final',
   '/app/resume-gate',
   '/app/resume/upload',
   '/app/resume/update',
@@ -68,9 +65,8 @@ const NO_CHROME_ROUTES = [
 
 function AppRoutes() {
   const location = useLocation();
-  const isInterviewCoachPublic = location.pathname === '/interview-coach' || location.pathname === '/interview-coach-final';
   const isAppRoute = NO_CHROME_ROUTES.some(r => location.pathname.startsWith(r));
-  const hideChrome = isInterviewCoachPublic || isAppRoute;
+  const hideChrome = isAppRoute;
 
   return (
     <>
@@ -78,9 +74,9 @@ function AppRoutes() {
       {!hideChrome && <Header />}
       <main className={hideChrome ? "" : "container py-10"}>
         <Routes>
-          {/* Public routes - NO header/footer */}
-          <Route path="/interview-coach" element={<InterviewCoachPublic />} />
-          <Route path="/interview-coach-final" element={<InterviewCoachPublic />} />
+          {/* Old interview coach URLs — redirect to pricing */}
+          <Route path="/interview-coach" element={<Navigate to="/pricing" replace />} />
+          <Route path="/interview-coach-final" element={<Navigate to="/pricing" replace />} />
 
           {/* Public marketing routes WITH header/footer */}
           <Route path="/" element={<Home />} />
@@ -90,7 +86,7 @@ function AppRoutes() {
           <Route path="/services/asan" element={<Navigator />} />
           <Route path="/services/optional" element={<Optional />} />
           <Route path="/pricing" element={<Pricing />} />
-          <Route path="/interview-coach-future" element={<InterviewCoachWithNav />} />
+          <Route path="/interview-coach-future" element={<Navigate to="/pricing" replace />} />
           <Route path="/about" element={<About />} />
           <Route path="/about/our-story" element={<Story />} />
           <Route path="/about/our-team" element={<Team />} />

@@ -1,14 +1,4 @@
-import { SessionType, SESSION_CONFIGS } from './session.ts';
 import { Lightbulb } from 'lucide-react';
-import { Button } // Button -> use <button> with Tailwind;
-
-interface WelcomeMessageProps {
-  sessionType: SessionType | null;
-  userEmail: string | null;
-  isPaymentVerified?: boolean;
-  isReady?: boolean;
-  onStartSession?: () => void;
-}
 
 export function WelcomeMessage({ 
   sessionType, 
@@ -17,7 +7,7 @@ export function WelcomeMessage({
   isReady = false,
   onStartSession 
 }: WelcomeMessageProps) {
-  const config = sessionType ? SESSION_CONFIGS[sessionType] : null;
+  const config = sessionType ? SESSION_CONFIGS[sessionType] ;
 
   if (!config) {
     return (
@@ -107,7 +97,7 @@ export function WelcomeMessage({
   const instructions = getSessionInstructions();
 
   // Parse markdown-style bold text
-  const renderText = (text: string) => {
+  const renderText = (text) => {
     const parts = text.split(/\*\*(.*?)\*\*/g);
     return parts.map((part, index) => 
       index % 2 === 1 ? (

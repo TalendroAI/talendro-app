@@ -9,18 +9,18 @@ import { MarkdownRenderer } from "./MarkdownRenderer";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface SessionResultsViewProps {
-  sessionLabel: string;
-  email: string;
-  prepPacket?: string | null;
-  transcript?: string | null;
-  analysisMarkdown?: string | null;
-  isProSessionFlow?: boolean;
+  sessionLabel;
+  email;
+  prepPacket? | null;
+  transcript? | null;
+  analysisMarkdown? | null;
+  isProSessionFlow?;
   sessionType?: 'quick_prep' | 'full_mock' | 'premium_audio' | 'pro';
 }
 
 // Parse transcript into Q&A pairs for clean display
-function parseTranscriptToQA(transcript: string): Array<{ question: string; answer: string }> {
-  const pairs: Array<{ question: string; answer: string }> = [];
+function parseTranscriptToQA(transcript): Array<{ question; answer }> {
+  const pairs: Array<{ question; answer }> = [];
 
   // Split by the --- delimiter
   const parts = transcript.split(/\n---\n/).filter((p) => p.trim());
@@ -56,7 +56,7 @@ export function SessionResultsView({
   sessionType,
 }: SessionResultsViewProps) {
   const navigate = useNavigate();
-  const cardRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef(null);
   const [isUpsellLoading, setIsUpsellLoading] = useState(false);
 
   const isQuickPrep = sessionLabel.toLowerCase().includes("quick prep");
@@ -69,7 +69,7 @@ export function SessionResultsView({
   // Ensure the results panel starts at the top when mounted
   useEffect(() => {
     const doScroll = () => {
-      const viewport = cardRef.current?.querySelector<HTMLElement>(
+      const viewport = cardRef.current?.querySelector(
         "[data-radix-scroll-area-viewport]",
       );
       if (!viewport) return;

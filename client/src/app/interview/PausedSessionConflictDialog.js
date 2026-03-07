@@ -1,34 +1,7 @@
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} // AlertDialog -> use modal with Tailwind;
-import { Button } // Button -> use <button> with Tailwind;
 import { formatDistanceToNow } from 'date-fns';
 import { Clock, Play, Trash2, X } from 'lucide-react';
 
-interface PausedSession {
-  id: string;
-  session_type: string;
-  paused_at: string;
-  current_question_number: number | null;
-}
-
-interface PausedSessionConflictDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  pausedSession: PausedSession | null;
-  onResume: (sessionId: string, sessionType: string) => void;
-  onAbandonAndStart: (sessionId: string) => Promise<void>;
-  isAbandoning?: boolean;
-}
-
-const getSessionTypeName = (type: string): string => {
+const getSessionTypeName = (type) => {
   switch (type) {
     case 'quick_prep':
       return 'Quick Prep';

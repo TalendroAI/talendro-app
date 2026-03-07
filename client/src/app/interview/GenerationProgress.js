@@ -1,21 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Progress } // Progress -> use <div> with Tailwind;
 import { Check } from 'lucide-react';
 import { cn } from './utils.js';
-
-interface ProgressStep {
-  label: string;
-  description: string;
-  minPercent: number;
-  maxPercent: number;
-}
-
-interface GenerationProgressProps {
-  isActive: boolean;
-  companyUrl?: string;
-  sessionType?: 'quick_prep' | 'full_mock' | 'premium_audio' | 'pro';
-  estimatedDuration?: number; // in seconds
-}
 
 export function GenerationProgress({
   isActive,
@@ -27,7 +12,7 @@ export function GenerationProgress({
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
   // Extract company name from URL
-  const extractCompanyName = (url: string): string => {
+  const extractCompanyName = (url) => {
     if (!url) return 'the company';
     try {
       const domain = url.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];

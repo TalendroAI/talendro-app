@@ -1,21 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Progress } // Progress -> use <div> with Tailwind;
-import { Avatar, AvatarImage, AvatarFallback } // Avatar -> use <img> with Tailwind;
 import { Check } from 'lucide-react';
 import { cn } from './utils.js';
 import sarahHeadshot from './sarah-headshot.jpg';
-
-interface ProgressStep {
-  label: string;
-  description: string;
-  minPercent: number;
-  maxPercent: number;
-}
-
-interface PrepPacketGeneratingOverlayProps {
-  isActive: boolean;
-  companyUrl?: string;
-}
 
 export function PrepPacketGeneratingOverlay({
   isActive,
@@ -25,7 +11,7 @@ export function PrepPacketGeneratingOverlay({
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
   // Extract company name from URL
-  const extractCompanyName = (url: string): string => {
+  const extractCompanyName = (url) => {
     if (!url) return 'your target company';
     try {
       const domain = url.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];

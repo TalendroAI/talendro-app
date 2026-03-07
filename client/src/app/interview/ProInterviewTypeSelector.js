@@ -5,23 +5,10 @@ import { supabase } // supabase removed;
 
 export type ProInterviewType = 'quick_prep' | 'full_mock' | 'premium_audio';
 
-interface ProInterviewTypeSelectorProps {
-  selectedType: ProInterviewType | null;
-  onSelect: (type: ProInterviewType) => void;
-  disabled?: boolean;
-  userEmail?: string;
-}
-
 interface RemainingSessionsData {
-  quick_prep: { used: number; limit: number | null; remaining: number | null };
-  full_mock: { used: number; limit: number; remaining: number };
-  premium_audio: { used: number; limit: number; remaining: number };
-}
-
-interface RemainingSessions {
-  is_pro: boolean;
-  remaining: RemainingSessionsData | null;
-  next_reset: string | null;
+  quick_prep: { used; limit | null; remaining | null };
+  full_mock: { used; limit; remaining };
+  premium_audio: { used; limit; remaining };
 }
 
 export function ProInterviewTypeSelector({
@@ -30,7 +17,7 @@ export function ProInterviewTypeSelector({
   disabled = false,
   userEmail,
 }: ProInterviewTypeSelectorProps) {
-  const [remainingSessions, setRemainingSessions] = useState<RemainingSessions | null>(null);
+  const [remainingSessions, setRemainingSessions] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -61,15 +48,15 @@ export function ProInterviewTypeSelector({
     }
   };
 
-  const getSessionInfo = (type: ProInterviewType): { remaining: number | null; limit: number | null; isUnlimited: boolean; isDisabled: boolean; resetDate: string | null } => {
+  const getSessionInfo = (type: ProInterviewType): { remaining | null; limit | null; isUnlimited; isDisabled; resetDate | null } => {
     if (!remainingSessions?.remaining) {
-      return { remaining: null, limit: null, isUnlimited: type === 'quick_prep', isDisabled: false, resetDate: null };
+      return { remaining, limit, isUnlimited: type === 'quick_prep', isDisabled: false, resetDate };
     }
 
     const data = remainingSessions.remaining[type];
     
     if (type === 'quick_prep') {
-      return { remaining: null, limit: null, isUnlimited: true, isDisabled: false, resetDate: null };
+      return { remaining, limit, isUnlimited: true, isDisabled: false, resetDate };
     }
 
     return {
@@ -81,13 +68,13 @@ export function ProInterviewTypeSelector({
     };
   };
 
-  const formatResetDate = (isoDate: string | null): string => {
+  const formatResetDate = (isoDate | null) => {
     if (!isoDate) return '';
     const date = new Date(isoDate);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
-  const INTERVIEW_OPTIONS: { type: ProInterviewType; label: string; description: string; icon: React.ReactNode }[] = [
+  const INTERVIEW_OPTIONS: { type: ProInterviewType; label; description; icon }[] = [
     {
       type: 'quick_prep',
       label: 'Quick Prep',

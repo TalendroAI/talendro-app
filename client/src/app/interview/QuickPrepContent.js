@@ -2,16 +2,6 @@ import { cn } from './utils.js';
 import { CompleteSessionButton } from './CompleteSessionButton';
 import { GenerationProgress } from './GenerationProgress';
 
-interface QuickPrepContentProps {
-  content: string | null;
-  isLoading: boolean;
-  error: string | null;
-  onCompleteSession: () => void;
-  isCompletingSession: boolean;
-  isSessionCompleted: boolean;
-  isContentReady: boolean;
-  companyUrl?: string;
-}
 
 export function QuickPrepContent({ 
   content, 
@@ -55,10 +45,10 @@ export function QuickPrepContent({
   }
 
   // Parse and render the markdown-like content
-  const renderContent = (text: string) => {
+  const renderContent = (text) => {
     const lines = text.split('\n');
-    const elements: JSX.Element[] = [];
-    let currentList: string[] = [];
+    const elements = [];
+    let currentList = [];
     let listKey = 0;
 
     const flushList = () => {
@@ -80,7 +70,6 @@ export function QuickPrepContent({
       // Skip empty lines
       if (!trimmedLine) {
         flushList();
-        return;
       }
 
       // Headers
@@ -91,7 +80,6 @@ export function QuickPrepContent({
             {trimmedLine.replace('## ', '').replace(/\*\*/g, '')}
           </h2>
         );
-        return;
       }
 
       if (trimmedLine.startsWith('# ')) {
@@ -101,7 +89,6 @@ export function QuickPrepContent({
             {trimmedLine.replace('# ', '').replace(/\*\*/g, '')}
           </h1>
         );
-        return;
       }
 
       // Bold headers (like **Company Overview**)
@@ -112,7 +99,6 @@ export function QuickPrepContent({
             {trimmedLine.replace(/\*\*/g, '')}
           </h3>
         );
-        return;
       }
 
       // Numbered sections (like 1. **Company Overview**)
@@ -136,13 +122,11 @@ export function QuickPrepContent({
             </p>
           );
         }
-        return;
       }
 
       // List items
       if (trimmedLine.startsWith('- ') || trimmedLine.startsWith('• ')) {
         currentList.push(trimmedLine.replace(/^[-•]\s*/, '').replace(/\*\*/g, ''));
-        return;
       }
 
       // Numbered list items (like "1. Question text")
@@ -159,7 +143,6 @@ export function QuickPrepContent({
             </p>
           </div>
         );
-        return;
       }
 
       // Regular paragraphs

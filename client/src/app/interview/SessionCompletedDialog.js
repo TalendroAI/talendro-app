@@ -1,25 +1,17 @@
 import { useNavigate } from 'react-router-dom';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} // Dialog -> use modal with Tailwind;
-import { Button } // Button -> use <button> with Tailwind;
 import { CheckCircle, FileText, ShoppingCart } from 'lucide-react';
 import { STRIPE_PRICES } // stripe config removed;
 
 interface SessionCompletedDialogProps {
-  isOpen: boolean;
+  isOpen;
   onClose: () => void;
-  sessionType: string;
-  userEmail: string;
+  sessionType;
+  userEmail;
   sessionResults?: {
-    overall_score?: number;
-    strengths?: string[];
-    improvements?: string[];
-    recommendations?: string;
+    overall_score?;
+    strengths?[];
+    improvements?[];
+    recommendations?;
   } | null;
 }
 

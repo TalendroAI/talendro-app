@@ -1,19 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 // Header removed - using BrandShell
-import { DocumentSidebar } from './DocumentSidebar.tsx';
-import { WelcomeMessage } from './WelcomeMessage.tsx';
-import { ChatInterface } from './ChatInterface.tsx';
-import { AudioInterface } from './AudioInterface.tsx';
-import { QuickPrepContent } from './QuickPrepContent.tsx';
-import { SessionCompletedDialog } from './SessionCompletedDialog.tsx';
-import { SessionResultsView } from './results/SessionResultsView.tsx';
-import { PausedSessionNotification } from './PausedSessionNotification.tsx';
-import { PausedSessionConflictDialog } from './PausedSessionConflictDialog.tsx';
-import { PrepPacketGeneratingOverlay } from './PrepPacketGeneratingOverlay.tsx';
-import { useSessionParams } from './useSessionParams.ts';
+import { DocumentSidebar } from './DocumentSidebar';
+import { WelcomeMessage } from './WelcomeMessage';
+import { ChatInterface } from './ChatInterface';
+import { AudioInterface } from './AudioInterface';
+import { QuickPrepContent } from './QuickPrepContent';
+import { SessionCompletedDialog } from './SessionCompletedDialog';
+import { SessionResultsView } from './results/SessionResultsView';
+import { PausedSessionNotification } from './PausedSessionNotification';
+import { PausedSessionConflictDialog } from './PausedSessionConflictDialog';
+import { PrepPacketGeneratingOverlay } from './PrepPacketGeneratingOverlay';
 // useClientAuth removed - using AuthContext
-import { DocumentInputs, SessionType } from './session.ts';
 import { useToast } from './useToast.js';
 import { verifyPayment } from './api.js';
 // supabase removed - using Express API
@@ -21,13 +19,6 @@ import { Loader2, CheckCircle } from 'lucide-react';
 // ProInterviewType imported inline
 // Button replaced with <button>
 import confetti from 'canvas-confetti';
-
-interface PausedSession {
-  id: string;
-  session_type: string;
-  paused_at: string;
-  current_question_number: number | null;
-}
 
 export default function InterviewCoach() {
   const { sessionType, userEmail, preSelectedInterviewType } = useSessionParams();
@@ -40,10 +31,10 @@ export default function InterviewCoach() {
   const sessionIdParam = searchParams.get('session_id');
 
   // Allow session links that only contain session_id (no session_type)
-  const [sessionTypeOverride, setSessionTypeOverride] = useState<SessionType | null>(null);
+  const [sessionTypeOverride, setSessionTypeOverride] = useState(null);
   const resolvedSessionType = sessionTypeOverride ?? sessionType;
   const isProSessionFlow = resolvedSessionType === 'pro';
-  const [documents, setDocuments] = useState<DocumentInputs>({
+  const [documents, setDocuments] = useState({
     firstName: '',
     resume: '',
     jobDescription: '',
@@ -53,17 +44,17 @@ export default function InterviewCoach() {
   const [isLoading, setIsLoading] = useState(false);
   const [isVerifying, setIsVerifying] = useState(true);
   const [isPaymentVerified, setIsPaymentVerified] = useState(false);
-  const [sessionId, setSessionId] = useState<string | undefined>();
-  const [sessionEmail, setSessionEmail] = useState<string | undefined>(); // Email associated with current session
+  const [sessionId, setSessionId] = useState();
+  const [sessionEmail, setSessionEmail] = useState(); // Email associated with current session
   const [isDocumentsSaved, setIsDocumentsSaved] = useState(false);
   
   // Quick Prep content state
-  const [quickPrepContent, setQuickPrepContent] = useState<string | null>(null);
+  const [quickPrepContent, setQuickPrepContent] = useState(null);
   const [isGeneratingContent, setIsGeneratingContent] = useState(false);
-  const [contentError, setContentError] = useState<string | null>(null);
+  const [contentError, setContentError] = useState(null);
   
   // Mock Interview completion state
-  const [mockInterviewMessages, setMockInterviewMessages] = useState<any[]>([]);
+  const [mockInterviewMessages, setMockInterviewMessages] = useState([]);
   const [isMockInterviewComplete, setIsMockInterviewComplete] = useState(false);
   
   // Audio interview state
@@ -73,8 +64,8 @@ export default function InterviewCoach() {
   
   // Completed session dialog state
   const [showCompletedDialog, setShowCompletedDialog] = useState(false);
-  const [completedSessionResults, setCompletedSessionResults] = useState<any>(null);
-  const [resultsReport, setResultsReport] = useState<any>(null);
+  const [completedSessionResults, setCompletedSessionResults] = useState(null);
+  const [resultsReport, setResultsReport] = useState(null);
   const [isSessionCompleted, setIsSessionCompleted] = useState(false);
 
   // Completion confetti (fire once per session)
@@ -144,11 +135,11 @@ export default function InterviewCoach() {
   
   // Resume from pause state
   const [resumeFromPause, setResumeFromPause] = useState(false);
-  const [resumingSessionType, setResumingSessionType] = useState<string | null>(null);
+  const [resumingSessionType, setResumingSessionType] = useState(null);
   
   // Paused session conflict dialog state
   const [showConflictDialog, setShowConflictDialog] = useState(false);
-  const [conflictPausedSession, setConflictPausedSession] = useState<PausedSession | null>(null);
+  const [conflictPausedSession, setConflictPausedSession] = useState(null);
   const [isAbandoning, setIsAbandoning] = useState(false);
   const [pendingSaveAction, setPendingSaveAction] = useState(false);
 
@@ -159,15 +150,14 @@ export default function InterviewCoach() {
     isPausing: false,
     isResuming: false,
   });
-  const [pauseHandlers, setPauseHandlers] = useState<{
-    onPause?: () => void;
+  const [pauseHandlers, setPauseHandlers] = useState void;
     onResume?: () => void;
     onEnd?: () => void;
   }>({});
   const [isEndingInterview, setIsEndingInterview] = useState(false);
 
   // Pro interview type selection state - initialize from URL parameter if available
-  const [selectedProInterviewType, setSelectedProInterviewType] = useState<ProInterviewType | null>(
+  const [selectedProInterviewType, setSelectedProInterviewType] = useState(
     preSelectedInterviewType as ProInterviewType | null
   );
 
@@ -399,7 +389,7 @@ export default function InterviewCoach() {
   };
 
   // Handle abandon and start new session
-  const handleAbandonAndStartNew = async (abandonedSessionId: string) => {
+  const handleAbandonAndStartNew = async (abandonedSessionId) => {
     if (!derivedEmail) {
       toast({
         variant: 'destructive',
@@ -454,7 +444,7 @@ export default function InterviewCoach() {
   };
 
   // Handle resume from conflict dialog
-  const handleResumeFromConflict = async (pausedSessionId: string, pausedSessionType: string) => {
+  const handleResumeFromConflict = async (pausedSessionId, pausedSessionType) => {
     if (!derivedEmail) {
       toast({
         variant: 'destructive',
@@ -534,12 +524,12 @@ export default function InterviewCoach() {
 
           if (!error && data?.ok && data?.session) {
             const s = data.session as {
-              id: string;
+              id;
               sessionType: SessionType;
-              status: string;
-              documents?: { resume?: string; jobDescription?: string; companyUrl?: string };
-              prepPacket?: { content?: string } | null;
-              sessionResults?: { overall_score?: number; strengths?: any; improvements?: any; recommendations?: string } | null;
+              status;
+              documents?: { resume?; jobDescription?; companyUrl? };
+              prepPacket?: { content? } | null;
+              sessionResults?: { overall_score?; strengths?; improvements?; recommendations? } | null;
             };
 
             setSessionId(s.id);
@@ -548,7 +538,7 @@ export default function InterviewCoach() {
 
             const docs = s.documents ?? {};
             setDocuments({
-              firstName: (docs as any).firstName || '',
+              firstName: (docs).firstName || '',
               resume: docs.resume || '',
               jobDescription: docs.jobDescription || '',
               companyUrl: docs.companyUrl || '',
@@ -817,19 +807,16 @@ export default function InterviewCoach() {
   }, [resolvedSessionType, userEmail, searchParams, isAuthLoading, isProSubscriber, profile, user, preSelectedInterviewType]);
 
   // Callback when mock interview is complete
-  const handleMockInterviewComplete = (messages: any[]) => {
+  const handleMockInterviewComplete = (messages[]) => {
     setMockInterviewMessages(messages);
     setIsMockInterviewComplete(true);
   };
 
   // Audio interview completion state for passing transcript to results
-  const [audioInterviewData, setAudioInterviewData] = useState<{
-    transcript: string;
-    prepPacket: string | null;
-  } | null>(null);
+  const [audioInterviewData, setAudioInterviewData] = useState(null);
 
   // Callback when audio interview is complete with results data
-  const handleAudioSessionComplete = (resultsData: { transcript: string; prepPacket: string | null }) => {
+  const handleAudioSessionComplete = (resultsData: { transcript; prepPacket | null }) => {
     setAudioInterviewData(resultsData);
     setIsAudioInterviewComplete(true);
     // Trigger the results flow immediately
@@ -837,7 +824,7 @@ export default function InterviewCoach() {
   };
 
   // Handle audio results flow - send email and show results screen
-  const handleAudioResultsFlow = async (resultsData: { transcript: string; prepPacket: string | null }) => {
+  const handleAudioResultsFlow = async (resultsData: { transcript; prepPacket | null }) => {
     setIsLoading(true);
     
     try {
@@ -855,7 +842,7 @@ export default function InterviewCoach() {
           email: sessionEmail || userEmail || derivedEmail, // Use session's email to match DB record
           session_type: 'premium_audio',
           prep_content: contentToSend,
-          results: null,
+          results,
         },
       });
 
@@ -922,8 +909,8 @@ export default function InterviewCoach() {
         return null;
       }
       
-      // prep_packet is stored as { content: string }
-      const packet = data.prep_packet as { content?: string };
+      // prep_packet is stored as { content }
+      const packet = data.prep_packet as { content? };
       return packet?.content || null;
     } catch (err) {
       console.error('Error fetching prep packet:', err);
@@ -980,7 +967,7 @@ export default function InterviewCoach() {
     try {
       // Prepare the content to send based on session type
       let contentToSend = '';
-      let resultsToSend: any = null;
+      let resultsToSend = null;
 
       if (completionType === 'quick_prep') {
         contentToSend = quickPrepContent || '';
@@ -1006,8 +993,8 @@ export default function InterviewCoach() {
         if (lastAssistantMessage) {
           const content = lastAssistantMessage.content;
           const scoreMatch = content.match(/(?:Overall\s*(?:Performance\s*)?Score[:\s]*)?(\d+)\s*(?:\/\s*100|out of 100)/i);
-          const overallScore = scoreMatch ? parseInt(scoreMatch[1], 10) : null;
-          resultsToSend = overallScore ? { overall_score: overallScore } : null;
+          const overallScore = scoreMatch ? parseInt(scoreMatch[1], 10) ;
+          resultsToSend = overallScore ? { overall_score: overallScore } ;
         }
       } else if (completionType === 'premium_audio') {
         // Audio flow typically sends results automatically from AudioInterface; keep a fallback.
@@ -1073,7 +1060,7 @@ export default function InterviewCoach() {
   };
 
   // Handle resume from paused session
-  const handleResumePausedSession = async (pausedSessionId: string, pausedSessionType: string, emailOverride?: string) => {
+  const handleResumePausedSession = async (pausedSessionId, pausedSessionType, emailOverride?) => {
     const emailForLookup = emailOverride ?? userEmail ?? searchParams.get('email') ?? undefined;
 
     if (!emailForLookup) {
@@ -1101,10 +1088,10 @@ export default function InterviewCoach() {
       }
 
       const docs = data.session.documents as {
-        firstName?: string;
-        resume?: string;
-        jobDescription?: string;
-        companyUrl?: string;
+        firstName?;
+        resume?;
+        jobDescription?;
+        companyUrl?;
       };
 
       setDocuments({
@@ -1145,7 +1132,7 @@ export default function InterviewCoach() {
     }
   };
 
-  const handleAbandonSession = (abandonedSessionId: string) => {
+  const handleAbandonSession = (abandonedSessionId) => {
     // Just clear local state if this was the current session
     if (abandonedSessionId === sessionId) {
       setSessionId(undefined);
@@ -1334,7 +1321,7 @@ export default function InterviewCoach() {
         full_mock: 'Full Mock Interview',
         premium_audio: 'Premium Audio Mock',
         pro: 'Pro Session',
-      }[(activeType as string) || ''] || 'coaching session';
+      }[(activeType) || ''] || 'coaching session';
 
       return (
         <SessionResultsView

@@ -1,11 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Clock, X } from 'lucide-react';
-import { Button } // Button -> use <button> with Tailwind;
 import { supabase } // supabase removed;
-
-interface PausedSessionNotificationProps {
-  userEmail: string;
-}
 
 export function PausedSessionNotification({ userEmail }: PausedSessionNotificationProps) {
   const [pausedCount, setPausedCount] = useState(0);

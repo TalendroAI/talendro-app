@@ -1,71 +1,13 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, User, Bot, Loader2, Pause, Play, Mic, MicOff, Check } from 'lucide-react';
-import { Button } // Button -> use <button> with Tailwind;
-import { Textarea } // Textarea -> use <textarea> with Tailwind;
 
-import { SessionType, SESSION_CONFIGS, DocumentInputs } from './session.ts';
 import { sendAIMessage } from './api.js';
 import { useToast } from './useToast.js';
 import { cn } from './utils.js';
 import { CompleteSessionButton } from './CompleteSessionButton';
 import { useChatSessionPersistence } from './useChatSessionPersistence.js';
 
-// ─── Web Speech API type declarations ───────────────────────────────────────
-interface SpeechRecognitionEvent extends Event {
-  results: SpeechRecognitionResultList;
-  resultIndex: number;
-}
-interface SpeechRecognitionErrorEvent extends Event {
-  error: string;
-}
-interface SpeechRecognitionInstance extends EventTarget {
-  continuous: boolean;
-  interimResults: boolean;
-  lang: string;
-  start(): void;
-  stop(): void;
-  onresult: ((e: SpeechRecognitionEvent) => void) | null;
-  onerror: ((e: SpeechRecognitionErrorEvent) => void) | null;
-  onend: (() => void) | null;
-}
-declare global {
-  interface Window {
-    SpeechRecognition?: new () => SpeechRecognitionInstance;
-    webkitSpeechRecognition?: new () => SpeechRecognitionInstance;
-  }
-}
 // ────────────────────────────────────────────────────────────────────────────
-
-interface Message {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-}
-
-interface HeaderPauseState {
-  showButton: boolean;
-  isPaused: boolean;
-  isPausing: boolean;
-  isResuming: boolean;
-}
-
-interface ChatInterfaceProps {
-  sessionType: SessionType;
-  isActive: boolean;
-  sessionId?: string;
-  documents: DocumentInputs;
-  onInterviewComplete?: (messages: Message[]) => void;
-  onCompleteSession: () => void;
-  isCompletingSession: boolean;
-  isSessionCompleted: boolean;
-  isContentReady: boolean;
-  userEmail?: string;
-  resumeFromPause?: boolean;
-  onPauseStateChange?: (isPaused: boolean) => void;
-  onHeaderPauseStateChange?: (state: HeaderPauseState) => void;
-  onRegisterPauseHandlers?: (handlers: { onPause?: () => void; onResume?: () => void; onEnd?: () => void }) => void;
-}
 
 export function ChatInterface({ 
   sessionType, 
@@ -83,7 +25,7 @@ export function ChatInterface({
   onHeaderPauseStateChange,
   onRegisterPauseHandlers,
 }: ChatInterfaceProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -95,12 +37,12 @@ export function ChatInterface({
   // ── Speech-to-text state ──────────────────────────────────────────────────
   const [isListening, setIsListening] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(false);
-  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
+  const recognitionRef = useRef(null);
   const baseTextRef = useRef(''); // text in box before mic was activated
   // ─────────────────────────────────────────────────────────────────────────
 
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef(null);
+  const messagesEndRef = useRef(null);
   const config = SESSION_CONFIGS[sessionType];
   const { toast } = useToast();
   
@@ -123,7 +65,6 @@ export function ChatInterface({
     if (isListening) {
       recognitionRef.current?.stop();
       setIsListening(false);
-      return;
     }
 
     const recognition = new SpeechRecognition();
@@ -202,7 +143,7 @@ export function ChatInterface({
   // ─────────────────────────────────────────────────────────────────────────
 
   // Check if the interview is complete by looking for the completion marker
-  const checkInterviewComplete = (content: string) => {
+  const checkInterviewComplete = (content) => {
     const completionMarkers = ['## INTERVIEW COMPLETE', '**INTERVIEW COMPLETE**', 'INTERVIEW COMPLETE'];
     return completionMarkers.some(marker => content.toUpperCase().includes(marker.toUpperCase()));
   };
@@ -220,7 +161,6 @@ export function ChatInterface({
     if (messages.length === 0) return;
     if (messages.length === 1 && messages[0].role === 'assistant') {
       scrollToTop();
-      return;
     }
     scrollToBottom();
   }, [messages, scrollToTop, scrollToBottom]);
@@ -263,7 +203,6 @@ export function ChatInterface({
           title: 'Session Expired',
           description: 'Your paused session has expired. Please start a new session.',
         });
-        return;
       }
       
       if (result.messages.length > 0) {
@@ -354,7 +293,6 @@ export function ChatInterface({
       if (!result) throw new Error('Failed to resume session');
       if (result.expired) {
         toast({ variant: 'destructive', title: 'Session Expired', description: 'Your paused session has expired (24 hour limit).' });
-        return;
       }
       setIsPaused(false);
       onPauseStateChange?.(false);
@@ -395,7 +333,7 @@ export function ChatInterface({
     });
   }, [onRegisterPauseHandlers, handlePauseInterview, handleResumeInterview, handleEndInterview]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!input.trim() || isLoading || isPaused) return;
 
@@ -443,7 +381,7 @@ export function ChatInterface({
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit(e);

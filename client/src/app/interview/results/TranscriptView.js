@@ -1,16 +1,6 @@
 import { cn } from '../utils.js';
 
-interface TranscriptViewProps {
-  transcript: string;
-  className?: string;
-}
-
-interface TranscriptMessage {
-  speaker: 'coach' | 'user';
-  content: string;
-}
-
-function parseTranscript(transcript: string): TranscriptMessage[] {
+function parseTranscript(transcript): TranscriptMessage[] {
   const messages: TranscriptMessage[] = [];
   const parts = transcript.split(/\n---\n/).filter(p => p.trim());
   

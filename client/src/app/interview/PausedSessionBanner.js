@@ -1,23 +1,7 @@
 import { useState, useEffect } from 'react';
 import { AlertCircle, Clock, Play, X } from 'lucide-react';
-import { Button } // Button -> use <button> with Tailwind;
-import { Card, CardContent } // Card -> use <div> with Tailwind;
 import { supabase } // supabase removed;
 import { useToast } from './useToast.js';
-
-interface PausedSession {
-  id: string;
-  session_type: string;
-  paused_at: string;
-  current_question_number: number;
-  created_at: string;
-}
-
-interface PausedSessionBannerProps {
-  userEmail: string;
-  onResume: (sessionId: string, sessionType: string) => void;
-  onAbandon: (sessionId: string) => void;
-}
 
 const SESSION_TYPE_LABELS: Record<string, string> = {
   quick_prep: 'Quick Prep',
@@ -27,9 +11,9 @@ const SESSION_TYPE_LABELS: Record<string, string> = {
 };
 
 export function PausedSessionBanner({ userEmail, onResume, onAbandon }: PausedSessionBannerProps) {
-  const [pausedSessions, setPausedSessions] = useState<PausedSession[]>([]);
+  const [pausedSessions, setPausedSessions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [abandoningId, setAbandoningId] = useState<string | null>(null);
+  const [abandoningId, setAbandoningId] = useState(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -63,7 +47,7 @@ export function PausedSessionBanner({ userEmail, onResume, onAbandon }: PausedSe
     fetchPausedSessions();
   }, [userEmail]);
 
-  const getTimeAgo = (pausedAt: string): string => {
+  const getTimeAgo = (pausedAt) => {
     const pausedTime = new Date(pausedAt).getTime();
     const now = Date.now();
     const diffMs = now - pausedTime;
@@ -76,7 +60,7 @@ export function PausedSessionBanner({ userEmail, onResume, onAbandon }: PausedSe
     return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
   };
 
-  const getExpiresIn = (pausedAt: string): string => {
+  const getExpiresIn = (pausedAt) => {
     const pausedTime = new Date(pausedAt).getTime();
     const expiresAt = pausedTime + 24 * 60 * 60 * 1000; // 24 hours
     const now = Date.now();
@@ -90,13 +74,13 @@ export function PausedSessionBanner({ userEmail, onResume, onAbandon }: PausedSe
     return `${remainingMins} minute${remainingMins !== 1 ? 's' : ''}`;
   };
 
-  const handleAbandon = async (sessionId: string) => {
+  const handleAbandon = async (sessionId) => {
     setAbandoningId(sessionId);
     try {
       // Mark session as cancelled
       const { error } = await supabase
         .from('coaching_sessions')
-        .update({ status: 'cancelled', paused_at: null })
+        .update({ status: 'cancelled', paused_at })
         .eq('id', sessionId);
 
       if (error) throw error;

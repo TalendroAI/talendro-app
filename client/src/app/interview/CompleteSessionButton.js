@@ -1,16 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Send, Check } from 'lucide-react';
-import { Button } // Button -> use <button> with Tailwind;
 import { cn } from './utils.js';
 import confetti from 'canvas-confetti';
-
-interface CompleteSessionButtonProps {
-  onClick: () => void;
-  isLoading: boolean;
-  isDisabled: boolean;
-  isCompleted: boolean;
-  className?: string;
-}
 
 export function CompleteSessionButton({
   onClick,
