@@ -3,7 +3,7 @@
 // import express from 'express';
 // import { parseWithAffinda, affindaStatus } from '../vendor/affindaAdapter.js';
 // import { mapToProfileDraft } from '../mappers/mapToProfileDraft.js';
-// import { createJob, setJobStatus, getJob, getDraft, saveDraft } from '../profileDraftStore.js';
+// import { createJob, setJobStatus, getJob, getDraft, saveDraft } from '../_archive/profileDraftStore.js';
 // import crypto from 'crypto';
 // import { parseResumeSimpleRobust } from '../resume-parser-simple-robust.js';
 // import { formatProtectionMiddleware, validateFormatIntegrity } from '../middleware/formatProtection.js';
@@ -364,7 +364,7 @@ import { parseWithClaude, claudeStatus } from '../vendor/claudeAdapter.js';
 import { parseWithLocal, localParserStatus } from '../vendor/localParser.js';
 import mapToProfileDraft from '../mappers/mapToProfileDraft.js';
 import { normalizeLinkedIn } from '../mappers/transforms.js';
-import { createJob, setJobStatus, getJob, getDraft, saveDraft } from '../profileDraftStore.js';
+import { createJob, setJobStatus, getJob, getDraft, saveDraft } from '../_archive/profileDraftStore.js';
 import crypto from 'crypto';
 import { formatProtectionMiddleware, validateFormatIntegrity } from '../middleware/formatProtection.js';
 

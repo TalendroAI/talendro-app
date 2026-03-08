@@ -31,7 +31,12 @@
 
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Guard: only initialize Resend when the API key is present.
+// Without this guard the server crashes on startup in environments
+// where RESEND_API_KEY has not yet been configured.
+const resend = process.env.RESEND_API_KEY
+  ? new Resend(process.env.RESEND_API_KEY)
+  : null;
 const FROM_ADDRESS = process.env.EMAIL_FROM || 'ASAN <noreply@talendro.com>'; // TODO: update with verified domain
 
 /**

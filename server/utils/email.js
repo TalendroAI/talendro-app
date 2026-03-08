@@ -1,6 +1,11 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Guard: only initialize Resend when the API key is present.
+// Without this guard the server crashes on startup in environments
+// where RESEND_API_KEY has not yet been configured.
+const resend = process.env.RESEND_API_KEY
+  ? new Resend(process.env.RESEND_API_KEY)
+  : null;
 const FROM = 'Talendro <support@talendro.com>';
 const APP_URL = process.env.APP_URL || 'https://talendro-app-1.onrender.com';
 
@@ -8,6 +13,10 @@ const APP_URL = process.env.APP_URL || 'https://talendro-app-1.onrender.com';
  * Send email verification link to a newly registered user.
  */
 export async function sendVerificationEmail(user, token) {
+  if (!resend) {
+    console.warn('[email] RESEND_API_KEY not set — skipping verification email for', user.email);
+    return;
+  }
   const link = `${APP_URL}/api/auth/verify-email?token=${token}`;
   await resend.emails.send({
     from: FROM,
@@ -73,6 +82,10 @@ export async function sendVerificationEmail(user, token) {
  * Send a welcome email after the user verifies their email.
  */
 export async function sendWelcomeEmail(user) {
+  if (!resend) {
+    console.warn('[email] RESEND_API_KEY not set — skipping welcome email for', user.email);
+    return;
+  }
   await resend.emails.send({
     from: FROM,
     to: user.email,

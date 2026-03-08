@@ -2,7 +2,10 @@ import express from 'express';
 import Stripe from 'stripe';
 
 const router = express.Router();
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+// Guard: only initialize Stripe when the key is present to prevent startup crashes.
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY)
+  : null;
 
 // Webhook endpoint - MUST use raw body
 router.post('/stripe', express.raw({ type: 'application/json' }), async (req, res) => {

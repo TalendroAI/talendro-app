@@ -293,9 +293,6 @@ app.use(morgan('dev'))
 
 const PORT = process.env.PORT || 5001
 
-// --- User Routes ---
-app.use('/api/user', userRoutes)
-
 // --- Auth Routes ---
 app.use('/api/auth', authRoutes)
 

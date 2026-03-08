@@ -9,7 +9,10 @@ import express from 'express';
 import Stripe from 'stripe';
 import User from '../models/User.js';
 const router = express.Router();
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+// Guard: only initialize Stripe when the key is present to prevent startup crashes.
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY)
+  : null;
 
 // Map Stripe plan keys to our User model enum values
 const PLAN_MAP = { starter: 'basic', pro: 'pro', concierge: 'premium' };
