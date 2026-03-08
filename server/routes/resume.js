@@ -186,4 +186,84 @@ router.put('/update', authenticateToken, async (req, res) => {
   }
 });
 
+// ─── POST /api/resume/tailor ────────────────────────────────────────────────
+// Task 1.5: Per-job resume tailoring
+// Accepts a jobId (or inline jobTitle + jobDescription) and returns a tailored
+// version of the user's approved resume for preview purposes.
+router.post('/tailor', authenticateToken, async (req, res) => {
+  try {
+    const { jobId, jobTitle, jobDescription, companyName } = req.body;
+    if (!jobDescription) return res.status(400).json({ error: 'jobDescription is required' });
+
+    const user = await User.findById(req.userId).lean();
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const baseResume = user.resumeData?.optimized || user.resumeData?.rawText || '';
+    if (!baseResume) return res.status(400).json({ error: 'No approved resume found. Please complete resume optimization first.' });
+
+    // TODO (Task 1.5): Import and call resumeTailorService.tailor()
+    // import resumeTailorService from '../services/resumeTailorService.js';
+    // const tailored = await resumeTailorService.tailor({ baseResume, jobTitle, jobDescription, companyName });
+    const tailored = baseResume; // STUB — replace with service call above
+
+    return res.json({ success: true, tailoredResume: tailored });
+  } catch (err) {
+    console.error('[resume/tailor] Error:', err.message);
+    return res.status(500).json({ error: 'Failed to tailor resume' });
+  }
+});
+
+// ─── POST /api/resume/generate-cover-letter ──────────────────────────────────
+// Task 1.6: Cover letter generation
+// Accepts a jobId (or inline job details) and returns a generated cover letter.
+router.post('/generate-cover-letter', authenticateToken, async (req, res) => {
+  try {
+    const { jobTitle, jobDescription, companyName } = req.body;
+    if (!jobTitle || !jobDescription) return res.status(400).json({ error: 'jobTitle and jobDescription are required' });
+
+    const user = await User.findById(req.userId).lean();
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const baseResume = user.resumeData?.optimized || '';
+
+    // TODO (Task 1.6): Import and call coverLetterService.generate()
+    // import coverLetterService from '../services/coverLetterService.js';
+    // const jobDoc = { title: jobTitle, description: jobDescription, company: companyName };
+    // const coverLetter = await coverLetterService.generate({ user, jobDoc, tailoredResume: baseResume });
+    const coverLetter = `Dear Hiring Team,\n\nI am excited to apply for the ${jobTitle} role at ${companyName}.\n\n[Cover letter generation not yet implemented — see coverLetterService.js]\n\nSincerely,\n${user.firstName || 'Applicant'}`; // STUB
+
+    return res.json({ success: true, coverLetter });
+  } catch (err) {
+    console.error('[resume/generate-cover-letter] Error:', err.message);
+    return res.status(500).json({ error: 'Failed to generate cover letter' });
+  }
+});
+
+// ─── GET /api/resume/download-pdf ────────────────────────────────────────────
+// Task 2.1: PDF resume download
+// Generates and returns a professionally formatted PDF of the user's resume.
+router.get('/download-pdf', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).lean();
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const resumeText = user.resumeData?.optimized || '';
+    if (!resumeText) return res.status(400).json({ error: 'No approved resume found.' });
+
+    // TODO (Task 2.1): Import and call pdfService.generateResumePdf()
+    // import pdfService from '../services/pdfService.js';
+    // const pdfBuffer = await pdfService.generateResumePdf({ user, resumeText });
+    // res.setHeader('Content-Type', 'application/pdf');
+    // res.setHeader('Content-Disposition', `attachment; filename="resume-${user.firstName || 'talendro'}.pdf"`);
+    // return res.send(pdfBuffer);
+
+    // STUB — remove once pdfService is implemented
+    return res.status(501).json({ error: 'PDF generation not yet implemented. See TODO in resume.js and pdfService.js.' });
+  } catch (err) {
+    console.error('[resume/download-pdf] Error:', err.message);
+    return res.status(500).json({ error: 'Failed to generate PDF' });
+  }
+});
+
 export default router;
+

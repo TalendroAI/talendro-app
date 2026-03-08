@@ -45,6 +45,9 @@ import Applications from '../app/Applications'
 import Billing from '../app/Billing'
 import Jobs from '../app/Jobs'
 import InterviewPrep from '../app/InterviewPrep'
+import SalaryNegotiation from '../app/SalaryNegotiation'
+import LinkedInOptimizer from '../app/LinkedInOptimizer'
+import WeeklyStrategy from '../app/WeeklyStrategy'
 
 // Auth
 import { AuthProvider } from '../auth/AuthContext'
@@ -156,6 +159,15 @@ function AppRoutes() {
           } />
           <Route path="/app/interview" element={
             <ProtectedRoute><InterviewPrep /></ProtectedRoute>
+          } />
+          <Route path="/app/salary-negotiation" element={
+            <ProtectedRoute><SalaryNegotiation /></ProtectedRoute>
+          } />
+          <Route path="/app/linkedin" element={
+            <ProtectedRoute><LinkedInOptimizer /></ProtectedRoute>
+          } />
+          <Route path="/app/strategy" element={
+            <ProtectedRoute><WeeklyStrategy /></ProtectedRoute>
           } />
         </Routes>
       </main>

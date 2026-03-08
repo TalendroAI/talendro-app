@@ -7,16 +7,33 @@ services:
     buildCommand: npm run install:all && npm run build
     startCommand: cd server && npm start
     envVars:
+      # ── Core ────────────────────────────────────────────────────────────────
       - key: NODE_ENV
         value: production
       - key: PORT
         sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: DOMAIN
+        sync: false
+
+      # ── Database ─────────────────────────────────────────────────────────────
       - key: MONGODB_URI
         sync: false
+
+      # ── Auth ─────────────────────────────────────────────────────────────────
       - key: JWT_SECRET
+        sync: false
+
+      # ── AI Services ──────────────────────────────────────────────────────────
+      - key: OPENAI_API_KEY
         sync: false
       - key: ANTHROPIC_API_KEY
         sync: false
+      - key: XAI_API_KEY
+        sync: false
+
+      # ── Stripe Billing ───────────────────────────────────────────────────────
       - key: STRIPE_SECRET_KEY
         sync: false
       - key: STRIPE_PRICE_ID_BASIC
@@ -27,8 +44,17 @@ services:
         sync: false
       - key: STRIPE_WEBHOOK_SECRET
         sync: false
-      - key: FRONTEND_URL
+
+      # ── Email (Resend) ────────────────────────────────────────────────────────
+      # TODO (Task 1.7): Add RESEND_API_KEY to Render dashboard and uncomment below
+      - key: RESEND_API_KEY
         sync: false
-      - key: DOMAIN
+      - key: EMAIL_FROM
         sync: false
 
+      # ── Auto-Apply Engine ────────────────────────────────────────────────────
+      # Set to 'true' once the Playwright ATS adapters are implemented (Task 1.4)
+      - key: ENABLE_AUTO_APPLY
+        value: "false"
+      - key: APPLY_WORKER_CONCURRENCY
+        value: "2"

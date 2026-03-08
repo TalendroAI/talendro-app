@@ -7,10 +7,11 @@
 // import morgan from 'morgan'
 // import path from 'path'
 // import { fileURLToPath } from 'url'
-// import userRoutes from './routes.user.js'
+// // userRoutes archived — now using routes/auth.js
+// import userRoutes from './_archive/routes.user.js'
 // import parseRoutes from './routes/parse.js'
 // import dashboardRoutes from './routes/dashboard.js'
-// import { parseResumeData } from './resume-parser-ultimate.js'
+// import { parseResumeData } from './_archive/resume-parser-ultimate.js' // archived
 // import { affindaStatus } from './vendor/affindaAdapter.js'
 // import crypto from 'crypto'
 
@@ -187,7 +188,7 @@
 
 
 
-import './bootstrap-env.js';  // ✅ MUST BE FIRST
+import './_archive/bootstrap-env.js';  // archived — do not delete
 
 // ✅ DIAGNOSTIC: Print environment status immediately
 console.log('[ENV] CWD:', process.cwd());
@@ -201,7 +202,8 @@ import morgan from 'morgan'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import fs from 'fs'
-import userRoutes from './routes.user.js'
+// userRoutes archived — now using routes/auth.js
+// import userRoutes from './_archive/routes.user.js'
 import parseRoutes from './routes/parse.js'
 import dashboardRoutes from './routes/dashboard.js'
 import jobsRoutes from './routes/jobs.js'
@@ -211,7 +213,11 @@ import interviewRoutes from './routes/interview.js'
 import authRoutes from './routes/auth.js'
 import webhookRoutes from './routes/webhooks.js'
 import resumeRoutes from './routes/resume.js'
-import { parseResumeData } from './resume-parser-ultimate.js'
+import negotiationRoutes from './routes/negotiation.js'
+import linkedinRoutes from './routes/linkedin.js'
+import strategyRoutes from './routes/strategy.js'
+import { startApplyWorker } from './services/applyWorker.js'
+import { parseResumeData } from './_archive/resume-parser-ultimate.js' // archived
 import crypto from 'crypto'
 import { initCrawlerScheduler } from './services/crawlerScheduler.js'
 
@@ -315,6 +321,15 @@ app.use('/api/ai', aiRoutes)
 app.use('/api/interview', interviewRoutes)
 
 app.use('/api/stripe', stripeRoutes)
+
+// --- Salary Negotiation Routes ---
+app.use('/api/negotiation', negotiationRoutes)
+
+// --- LinkedIn Optimization Routes ---
+app.use('/api/linkedin', linkedinRoutes)
+
+// --- Weekly Strategy Session Routes ---
+app.use('/api/strategy', strategyRoutes)
 
 // --- Mock API ---
 app.get('/api/health', (req,res)=> res.json({ ok:true, service:'talendro-server' }))
@@ -477,4 +492,12 @@ app.listen(PORT, '0.0.0.0', () => {
   // Initialize the ATS job crawler scheduler
   initCrawlerScheduler();
   console.log('✅ ATS crawler scheduler initialized');
+  // Start the Auto-Apply Worker
+  // TODO (Task 1.2): Remove the guard below once the worker is fully implemented
+  if (process.env.ENABLE_AUTO_APPLY === 'true') {
+    startApplyWorker();
+    console.log('✅ Auto-Apply Worker started');
+  } else {
+    console.log('ℹ️  Auto-Apply Worker disabled (set ENABLE_AUTO_APPLY=true to enable)');
+  };
 })

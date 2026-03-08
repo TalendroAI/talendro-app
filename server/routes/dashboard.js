@@ -1,261 +1,219 @@
-// server/routes/dashboard.js
-import express from "express";
+/**
+ * routes/dashboard.js
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Dashboard API Routes — serves real data from MongoDB.
+ *
+ * FIXED (Task 2.3): All endpoints previously returned hardcoded mock data.
+ * They now query MongoDB for real user-specific data.
+ *
+ * The legacy /:cid parameter pattern is preserved for backward compatibility
+ * with existing frontend calls, but the actual data is fetched using the
+ * authenticated user's ID from the JWT token.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
+import express from 'express';
+import { authenticateToken } from '../middleware/auth.js';
+import User from '../models/User.js';
+import Job from '../models/Job.js';
+import Application from '../models/Application.js';
+
 const router = express.Router();
 
-// Stats endpoint
-router.get("/stats/:cid", (req, res) => {
-  const { cid } = req.params;
-  res.json({
-    jobsSearched: 124,
-    resumes: 12,
-    applications: 38,
-    agents: 3,
-    history: [
-      { week: "Week 1", applications: 5 },
-      { week: "Week 2", applications: 10 },
-      { week: "Week 3", applications: 15 },
-      { week: "Week 4", applications: 8 }
-    ],
-    recentActivity: [
-      { action: "New job matches found", timestamp: new Date().toISOString() },
-      { action: "Resume customized for Acme Corp", timestamp: new Date(Date.now() - 3600000).toISOString() },
-      { action: "Application submitted to Beta Inc", timestamp: new Date(Date.now() - 7200000).toISOString() }
-    ]
-  });
+// ─── GET /api/dashboard/stats/:cid ──────────────────────────────────────────
+// Returns real application and job stats for the authenticated user.
+router.get('/stats/:cid', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    const [user, totalApplications, totalJobs] = await Promise.all([
+      User.findById(userId).lean(),
+      Application.countDocuments({ userId }),
+      Job.countDocuments({ matchedUsers: userId }),
+    ]);
+
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // Build weekly application history (last 4 weeks)
+    const fourWeeksAgo = new Date(Date.now() - 28 * 24 * 60 * 60 * 1000);
+    const recentApps = await Application.find({
+      userId,
+      appliedAt: { $gte: fourWeeksAgo },
+    }).select('appliedAt').lean();
+
+    const weeklyHistory = [0, 1, 2, 3].map(weeksAgo => {
+      const weekStart = new Date(Date.now() - (weeksAgo + 1) * 7 * 24 * 60 * 60 * 1000);
+      const weekEnd = new Date(Date.now() - weeksAgo * 7 * 24 * 60 * 60 * 1000);
+      const count = recentApps.filter(a => a.appliedAt >= weekStart && a.appliedAt < weekEnd).length;
+      return { week: `Week ${4 - weeksAgo}`, applications: count };
+    });
+
+    // Recent activity from applications
+    const recentActivity = await Application.find({ userId })
+      .sort({ updatedAt: -1 })
+      .limit(5)
+      .lean();
+
+    const activityFeed = recentActivity.map(app => ({
+      action: `Application ${app.status === 'applied' ? 'submitted' : app.status} — ${app.jobTitle || 'Job'}`,
+      timestamp: (app.updatedAt || app.appliedAt || app.createdAt || new Date()).toISOString(),
+    }));
+
+    return res.json({
+      jobsSearched: totalJobs,
+      resumes: user.resumeData?.optimized ? 1 : 0,
+      applications: totalApplications,
+      agents: 1,
+      history: weeklyHistory,
+      recentActivity: activityFeed,
+    });
+  } catch (err) {
+    console.error('[dashboard/stats] Error:', err.message);
+    return res.status(500).json({ error: 'Failed to fetch dashboard stats' });
+  }
 });
 
-// Initial search results
-router.get("/initial-search/:cid", (req, res) => {
-  const { cid } = req.params;
-  res.json({
-    results: [
-      {
-        id: 1,
-        title: "Senior Software Engineer",
-        company: "Acme Corp",
-        location: "Remote",
-        salary: "$120,000 - $150,000",
-        snippet: "Looking for Python + React developer with 5+ years experience...",
-        url: "https://careers.acme.com/job/123",
-        postedDate: "2025-09-25",
-        matchScore: 95,
-        keywords: ["Python", "React", "AWS", "Docker"]
-      },
-      {
-        id: 2,
-        title: "Backend Developer",
-        company: "Beta Inc",
-        location: "NYC, NY",
-        salary: "$100,000 - $130,000",
-        snippet: "Java, Spring Boot, cloud experience required...",
-        url: "https://jobs.beta.com/456",
-        postedDate: "2025-09-24",
-        matchScore: 88,
-        keywords: ["Java", "Spring Boot", "Microservices", "Kubernetes"]
-      },
-      {
-        id: 3,
-        title: "Full Stack Developer",
-        company: "Gamma LLC",
-        location: "San Francisco, CA",
-        salary: "$110,000 - $140,000",
-        snippet: "Node.js, React, TypeScript, MongoDB experience...",
-        url: "https://gamma.com/careers/789",
-        postedDate: "2025-09-23",
-        matchScore: 92,
-        keywords: ["Node.js", "React", "TypeScript", "MongoDB"]
-      },
-      {
-        id: 4,
-        title: "DevOps Engineer",
-        company: "Delta Systems",
-        location: "Austin, TX",
-        salary: "$115,000 - $145,000",
-        snippet: "AWS, Terraform, CI/CD pipeline experience...",
-        url: "https://delta.com/jobs/101",
-        postedDate: "2025-09-22",
-        matchScore: 85,
-        keywords: ["AWS", "Terraform", "Docker", "Jenkins"]
-      }
-    ]
-  });
+// ─── GET /api/dashboard/initial-search/:cid ─────────────────────────────────
+// FIXED (Task 2.3): Previously returned hardcoded mock jobs.
+// Now returns the top matched jobs from MongoDB for this user.
+router.get('/initial-search/:cid', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.userId;
+    const user = await User.findById(userId).lean();
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // Fetch top 10 highest-scoring jobs for this user
+    const jobs = await Job.find({ matchedUsers: userId })
+      .sort({ matchScore: -1 })
+      .limit(10)
+      .lean();
+
+    // If no matched jobs yet (new user), fall back to recent jobs from the DB
+    const fallbackJobs = jobs.length === 0
+      ? await Job.find({}).sort({ postedDate: -1 }).limit(10).lean()
+      : jobs;
+
+    const results = fallbackJobs.map(job => ({
+      id: job._id,
+      title: job.title,
+      company: job.company,
+      location: job.location,
+      salary: job.salary || 'Not specified',
+      snippet: job.description ? job.description.substring(0, 150) + '...' : '',
+      url: job.applyUrl || job.url,
+      postedDate: job.postedDate,
+      matchScore: job.matchScore || 0,
+      keywords: job.skills || [],
+      atsType: job.atsType || 'generic',
+    }));
+
+    return res.json({ results });
+  } catch (err) {
+    console.error('[dashboard/initial-search] Error:', err.message);
+    return res.status(500).json({ error: 'Failed to fetch initial job matches' });
+  }
 });
 
-// Resumes endpoint
-router.get("/resumes/:cid", (req, res) => {
-  const { cid } = req.params;
-  res.json([
-    { 
-      id: 1, 
-      job: "Software Engineer at Acme Corp", 
-      keywords: ["Python", "React", "AWS"], 
-      date: "2025-09-15",
-      status: "Ready",
-      downloadUrl: "/api/resumes/download/1"
-    },
-    { 
-      id: 2, 
-      job: "Backend Developer at Beta Inc", 
-      keywords: ["Java", "Spring Boot", "Microservices"], 
-      date: "2025-09-16",
-      status: "Ready",
-      downloadUrl: "/api/resumes/download/2"
-    },
-    { 
-      id: 3, 
-      job: "Full Stack Developer at Gamma LLC", 
-      keywords: ["Node.js", "React", "TypeScript"], 
-      date: "2025-09-17",
-      status: "Processing",
-      downloadUrl: null
+// ─── GET /api/dashboard/resumes/:cid ────────────────────────────────────────
+// Returns the user's resume history.
+router.get('/resumes/:cid', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).lean();
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const resumes = [];
+    if (user.resumeData?.optimized) {
+      resumes.push({
+        id: 'base',
+        job: 'Base Resume (Optimized)',
+        keywords: user.resumeData?.skills || [],
+        date: user.resumeData?.optimizedAt || user.updatedAt,
+        status: user.resumeData?.approved ? 'Approved' : 'Ready',
+        downloadUrl: '/api/resume/download-pdf',
+      });
     }
-  ]);
+
+    return res.json(resumes);
+  } catch (err) {
+    console.error('[dashboard/resumes] Error:', err.message);
+    return res.status(500).json({ error: 'Failed to fetch resumes' });
+  }
 });
 
-// Applications endpoint
-router.get("/applications/:cid", (req, res) => {
-  const { cid } = req.params;
-  res.json([
-    { 
-      id: 1, 
-      title: "Senior Software Engineer", 
-      company: "Acme Corp", 
-      date: "2025-09-15",
-      status: "Submitted",
-      resumeUsed: "Resume #1",
-      notes: "Applied via company website"
-    },
-    { 
-      id: 2, 
-      title: "Backend Developer", 
-      company: "Beta Inc", 
-      date: "2025-09-16",
-      status: "Under Review",
-      resumeUsed: "Resume #2",
-      notes: "Application under review by HR"
-    },
-    { 
-      id: 3, 
-      title: "Full Stack Developer", 
-      company: "Gamma LLC", 
-      date: "2025-09-17",
-      status: "Interview Scheduled",
-      resumeUsed: "Resume #3",
-      notes: "Phone interview scheduled for next week"
-    }
-  ]);
+// ─── GET /api/dashboard/applications/:cid ───────────────────────────────────
+// Returns the user's real application history from MongoDB.
+router.get('/applications/:cid', authenticateToken, async (req, res) => {
+  try {
+    const applications = await Application.find({ userId: req.userId })
+      .sort({ appliedAt: -1 })
+      .limit(20)
+      .lean();
+
+    const formatted = applications.map(app => ({
+      id: app._id,
+      title: app.jobTitle || 'Unknown Role',
+      company: app.companyName || 'Unknown Company',
+      date: app.appliedAt || app.createdAt,
+      status: app.status || 'Pending',
+      resumeUsed: app.tailoredResumeSnapshot ? 'Tailored Resume' : 'Base Resume',
+      notes: app.errorMessage || '',
+      applyUrl: app.applyUrl,
+    }));
+
+    return res.json(formatted);
+  } catch (err) {
+    console.error('[dashboard/applications] Error:', err.message);
+    return res.status(500).json({ error: 'Failed to fetch applications' });
+  }
 });
 
-// Activities endpoint
-router.get("/activities/:cid", (req, res) => {
-  const { cid } = req.params;
-  res.json([
-    { 
-      id: 1, 
-      action: "Boolean search agent created", 
-      date: "2025-09-14",
-      type: "system",
-      description: "New search agent configured for software engineering roles"
-    },
-    { 
-      id: 2, 
-      action: "Application submitted for Acme Corp", 
-      date: "2025-09-15",
-      type: "application",
-      description: "Senior Software Engineer position at Acme Corp"
-    },
-    { 
-      id: 3, 
-      action: "Resume customized for Beta Inc", 
-      date: "2025-09-16",
-      type: "resume",
-      description: "Resume tailored for Backend Developer role"
-    },
-    { 
-      id: 4, 
-      action: "New job matches found", 
-      date: "2025-09-17",
-      type: "search",
-      description: "4 new matching positions discovered"
-    }
-  ]);
+// ─── GET /api/dashboard/activities/:cid ─────────────────────────────────────
+// Returns the user's activity feed from real application events.
+router.get('/activities/:cid', authenticateToken, async (req, res) => {
+  try {
+    const applications = await Application.find({ userId: req.userId })
+      .sort({ updatedAt: -1 })
+      .limit(10)
+      .lean();
+
+    const activities = applications.map((app, i) => ({
+      id: app._id,
+      action: `Application ${app.status} — ${app.jobTitle || 'Job'} at ${app.companyName || 'Company'}`,
+      date: (app.updatedAt || app.appliedAt || new Date()).toISOString().split('T')[0],
+      type: 'application',
+      description: app.errorMessage || `Status: ${app.status}`,
+    }));
+
+    return res.json(activities);
+  } catch (err) {
+    console.error('[dashboard/activities] Error:', err.message);
+    return res.status(500).json({ error: 'Failed to fetch activities' });
+  }
 });
 
-// Boolean search generator
-router.post("/boolean-generator/:cid", (req, res) => {
-  const { cid } = req.params;
+// ─── POST /api/dashboard/boolean-generator/:cid ─────────────────────────────
+// Boolean search string generator — logic is fine, kept as-is.
+router.post('/boolean-generator/:cid', (req, res) => {
   const { skills, jobTitles, locations, industries } = req.body;
-  
-  // Generate Boolean search string
-  const jobTitleQuery = jobTitles?.map(title => `"${title}"`).join(' OR ') || '"software engineer" OR "developer"';
-  const skillsQuery = skills?.map(skill => `"${skill}"`).join(' OR ') || '"Python" OR "Java"';
-  const locationQuery = locations?.map(loc => `"${loc}"`).join(' OR ') || '"remote" OR "hybrid"';
-  const industryQuery = industries?.map(industry => `"${industry}"`).join(' OR ') || '"technology" OR "software"';
-  
+
+  const jobTitleQuery = jobTitles?.map(t => `"${t}"`).join(' OR ') || '"software engineer" OR "developer"';
+  const skillsQuery = skills?.map(s => `"${s}"`).join(' OR ') || '"Python" OR "JavaScript"';
+  const locationQuery = locations?.map(l => `"${l}"`).join(' OR ') || '"remote" OR "hybrid"';
+  const industryQuery = industries?.map(i => `"${i}"`).join(' OR ') || '"technology" OR "software"';
+
   const booleanString = `(${jobTitleQuery}) AND (${skillsQuery}) AND (${locationQuery}) AND (${industryQuery})`;
-  
-  res.json({
+
+  return res.json({
     booleanString,
-    searchQuery: {
-      jobTitles: jobTitles || ["software engineer", "developer"],
-      skills: skills || ["Python", "Java"],
-      locations: locations || ["remote", "hybrid"],
-      industries: industries || ["technology", "software"]
-    },
+    searchQuery: { jobTitles, skills, locations, industries },
     generatedAt: new Date().toISOString(),
-    cid
   });
 });
 
-// Job search execution
-router.post("/execute-search/:cid", async (req, res) => {
-  const { cid } = req.params;
-  const { booleanString } = req.body;
-  
-  // Simulate job search execution
-  const mockResults = [
-    {
-      id: Math.random().toString(36).substr(2, 9),
-      title: "Software Engineer",
-      company: "TechCorp",
-      location: "Remote",
-      url: "https://techcorp.com/jobs/123",
-      postedDate: new Date().toISOString(),
-      source: "Company Website"
-    },
-    {
-      id: Math.random().toString(36).substr(2, 9),
-      title: "Full Stack Developer",
-      company: "StartupXYZ",
-      location: "San Francisco, CA",
-      url: "https://startupxyz.com/careers/456",
-      postedDate: new Date().toISOString(),
-      source: "LinkedIn"
-    }
-  ];
-  
-  res.json({
-    searchId: Math.random().toString(36).substr(2, 9),
-    results: mockResults,
-    totalFound: mockResults.length,
-    executedAt: new Date().toISOString(),
-    booleanString
-  });
-});
-
-// Resume download
-router.get("/resumes/download/:resumeId", (req, res) => {
-  const { resumeId } = req.params;
-  // In a real implementation, this would serve the actual resume file
-  res.json({
-    message: `Resume ${resumeId} download initiated`,
-    downloadUrl: `/api/dashboard/resumes/download/${resumeId}/file`
-  });
+// ─── GET /api/dashboard/resumes/download/:resumeId ──────────────────────────
+// Redirect to the real PDF download endpoint.
+router.get('/resumes/download/:resumeId', authenticateToken, (req, res) => {
+  return res.redirect('/api/resume/download-pdf');
 });
 
 export default router;
-
-
-
-
-

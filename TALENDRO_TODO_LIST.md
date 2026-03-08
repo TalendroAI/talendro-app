@@ -1,63 +1,121 @@
-# Talendro Master To-Do List
+# Talendro — Master Build & Deployment To-Do List
 
-**Version:** 1.0
-**Date:** 2026-03-07
-**Author:** Manus AI
+> **Last Updated:** March 7, 2026
+> **Status Key:** ✅ Scaffolded (file exists, logic needed) | 🔲 Not Started | ✔️ Complete
 
-## Introduction
-
-This document provides a master to-do list for the complete build and deployment of the Talendro platform. It is based on the revised roadmap and a detailed code-level audit. Each task is designed to be specific and actionable, referencing the exact files, services, or components that need to be built or fixed.
+This document is the single source of truth for all remaining work required to take Talendro from its current state to a fully operational product that delivers on every promise made on the marketing and pricing pages. Tasks are ordered by priority and dependency.
 
 ---
 
-## Phase 1: Build the Core Application Engine (Est: 8-10 Weeks)
+## Phase 1 — Core Application Engine
+*Estimated: 8–10 weeks of engineering effort*
+*This phase delivers the core product promise: automated job application submission.*
 
-**Objective:** Build the core automated application engine from the ground up. This is the most critical phase and delivers the fundamental promise of the product.
+| # | Task | File(s) to Edit | Status |
+|---|---|---|---|
+| 1.1 | **Application Queue** — In-memory queue for managing apply jobs | `server/services/queueService.js` | ✅ Scaffolded |
+| 1.2 | **Apply Worker** — Core worker that processes jobs from the queue | `server/services/applyWorker.js` | ✅ Scaffolded |
+| 1.3 | **ATS Adapter Registry** — Routes jobs to the correct ATS adapter | `server/services/ats/index.js` | ✅ Scaffolded |
+| 1.4 | **ATS Adapters (Playwright)** — Implement browser automation for Greenhouse, Lever, and Generic forms | `server/services/ats/greenhouseAdapter.js`, `leverAdapter.js`, `genericAdapter.js` | ✅ Scaffolded |
+| 1.5 | **Resume Tailoring Service** — OpenAI call to tailor resume per job | `server/services/resumeTailorService.js` | ✅ Scaffolded |
+| 1.6 | **Cover Letter Service** — OpenAI call to generate cover letter per job | `server/services/coverLetterService.js` | ✅ Scaffolded |
+| 1.7 | **Email Notification Service** — Resend integration for application confirmations | `server/services/emailService.js` | ✅ Scaffolded |
+| 1.8 | **Quota Enforcement** — Enforce monthly application limits per plan | `server/services/applyWorker.js` (see TODO comment) | ✅ Scaffolded |
 
-| Task | Component / File | Acceptance Criteria |
-| :--- | :--- | :--- |
-| **1.1: Set Up Job Queue** | New Service | Implement a message queue (e.g., RabbitMQ) to manage application jobs. Create a new service file: `/server/services/queueService.js`. |
-| **1.2: Create Apply Worker** | New Service | Create a new worker service `/server/services/applyWorker.js` that consumes jobs from the queue. |
-| **1.3: Build ATS Adapters** | New Services | Create ATS-specific adapters. Start with Greenhouse (`/server/services/ats/greenhouseAdapter.js`) and Lever (`/server/services/ats/leverAdapter.js`). |
-| **1.4: Implement Browser Automation** | `applyWorker.js` | Use Playwright within the `applyWorker.js` to navigate to application forms, fill in fields, and submit. |
-| **1.5: Build Per-Job Resume Tailoring** | New API & Service | Create a new API endpoint `/api/resume/tailor` and a service `/server/services/resumeTailorService.js` that uses AI to customize a resume for a specific job description. |
-| **1.6: Build Cover Letter Generation** | New API & Service | Create a new API endpoint `/api/resume/generate-cover-letter` and a service `/server/services/coverLetterService.js` to generate AI-powered cover letters. |
-| **1.7: Implement Email Notifications** | New Service | Integrate an email service (e.g., SendGrid) in `/server/services/emailService.js` and call it from the `applyWorker.js` on successful application submission. |
-| **1.8: Enforce Application Quotas** | `User.js` & `applyWorker.js` | Modify `/server/models/User.js` to properly track monthly application counts. The `applyWorker.js` must check and enforce this limit before processing a job. |
-
----
-
-## Phase 2: Deliver Pro-Tier Features & Fix Facades (Est: 4-6 Weeks)
-
-**Objective:** Build out the features promised in the Pro plan and fix the deceptive UI elements to create an honest user experience.
-
-| Task | Component / File | Acceptance Criteria |
-| :--- | :--- | :--- |
-| **2.1: Implement PDF Resume Generation** | New API & Service | Create a `/api/resume/download-pdf` endpoint and a `/server/services/pdfService.js` that uses a library like Puppeteer to generate a downloadable PDF resume. |
-| **2.2: Build Salary Negotiation Guide** | New UI, API & Service | Create a new UI component `/client/src/app/SalaryNegotiation.js`, a new API endpoint `/api/negotiation/chat`, and a new service `/server/services/negotiationService.js` for single-round AI negotiation coaching. |
-| **2.3: Fix Onboarding Dashboard** | `Dashboard.js` | Modify `/client/src/pages/app/Dashboard.js` to remove the mock API call and replace it with a call to the live `/api/jobs/feed` endpoint. |
-| **2.4: Stabilize Resume Parsing** | `parse.js` | Refactor `/server/routes/parse.js` to remove all commented-out code and legacy logic, ensuring only the production-ready OpenAI parser is used. |
+**To activate Phase 1:**
+1. Install Playwright: `cd server && npm install playwright`
+2. Implement the `apply()` method in each ATS adapter (see detailed TODO comments in each file)
+3. Implement `resumeTailorService.tailor()` with the OpenAI call
+4. Implement `coverLetterService.generate()` with the OpenAI call
+5. Add `RESEND_API_KEY` to Render env vars and implement `emailService` methods
+6. Set `ENABLE_AUTO_APPLY=true` in Render to enable the worker
 
 ---
 
-## Phase 3: Build Concierge Features (Est: 4-5 Weeks)
+## Phase 2 — Pro-Tier Features & Facade Fixes
+*Estimated: 4–6 weeks of engineering effort*
+*This phase completes the Pro plan and fixes the fake onboarding experience.*
 
-**Objective:** Implement the high-value, premium features promised to Concierge subscribers.
+| # | Task | File(s) to Edit | Status |
+|---|---|---|---|
+| 2.1 | **PDF Resume Download** — Generate and serve a formatted PDF of the user's resume | `server/services/pdfService.js`, `server/routes/resume.js` | ✅ Scaffolded |
+| 2.2 | **Salary Negotiation Coach** — AI-powered offer analysis and negotiation chat | `server/services/negotiationService.js`, `server/routes/negotiation.js`, `client/src/app/SalaryNegotiation.js` | ✅ Scaffolded |
+| 2.3 | **Fix Onboarding Dashboard Facade** — Replace mock data with real MongoDB queries | `server/routes/dashboard.js` | ✔️ **Complete** |
+| 2.4 | **Stabilize Resume Parsing** — Clean up `parse.js` and remove dead code | `server/routes/parse.js` | 🔲 Not Started |
 
-| Task | Component / File | Acceptance Criteria |
-| :--- | :--- | :--- |
-| **3.1: Build LinkedIn Optimization** | New UI, API & Service | Create a `/client/src/app/LinkedInOptimizer.js` component, a `/api/linkedin/optimize` endpoint, and a `/server/services/linkedinService.js` to scrape and analyze a user's LinkedIn profile. |
-| **3.2: Implement Advanced Salary Negotiation** | `negotiationService.js` | Extend the existing salary negotiation service to support the multi-round analysis and support promised in the Concierge plan. |
-| **3.3: Build Weekly AI Strategy Session** | New UI, API & Service | Create a `/client/src/app/StrategySession.js` component, a `/api/strategy/chat` endpoint, and a `/server/services/strategyService.js` for the weekly AI-powered career coaching session. |
+**To activate Phase 2:**
+1. Install Puppeteer for PDF: `cd server && npm install puppeteer`
+2. Implement `pdfService.generateResumePdf()` (see TODO in file)
+3. Implement `negotiationService.chat()` and `negotiationService.analyze()` (see TODO in file)
+4. Clean up `server/routes/parse.js` — remove the 320 lines of commented-out dead code above the live code
 
 ---
 
-## Phase 4: Deployment & Cleanup
+## Phase 3 — Concierge Features
+*Estimated: 4–5 weeks of engineering effort*
+*This phase completes the highest-tier plan.*
 
-**Objective:** Prepare the application for production, deploy it, and clean up the repository.
+| # | Task | File(s) to Edit | Status |
+|---|---|---|---|
+| 3.1 | **LinkedIn Profile Optimization** — AI analysis of pasted LinkedIn profile text | `server/services/linkedinService.js`, `server/routes/linkedin.js`, `client/src/app/LinkedInOptimizer.js` | ✅ Scaffolded |
+| 3.2 | **Advanced Salary Negotiation** — Multi-round negotiation support (Concierge upgrade) | `server/services/negotiationService.js` (extend `chat()`) | ✅ Scaffolded |
+| 3.3 | **Weekly AI Strategy Session** — Personalized weekly career strategy brief + chat | `server/services/strategyService.js`, `server/routes/strategy.js`, `client/src/app/WeeklyStrategy.js` | ✅ Scaffolded |
 
-| Task | Component / File | Acceptance Criteria |
-| :--- | :--- | :--- |
-| **4.1: Update Deployment Configuration** | `render.yaml` | Add all new environment variables (e.g., for the queue service, email service) to the `render.yaml` file. |
-| **4.2: Create Worker Dockerfile** | New File | Create a new `Dockerfile` specifically for the `applyWorker.js` service to ensure it can be deployed as a separate background worker on Render. |
-| **4.3: Repository Cleanup** | Entire `/server/` directory | Delete all stale, unused, and temporary files from the `/server/` directory (e.g., `resume-parser-*.js`, `index-stripe.js`, etc.) to create a clean, production-ready codebase. |
+**To activate Phase 3:**
+1. Implement `linkedinService.analyze()` with the OpenAI call (see TODO in file)
+2. Implement `strategyService.generateSession()` and `strategyService.chat()` (see TODO in file)
+3. Verify plan-gating logic in `linkedin.js` and `strategy.js` routes is correct
+
+---
+
+## Phase 4 — Deployment & Cleanup
+*Estimated: 1–2 weeks*
+
+| # | Task | File(s) to Edit | Status |
+|---|---|---|---|
+| 4.1 | **Archive stale server files** — Move 18 dead parser/utility files out of server root | `server/_archive/` | ✔️ **Complete** |
+| 4.2 | **Update render.yaml** — Add all new env vars (RESEND_API_KEY, ENABLE_AUTO_APPLY, etc.) | `render.yaml` | ✔️ **Complete** |
+| 4.3 | **Clean up parse.js** — Remove 320 lines of commented-out dead code | `server/routes/parse.js` | 🔲 Not Started |
+| 4.4 | **Add Playwright to Dockerfile** — Ensure system deps are installed on Render for browser automation | Create `server/Dockerfile` or add to `render.yaml` build command | 🔲 Not Started |
+| 4.5 | **Wire new routes into navigation** — Add Salary Negotiation, LinkedIn, and Strategy links to the app sidebar/nav | `client/src/app/BrandShell.js` or equivalent nav component | 🔲 Not Started |
+| 4.6 | **End-to-end test** — Full user journey test from signup → resume → job match → application | Manual QA checklist | 🔲 Not Started |
+
+---
+
+## New Files Created (Reference)
+
+The following files were created as part of the scaffolding session on March 7, 2026. Each file contains detailed TODO comments with exact implementation instructions.
+
+**Backend Services (`server/services/`):**
+- `queueService.js` — In-memory application job queue
+- `applyWorker.js` — Core auto-apply worker
+- `resumeTailorService.js` — Per-job resume tailoring via OpenAI
+- `coverLetterService.js` — Per-job cover letter generation via OpenAI
+- `emailService.js` — Transactional email via Resend
+- `pdfService.js` — PDF resume generation via Puppeteer
+- `negotiationService.js` — Salary negotiation coaching via OpenAI
+- `linkedinService.js` — LinkedIn profile analysis via OpenAI
+- `strategyService.js` — Weekly career strategy session via OpenAI
+
+**ATS Adapters (`server/services/ats/`):**
+- `index.js` — Adapter registry
+- `greenhouseAdapter.js` — Greenhouse ATS Playwright automation
+- `leverAdapter.js` — Lever ATS Playwright automation
+- `genericAdapter.js` — Generic form-fill fallback
+
+**Backend Routes (`server/routes/`):**
+- `negotiation.js` — `POST /api/negotiation/chat`, `POST /api/negotiation/analyze`
+- `linkedin.js` — `POST /api/linkedin/analyze`, `GET /api/linkedin/last-analysis`
+- `strategy.js` — `POST /api/strategy/session`, `POST /api/strategy/chat`, `GET /api/strategy/history`
+
+**Frontend Components (`client/src/app/`):**
+- `SalaryNegotiation.js` — Full UI for offer analysis + negotiation chat
+- `LinkedInOptimizer.js` — Full UI for LinkedIn profile analysis
+- `WeeklyStrategy.js` — Full UI for weekly strategy session + history
+
+**Routes updated:**
+- `server/routes/resume.js` — Added `/tailor`, `/generate-cover-letter`, `/download-pdf` endpoints
+- `server/routes/dashboard.js` — Replaced all mock data with real MongoDB queries
+- `server/index.js` — Registered all new routes + apply worker startup
+- `client/src/shell/App.js` — Added `/app/salary-negotiation`, `/app/linkedin`, `/app/strategy` routes
+- `render.yaml` — Added RESEND_API_KEY, ENABLE_AUTO_APPLY, XAI_API_KEY env vars
