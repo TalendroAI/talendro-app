@@ -39,7 +39,7 @@ This document is the single source of truth for all remaining work required to t
 | # | Task | File(s) to Edit | Status |
 |---|---|---|---|
 | 2.1 | **Tiered Resume Output** — Implement logic to deliver correct resume formats per tier | `server/routes/resume.js`, `server/services/pdfService.js` | ✅ Scaffolded |
-| 2.2 | **Salary Negotiation Coach** — AI-powered offer analysis and negotiation chat | `server/services/negotiationService.js`, `server/routes/negotiation.js`, `client/src/app/SalaryNegotiation.js` | ✅ Scaffolded |
+| 2.2 | **Salary Negotiation — Pro (Chat)** — AI-conducted Full Mock salary negotiation role-play via text chat | `server/services/negotiationService.js`, `server/routes/negotiation.js`, `client/src/app/SalaryNegotiation.js` | ✅ Scaffolded |
 | 2.3 | **Fix Onboarding Dashboard Facade** — Replace mock data with real MongoDB queries | `server/routes/dashboard.js` | ✔️ **Complete** |
 | 2.4 | **Stabilize Resume Parsing** — Clean up `parse.js` and remove dead code | `server/routes/parse.js` | 🔲 Not Started |
 
@@ -59,7 +59,7 @@ This document is the single source of truth for all remaining work required to t
 | # | Task | File(s) to Edit | Status |
 |---|---|---|---|
 | 3.1 | **LinkedIn Profile Optimization** — AI analysis and update of LinkedIn profile | `server/services/linkedinService.js`, `server/routes/linkedin.js`, `client/src/app/LinkedInOptimizer.js` | ✅ Scaffolded |
-| 3.2 | **Advanced Salary Negotiation** — Multi-round negotiation support (Concierge upgrade) | `server/services/negotiationService.js` (extend `chat()`) | ✅ Scaffolded |
+| 3.2 | **Salary Negotiation — Concierge (Voice)** — AI-conducted live voice Mock salary negotiation role-play (mirrors the voice interview system) | `server/services/negotiationService.js`, `server/routes/negotiation.js` (add voice token endpoint) | ✅ Scaffolded |
 | 3.3 | **Weekly AI Strategy Session** — Personalized weekly career strategy brief + chat | `server/services/strategyService.js`, `server/routes/strategy.js`, `client/src/app/WeeklyStrategy.js` | ✅ Scaffolded |
 
 **To activate Phase 3:**

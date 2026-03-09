@@ -291,3 +291,15 @@ Regardless of the entry point, the final output is determined by the user's acti
 *   **LinkedIn Profile Review & Update:** A comprehensive service for Concierge subscribers that includes a full review of their LinkedIn profile, with AI-powered suggestions and manual updates to align it with their newly optimized resume and career goals.
 
 This tiered delivery model is enforced at the API level within the resume generation routes. The backend services will check the user's `plan` field before generating and returning the appropriate artifacts.
+
+### 5.6. The Five Core Differentiators
+
+The entire product offering is built on five key pillars that scale in value across the three subscription tiers. The platform is fully autonomous, with all services delivered by AI systems, not humans.
+
+| Differentiator | Starter | Pro | Concierge |
+|---|---|---|---|
+| **Resume Services** | AI builds, updates, or optimizes your resume → delivers ATS-optimized plain text output | AI builds, updates, or optimizes your resume → delivers ATS-optimized plain text + beautifully formatted HTML resume | AI builds, updates, or optimizes your resume → delivers ATS-optimized plain text + beautifully formatted HTML resume + AI-powered LinkedIn profile analysis and updated copy |
+| **Job Search Frequency** | AI searches every 4 hours | AI searches every 60 minutes | AI searches every 30 minutes |
+| **Applications/Month** | Up to 50 AI-submitted applications | Up to 200 AI-submitted applications | Unlimited AI-submitted applications |
+| **Interview Coaching** | AI-generated Quick Prep report — key questions, talking points, and company brief delivered before your interview | AI-conducted Full Mock Interview — real-time chat session with AI coaching, feedback, and performance scoring | AI-conducted live voice Mock Interview — real-time spoken conversation with the AI, instant feedback, and full performance debrief |
+| **Salary Negotiation** | Not included | AI-conducted Full Mock salary negotiation role-play | AI-conducted live voice Mock salary negotiation role-play |
