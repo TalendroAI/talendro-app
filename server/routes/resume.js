@@ -240,15 +240,31 @@ router.post('/generate-cover-letter', authenticateToken, async (req, res) => {
 });
 
 // ─── GET /api/resume/download-pdf ────────────────────────────────────────────
-// Task 2.1: PDF resume download
-// Generates and returns a professionally formatted PDF of the user's resume.
+// Task 2.1: Tiered PDF / HTML resume download
+//
+// TIER LOGIC:
+//   Starter  (plan: 'basic')   → plain text only. PDF/HTML is not available.
+//   Pro      (plan: 'pro')     → plain text + HTML formatted resume.
+//   Concierge (plan: 'premium') → plain text + HTML formatted resume + LinkedIn update.
+//
+// This endpoint serves the HTML formatted resume (Pro & Concierge only).
+// The plain text resume is always available via the /optimize endpoint.
 router.get('/download-pdf', authenticateToken, async (req, res) => {
   try {
     const user = await User.findById(req.userId).lean();
     if (!user) return res.status(404).json({ error: 'User not found' });
 
+    // ── Tier gate: HTML resume is a Pro/Concierge feature ──────────────────
+    const plan = user.plan || 'basic';
+    if (plan === 'basic') {
+      return res.status(403).json({
+        error: 'Your Starter plan includes a plain text resume. Upgrade to Pro or Concierge to receive a beautifully formatted HTML resume.',
+        upgradeRequired: true,
+      });
+    }
+
     const resumeText = user.resumeData?.optimized || '';
-    if (!resumeText) return res.status(400).json({ error: 'No approved resume found.' });
+    if (!resumeText) return res.status(400).json({ error: 'No approved resume found. Please complete resume optimization first.' });
 
     // TODO (Task 2.1): Import and call pdfService.generateResumePdf()
     // import pdfService from '../services/pdfService.js';

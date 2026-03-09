@@ -265,3 +265,29 @@ This component represents a significant engineering challenge and will be the pr
 ## 9. Conclusion
 
 This document provides a foundational understanding of the Talendro platform's architecture and technical implementation. It is a living document that should be updated as the system evolves. By maintaining a clear and comprehensive reference, the engineering team can build, scale, and maintain the platform effectively, ensuring the successful delivery of a powerful and reliable job search automation tool for our users.
+
+### 5.5. Resume Generation & Tiered Delivery
+
+The resume optimization and generation system is a core feature available to all subscribers. While the underlying AI-powered optimization process is consistent across all tiers—focusing on ATS compatibility, keyword alignment, and human readability—the final deliverables are differentiated based on the user's subscription plan. This ensures that value scales with the subscription level.
+
+The process is available through three primary user flows, all of which feed into the same backend optimization service:
+
+1.  **Resume Build:** For users who do not have an existing resume and need to create one from scratch.
+2.  **Resume Update:** For users who need to add a new job or make other content changes to an existing resume before re-optimizing.
+3.  **Resume Optimize:** For users who have a complete, up-to-date resume and want to optimize it as-is.
+
+Regardless of the entry point, the final output is determined by the user's active subscription plan at the time of the request.
+
+#### Tiered Output Structure:
+
+| Tier        | Optimized Plain Text Resume | Optimized HTML Formatted Resume | LinkedIn Profile Review & Update |
+| :---------- | :-------------------------: | :-----------------------------: | :------------------------------: |
+| **Starter**   |              ✅             |                ❌               |                ❌                |
+| **Pro**       |              ✅             |                ✅               |                ❌                |
+| **Concierge** |              ✅             |                ✅               |                ✅                |
+
+*   **Optimized Plain Text Resume:** A clean, text-only version of the resume. This format is designed for maximum compatibility with all Applicant Tracking Systems (ATS), ensuring the content can be parsed correctly without any formatting issues. It is the baseline deliverable for all tiers.
+*   **Optimized HTML Formatted Resume:** A beautifully designed, professional resume rendered in HTML. This version is intended for direct-to-human delivery, such as emailing to a recruiter or hiring manager, where visual presentation is important. This is available for Pro and Concierge subscribers.
+*   **LinkedIn Profile Review & Update:** A comprehensive service for Concierge subscribers that includes a full review of their LinkedIn profile, with AI-powered suggestions and manual updates to align it with their newly optimized resume and career goals.
+
+This tiered delivery model is enforced at the API level within the resume generation routes. The backend services will check the user's `plan` field before generating and returning the appropriate artifacts.

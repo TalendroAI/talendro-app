@@ -1,6 +1,6 @@
 # Talendro — Master Build & Deployment To-Do List
 
-> **Last Updated:** March 7, 2026
+> **Last Updated:** March 8, 2026
 > **Status Key:** ✅ Scaffolded (file exists, logic needed) | 🔲 Not Started | ✔️ Complete
 
 This document is the single source of truth for all remaining work required to take Talendro from its current state to a fully operational product that delivers on every promise made on the marketing and pricing pages. Tasks are ordered by priority and dependency.
@@ -38,16 +38,17 @@ This document is the single source of truth for all remaining work required to t
 
 | # | Task | File(s) to Edit | Status |
 |---|---|---|---|
-| 2.1 | **PDF Resume Download** — Generate and serve a formatted PDF of the user's resume | `server/services/pdfService.js`, `server/routes/resume.js` | ✅ Scaffolded |
+| 2.1 | **Tiered Resume Output** — Implement logic to deliver correct resume formats per tier | `server/routes/resume.js`, `server/services/pdfService.js` | ✅ Scaffolded |
 | 2.2 | **Salary Negotiation Coach** — AI-powered offer analysis and negotiation chat | `server/services/negotiationService.js`, `server/routes/negotiation.js`, `client/src/app/SalaryNegotiation.js` | ✅ Scaffolded |
 | 2.3 | **Fix Onboarding Dashboard Facade** — Replace mock data with real MongoDB queries | `server/routes/dashboard.js` | ✔️ **Complete** |
 | 2.4 | **Stabilize Resume Parsing** — Clean up `parse.js` and remove dead code | `server/routes/parse.js` | 🔲 Not Started |
 
 **To activate Phase 2:**
 1. Install Puppeteer for PDF: `cd server && npm install puppeteer`
-2. Implement `pdfService.generateResumePdf()` (see TODO in file)
-3. Implement `negotiationService.chat()` and `negotiationService.analyze()` (see TODO in file)
-4. Clean up `server/routes/parse.js` — remove the 320 lines of commented-out dead code above the live code
+2. Implement `pdfService.generateResumePdf()` to generate the HTML resume (see TODO in file)
+3. Update the `/api/resume/download-pdf` endpoint to check user's plan and only return the PDF for Pro/Concierge tiers.
+4. Implement `negotiationService.chat()` and `negotiationService.analyze()` (see TODO in file)
+5. Clean up `server/routes/parse.js` — remove the 320 lines of commented-out dead code above the live code
 
 ---
 
@@ -57,12 +58,12 @@ This document is the single source of truth for all remaining work required to t
 
 | # | Task | File(s) to Edit | Status |
 |---|---|---|---|
-| 3.1 | **LinkedIn Profile Optimization** — AI analysis of pasted LinkedIn profile text | `server/services/linkedinService.js`, `server/routes/linkedin.js`, `client/src/app/LinkedInOptimizer.js` | ✅ Scaffolded |
+| 3.1 | **LinkedIn Profile Optimization** — AI analysis and update of LinkedIn profile | `server/services/linkedinService.js`, `server/routes/linkedin.js`, `client/src/app/LinkedInOptimizer.js` | ✅ Scaffolded |
 | 3.2 | **Advanced Salary Negotiation** — Multi-round negotiation support (Concierge upgrade) | `server/services/negotiationService.js` (extend `chat()`) | ✅ Scaffolded |
 | 3.3 | **Weekly AI Strategy Session** — Personalized weekly career strategy brief + chat | `server/services/strategyService.js`, `server/routes/strategy.js`, `client/src/app/WeeklyStrategy.js` | ✅ Scaffolded |
 
 **To activate Phase 3:**
-1. Implement `linkedinService.analyze()` with the OpenAI call (see TODO in file)
+1. Implement `linkedinService.analyze()` and `linkedinService.update()` with the OpenAI call (see TODO in file)
 2. Implement `strategyService.generateSession()` and `strategyService.chat()` (see TODO in file)
 3. Verify plan-gating logic in `linkedin.js` and `strategy.js` routes is correct
 
@@ -84,38 +85,4 @@ This document is the single source of truth for all remaining work required to t
 
 ## New Files Created (Reference)
 
-The following files were created as part of the scaffolding session on March 7, 2026. Each file contains detailed TODO comments with exact implementation instructions.
-
-**Backend Services (`server/services/`):**
-- `queueService.js` — In-memory application job queue
-- `applyWorker.js` — Core auto-apply worker
-- `resumeTailorService.js` — Per-job resume tailoring via OpenAI
-- `coverLetterService.js` — Per-job cover letter generation via OpenAI
-- `emailService.js` — Transactional email via Resend
-- `pdfService.js` — PDF resume generation via Puppeteer
-- `negotiationService.js` — Salary negotiation coaching via OpenAI
-- `linkedinService.js` — LinkedIn profile analysis via OpenAI
-- `strategyService.js` — Weekly career strategy session via OpenAI
-
-**ATS Adapters (`server/services/ats/`):**
-- `index.js` — Adapter registry
-- `greenhouseAdapter.js` — Greenhouse ATS Playwright automation
-- `leverAdapter.js` — Lever ATS Playwright automation
-- `genericAdapter.js` — Generic form-fill fallback
-
-**Backend Routes (`server/routes/`):**
-- `negotiation.js` — `POST /api/negotiation/chat`, `POST /api/negotiation/analyze`
-- `linkedin.js` — `POST /api/linkedin/analyze`, `GET /api/linkedin/last-analysis`
-- `strategy.js` — `POST /api/strategy/session`, `POST /api/strategy/chat`, `GET /api/strategy/history`
-
-**Frontend Components (`client/src/app/`):**
-- `SalaryNegotiation.js` — Full UI for offer analysis + negotiation chat
-- `LinkedInOptimizer.js` — Full UI for LinkedIn profile analysis
-- `WeeklyStrategy.js` — Full UI for weekly strategy session + history
-
-**Routes updated:**
-- `server/routes/resume.js` — Added `/tailor`, `/generate-cover-letter`, `/download-pdf` endpoints
-- `server/routes/dashboard.js` — Replaced all mock data with real MongoDB queries
-- `server/index.js` — Registered all new routes + apply worker startup
-- `client/src/shell/App.js` — Added `/app/salary-negotiation`, `/app/linkedin`, `/app/strategy` routes
-- `render.yaml` — Added RESEND_API_KEY, ENABLE_AUTO_APPLY, XAI_API_KEY env vars
+*This section is unchanged and remains for reference.*
