@@ -28,6 +28,7 @@
     "openai": "^4.104.0",
     "p-limit": "^7.3.0",
     "pdf-parse-new": "^1.4.1",
+    "puppeteer": "^24.38.0",
     "resend": "^6.9.3",
     "stripe": "^19.3.0",
     "textract": "^2.5.0",

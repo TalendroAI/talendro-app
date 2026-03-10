@@ -1,3 +1,8 @@
+import OpenAI from 'openai';
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const MODEL = 'gpt-4.1-mini';
+
 /**
  * coverLetterService.js
  * ─────────────────────────────────────────────────────────────────────────────
@@ -71,10 +76,28 @@ Write the cover letter now.`;
  * @returns {Promise<string>} The cover letter as plain text
  */
 async function generate({ user, jobDoc, tailoredResume }) {
-  // ── TODO (Task 1.6): Replace this stub with OpenAI implementation ─────────
-  // See the detailed instructions in the file header above.
-  console.warn('[coverLetterService] STUB — AI cover letter generation not yet implemented.');
-  return `Dear Hiring Team,\n\nI am excited to apply for the ${jobDoc.title} role at ${jobDoc.company}.\n\n[Cover letter generation not yet implemented — see coverLetterService.js]\n\nSincerely,\n${user.firstName || 'Applicant'}`;
+  if (!jobDoc?.title || !jobDoc?.description) {
+    throw new Error('generate() requires jobDoc with title and description');
+  }
+
+  const name = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.name || 'the candidate';
+  const resumeContext = tailoredResume
+    ? (typeof tailoredResume === 'string' ? tailoredResume.slice(0, 1500) : JSON.stringify(tailoredResume).slice(0, 1500))
+    : 'Resume data not available.';
+
+  const userPrompt = buildUserPrompt({ firstName: name }, jobDoc, resumeContext);
+
+  const response = await openai.chat.completions.create({
+    model: MODEL,
+    messages: [
+      { role: 'system', content: COVER_LETTER_SYSTEM_PROMPT },
+      { role: 'user', content: userPrompt },
+    ],
+    temperature: 0.6,
+    max_tokens: 800,
+  });
+
+  return response.choices[0].message.content.trim();
 }
 
 export default { generate, COVER_LETTER_SYSTEM_PROMPT, buildUserPrompt };

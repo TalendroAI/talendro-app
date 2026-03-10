@@ -1,13 +1,11 @@
 import express from 'express';
-import OpenAI from 'openai';
 import { authenticateToken } from '../middleware/auth.js';
 import User from '../models/User.js';
+import { optimize as optimizeResume, tailor as tailorResume } from '../services/resumeTailorService.js';
+import { generate as generateCoverLetter } from '../services/coverLetterService.js';
+import { generateResumePdf } from '../services/pdfService.js';
 
 const router = express.Router();
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -93,38 +91,16 @@ function buildPrompt(ctx) {
 router.post('/optimize', authenticateToken, async (req, res) => {
   try {
     const { path = 'upload', raw = {}, createData = {}, updateData = {} } = req.body;
-    const ctx = buildContextFromPath(path, raw, createData, updateData);
 
-    if (!ctx.name && (!ctx.work || ctx.work.length === 0)) {
-      return res.status(400).json({ success: false, error: 'Insufficient resume data. Please provide at least your name and work history.' });
-    }
+    // Use the full resumeTailorService which handles all three paths
+    const result = await optimizeResume({ path, raw, createData, updateData });
 
-    const prompt = buildPrompt(ctx);
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4.1-mini',
-      messages: [
-        { role: 'system', content: 'You are an expert resume writer. Always respond with valid JSON only, no markdown.' },
-        { role: 'user', content: prompt },
-      ],
-      temperature: 0.4,
-      max_tokens: 3000,
-    });
+    const scores = result.scores || scoreResume(path);
 
-    const rawResponse = completion.choices[0]?.message?.content || '';
-    let optimizedResume;
-    try {
-      const cleaned = rawResponse.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
-      optimizedResume = JSON.parse(cleaned);
-    } catch (parseErr) {
-      console.error('[resume/optimize] JSON parse error:', parseErr.message);
-      return res.status(500).json({ success: false, error: 'AI returned malformed response. Please try again.' });
-    }
-
-    const scores = scoreResume(path);
-
+    // Save optimized resume to MongoDB
     await User.findByIdAndUpdate(req.userId, {
       $set: {
-        'resumeData.optimized': optimizedResume,
+        'resumeData.optimized': result,
         'resumeData.optimizedAt': new Date(),
         'resumeData.path': path,
         'resumeData.scores': scores,
@@ -133,7 +109,7 @@ router.post('/optimize', authenticateToken, async (req, res) => {
       }
     });
 
-    return res.json({ success: true, resume: optimizedResume, scores, savedToProfile: true });
+    return res.json({ success: true, resume: result, scores, savedToProfile: true });
   } catch (err) {
     console.error('[resume/optimize] Error:', err.message);
     return res.status(500).json({ success: false, error: 'Resume optimization failed. Please try again.', detail: err.message });
@@ -201,10 +177,7 @@ router.post('/tailor', authenticateToken, async (req, res) => {
     const baseResume = user.resumeData?.optimized || user.resumeData?.rawText || '';
     if (!baseResume) return res.status(400).json({ error: 'No approved resume found. Please complete resume optimization first.' });
 
-    // TODO (Task 1.5): Import and call resumeTailorService.tailor()
-    // import resumeTailorService from '../services/resumeTailorService.js';
-    // const tailored = await resumeTailorService.tailor({ baseResume, jobTitle, jobDescription, companyName });
-    const tailored = baseResume; // STUB — replace with service call above
+    const tailored = await tailorResume({ baseResume, jobTitle, jobDescription, companyName });
 
     return res.json({ success: true, tailoredResume: tailored });
   } catch (err) {
@@ -226,11 +199,8 @@ router.post('/generate-cover-letter', authenticateToken, async (req, res) => {
 
     const baseResume = user.resumeData?.optimized || '';
 
-    // TODO (Task 1.6): Import and call coverLetterService.generate()
-    // import coverLetterService from '../services/coverLetterService.js';
-    // const jobDoc = { title: jobTitle, description: jobDescription, company: companyName };
-    // const coverLetter = await coverLetterService.generate({ user, jobDoc, tailoredResume: baseResume });
-    const coverLetter = `Dear Hiring Team,\n\nI am excited to apply for the ${jobTitle} role at ${companyName}.\n\n[Cover letter generation not yet implemented — see coverLetterService.js]\n\nSincerely,\n${user.firstName || 'Applicant'}`; // STUB
+    const jobDoc = { title: jobTitle, description: jobDescription, company: companyName };
+    const coverLetter = await generateCoverLetter({ user, jobDoc, tailoredResume: baseResume });
 
     return res.json({ success: true, coverLetter });
   } catch (err) {
@@ -263,18 +233,16 @@ router.get('/download-pdf', authenticateToken, async (req, res) => {
       });
     }
 
-    const resumeText = user.resumeData?.optimized || '';
-    if (!resumeText) return res.status(400).json({ error: 'No approved resume found. Please complete resume optimization first.' });
+    const resumeData = user.resumeData?.optimized;
+    if (!resumeData) {
+      return res.status(400).json({ error: 'No optimized resume found. Please complete resume optimization first.' });
+    }
 
-    // TODO (Task 2.1): Import and call pdfService.generateResumePdf()
-    // import pdfService from '../services/pdfService.js';
-    // const pdfBuffer = await pdfService.generateResumePdf({ user, resumeText });
-    // res.setHeader('Content-Type', 'application/pdf');
-    // res.setHeader('Content-Disposition', `attachment; filename="resume-${user.firstName || 'talendro'}.pdf"`);
-    // return res.send(pdfBuffer);
-
-    // STUB — remove once pdfService is implemented
-    return res.status(501).json({ error: 'PDF generation not yet implemented. See TODO in resume.js and pdfService.js.' });
+    const pdfBuffer = await generateResumePdf({ resumeData });
+    const firstName = user.firstName || user.name?.split(' ')[0] || 'talendro';
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${firstName}-resume-talendro.pdf"`);
+    return res.send(pdfBuffer);
   } catch (err) {
     console.error('[resume/download-pdf] Error:', err.message);
     return res.status(500).json({ error: 'Failed to generate PDF' });
