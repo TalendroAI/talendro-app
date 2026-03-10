@@ -4,6 +4,19 @@ import { useNavigate } from "react-router-dom";
 const C = { blue: "#2F6DF6", aqua: "#00C4CC", slate: "#2C2F38", gray: "#9FA6B2", lightBg: "#F9FAFB", white: "#FFFFFF", green: "#10B981" };
 
 const EMPTY_JOB = { title: "", company: "", startMonth: "", startYear: "", endMonth: "", endYear: "", current: false, description: "" };
+
+async function generateJobBullets({ title, company, description }) {
+  const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+  const headers = { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+  const res = await fetch('/api/resume/generate-bullets', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ title, company, description }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Failed to generate bullets');
+  return data.bullets || data.text || '';
+}
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const YEARS = Array.from({ length: 30 }, (_, i) => String(new Date().getFullYear() - i));
 
@@ -90,6 +103,7 @@ export default function ResumeUpdate() {
   const [changes, setChanges] = useState({ newJobs: [], newSkills: "", newEducation: "", newCerts: "", summary: "" });
   const [newJob, setNewJob] = useState({ ...EMPTY_JOB });
   const [confirmed, setConfirmed] = useState(false);
+  const [generatingBullets, setGeneratingBullets] = useState(false);
 
   const handleFileUpload = async (f) => {
     setFile(f);
@@ -221,7 +235,36 @@ export default function ResumeUpdate() {
             <input type="checkbox" checked={newJob.current} onChange={e => setNewJob(p => ({ ...p, current: e.target.checked }))} style={{ width: 16, height: 16, accentColor: C.blue }} />
             <span style={{ fontSize: 14, color: C.slate }}>I currently work here</span>
           </label>
-          <Textarea label="Key Responsibilities & Achievements (optional)" value={newJob.description} onChange={v => setNewJob(p => ({ ...p, description: v }))} placeholder="Describe your main responsibilities and any notable achievements..." rows={3} />
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <label style={{ fontSize: 13, fontWeight: 600, color: C.slate, textTransform: 'uppercase', letterSpacing: 0.6 }}>Key Responsibilities & Achievements (optional)</label>
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!newJob.title && !newJob.company) return;
+                  setGeneratingBullets(true);
+                  try {
+                    const bullets = await generateJobBullets({ title: newJob.title, company: newJob.company, description: newJob.description });
+                    setNewJob(p => ({ ...p, description: bullets }));
+                  } catch (e) { /* silently fail */ }
+                  setGeneratingBullets(false);
+                }}
+                disabled={generatingBullets || (!newJob.title && !newJob.company)}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 12px', border: `1.5px solid ${C.blue}`, borderRadius: 7, fontSize: 12, fontWeight: 700, cursor: generatingBullets || (!newJob.title && !newJob.company) ? 'not-allowed' : 'pointer', background: generatingBullets ? '#EFF6FF' : C.blue, color: generatingBullets ? C.blue : C.white, fontFamily: "'Inter', sans-serif", transition: 'all 0.2s' }}
+              >
+                {generatingBullets ? '⚙️ Generating...' : '✨ Generate with AI'}
+              </button>
+            </div>
+            <textarea
+              value={newJob.description}
+              onChange={e => setNewJob(p => ({ ...p, description: e.target.value }))}
+              placeholder="Describe your main responsibilities and any notable achievements, or click 'Generate with AI' to auto-write them..."
+              rows={4}
+              style={{ width: '100%', padding: '12px 16px', background: C.white, border: '1.5px solid #E5E7EB', borderRadius: 10, fontSize: 15, color: C.slate, fontFamily: "'Inter', sans-serif", outline: 'none', boxSizing: 'border-box', resize: 'vertical' }}
+              onFocus={e => e.target.style.borderColor = C.blue}
+              onBlur={e => e.target.style.borderColor = '#E5E7EB'}
+            />
+          </div>
           <button onClick={addNewJob} disabled={!newJob.title || !newJob.company}
             style={{ padding: "10px 28px", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: !newJob.title || !newJob.company ? "not-allowed" : "pointer", background: !newJob.title || !newJob.company ? "#E5E7EB" : C.blue, color: !newJob.title || !newJob.company ? C.gray : C.white, fontFamily: "'Inter', sans-serif" }}>
             + Add This Position

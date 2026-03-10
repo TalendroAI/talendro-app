@@ -21,15 +21,23 @@ import cron from 'node-cron';
 import pLimit from 'p-limit';
 import Company from '../models/Company.js';
 import Job from '../models/Job.js';
+import User from '../models/User.js';
 import { discoverGreenhouseCompanies, crawlGreenhouseCompany } from './greenhouseCrawler.js';
 import { discoverLeverCompanies, crawlLeverCompany } from './leverCrawler.js';
 import { fetchAndIngestFantasticJobs } from './fantasticJobsService.js';
 import { fetchAndIngestJSearchJobs } from './jsearchService.js';
+import { evaluateBatchForUser, TIER_CONFIG } from './jobScoringService.js';
+import emailService from './emailService.js';
 
 const BATCH_SIZE = 50;        // companies to crawl per run
 const CONCURRENCY = 3;        // max parallel requests
 const STALE_HOURS = 72;       // mark jobs inactive after 72 hours of not being seen
 const DELAY_MS = 400;         // ms between requests
+const SCORING_CONCURRENCY = 2; // max parallel per-subscriber scoring runs
+
+// Track rarity alert cooldowns to avoid duplicate emails (24h per user)
+const rarityAlertSentAt = new Map(); // userId -> timestamp
+const RARITY_ALERT_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -55,6 +63,104 @@ let crawlStats = {
 // ─── Get crawler stats (for API endpoint) ────────────────────────────────────
 export function getCrawlerStats() {
   return { ...crawlStats };
+}
+
+// ─── Per-subscriber scoring pass ─────────────────────────────────────────────
+/**
+ * Runs the scoring engine for every active subscriber against recently
+ * discovered jobs. Dispatches rarity alert emails (max once per 24h per user)
+ * when EXCEPTIONALLY_RARE roles are found.
+ *
+ * Tier-based freshness gates ensure:
+ *   Concierge: jobs up to 90 min old
+ *   Pro:       jobs up to 2 hours old
+ *   Starter:   jobs up to 5 hours old
+ */
+let isScoringRunning = false;
+
+async function runSubscriberScoringPass() {
+  if (isScoringRunning) {
+    console.log('[Scheduler] Subscriber scoring already running, skipping');
+    return;
+  }
+  isScoringRunning = true;
+  console.log('[Scheduler] Starting per-subscriber scoring pass...');
+  const startTime = Date.now();
+  let usersScored = 0;
+  let totalRarityAlerts = 0;
+
+  try {
+    const subscribers = await User.find({
+      plan: { $in: ['starter', 'pro', 'concierge', 'premium'] },
+      isActive: { $ne: false },
+    }).lean();
+
+    if (subscribers.length === 0) {
+      console.log('[Scheduler] No active subscribers to score');
+      return;
+    }
+
+    // Use the most generous lookback (concierge) so all tiers see recent jobs
+    const lookbackMs = TIER_CONFIG.concierge.maxAgeMs;
+    const lookbackCutoff = new Date(Date.now() - lookbackMs);
+
+    const recentJobs = await Job.find({
+      isActive: true,
+      firstSeenAt: { $gte: lookbackCutoff },
+    }).lean();
+
+    if (recentJobs.length === 0) {
+      console.log('[Scheduler] No new jobs in lookback window — skipping scoring pass');
+      return;
+    }
+
+    console.log(`[Scheduler] Scoring ${recentJobs.length} recent jobs for ${subscribers.length} subscribers...`);
+
+    const limiter = pLimit(SCORING_CONCURRENCY);
+    const tasks = subscribers.map(user =>
+      limiter(async () => {
+        try {
+          const result = await evaluateBatchForUser(recentJobs, user);
+          usersScored++;
+
+          if (result.rarityAlerts && result.rarityAlerts.length > 0 && user.email) {
+            const lastSent = rarityAlertSentAt.get(String(user._id)) || 0;
+            if (Date.now() - lastSent > RARITY_ALERT_COOLDOWN_MS) {
+              const topAlert = result.rarityAlerts[0];
+              const job = topAlert.job || topAlert;
+              try {
+                await emailService.sendRareRoleAlert({
+                  to: user.email,
+                  name: user.name || 'there',
+                  title: job.title,
+                  company: job.company,
+                  location: job.location,
+                  salary: job.salary,
+                  postedAgo: 'just now',
+                  jobUrl: job.jobUrl || job.applyUrl || '#',
+                  rarity: 'exceptionally_rare',
+                });
+                rarityAlertSentAt.set(String(user._id), Date.now());
+                totalRarityAlerts++;
+                console.log(`[Scheduler] Rarity alert sent to ${user.email}: ${job.title} @ ${job.company}`);
+              } catch (emailErr) {
+                console.error(`[Scheduler] Rarity alert email failed for ${user.email}:`, emailErr.message);
+              }
+            }
+          }
+        } catch (err) {
+          console.error(`[Scheduler] Scoring error for user ${user._id}:`, err.message);
+        }
+      })
+    );
+
+    await Promise.all(tasks);
+    console.log(`[Scheduler] Scoring pass complete: ${usersScored} users, ${totalRarityAlerts} rarity alerts sent (${Date.now() - startTime}ms)`);
+  } catch (err) {
+    console.error('[Scheduler] Subscriber scoring pass error:', err.message);
+  } finally {
+    isScoringRunning = false;
+  }
 }
 
 // ─── Run company discovery (Greenhouse + Lever) ───────────────────────────────
@@ -261,6 +367,13 @@ export function initCrawlerScheduler() {
     cleanupStaleJobs();
   });
 
+  // Per-subscriber scoring pass every 15 minutes
+  // Ensures Concierge subscribers see new jobs within 15 min of discovery
+  cron.schedule('*/15 * * * *', () => {
+    console.log('[Scheduler] 15-minute subscriber scoring pass triggered');
+    runSubscriberScoringPass();
+  });
+
   // Startup sequence — stagger to avoid hammering everything at once
   setTimeout(async () => {
     try {
@@ -323,4 +436,8 @@ export async function triggerFantastic() {
 
 export async function triggerJSearch() {
   return runJSearchIngestion();
+}
+
+export async function triggerScoringPass() {
+  return runSubscriberScoringPass();
 }

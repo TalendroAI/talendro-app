@@ -3,31 +3,57 @@
  * ─────────────────────────────────────────────────────────────────────────────
  * Salary Negotiation Coach — Pro & Concierge feature.
  *
- * Two modes:
- *   1. Analyze Mode: User enters offer details → receives a one-shot analysis
- *      with market assessment, counter-offer recommendation, and a script.
- *   2. Chat Mode: Conversational coaching for multi-round negotiation.
- *      (Concierge only for multi-round; Pro gets single-round analysis.)
- *
- * ─────────────────────────────────────────────────────────────────────────────
- * TODO (Task 2.2):
- *   - The backend route POST /api/negotiation/analyze is wired and ready.
- *   - The backend route POST /api/negotiation/chat is wired and ready.
- *   - Implement negotiationService.js on the backend to activate both.
- *   - The UI below is complete and ready to use once the backend is live.
+ * Three modes:
+ *   1. Setup:   User enters offer details to configure the session
+ *   2. Analyze: One-shot offer analysis with market data, counter-offer, script
+ *   3. Chat:    Conversational coaching / role-play (multi-round for Concierge)
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useAuth } from '../auth/AuthContext';
 
-const API_BASE = process.env.REACT_APP_API_URL || '';
+const C = {
+  blue: '#2F6DF6',
+  aqua: '#00C4CC',
+  slate: '#2C2F38',
+  gray: '#9FA6B2',
+  lightBg: '#F9FAFB',
+  white: '#FFFFFF',
+  green: '#10B981',
+  red: '#EF4444',
+  amber: '#F59E0B',
+};
+
+function formatMarkdown(text) {
+  if (!text) return null;
+  return text.split('\n').map((line, i) => {
+    if (line.startsWith('**') && line.endsWith('**')) {
+      return <p key={i} style={{ fontWeight: 700, color: C.slate, marginBottom: 4, marginTop: 12 }}>{line.replace(/\*\*/g, '')}</p>;
+    }
+    if (line.startsWith('**')) {
+      const parts = line.split('**').filter(Boolean);
+      return (
+        <p key={i} style={{ marginBottom: 4 }}>
+          {parts.map((part, j) => j % 2 === 0 ? <strong key={j}>{part}</strong> : <span key={j}>{part}</span>)}
+        </p>
+      );
+    }
+    if (line.trim() === '') return <div key={i} style={{ height: 8 }} />;
+    return <p key={i} style={{ marginBottom: 4, lineHeight: 1.7 }}>{line}</p>;
+  });
+}
 
 export default function SalaryNegotiation() {
-  const [mode, setMode] = useState('analyze'); // 'analyze' | 'chat'
+  const { user: authUser } = useAuth();
+  const userPlan = authUser?.plan || localStorage.getItem('talendro_plan') || 'basic';
+  const isConcierge = userPlan === 'premium';
+  const isPro = userPlan === 'pro' || isConcierge;
+
+  const [mode, setMode] = useState('setup'); // 'setup' | 'analyze' | 'chat'
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Analyze mode state
   const [offerForm, setOfferForm] = useState({
     jobTitle: '',
     companyName: '',
@@ -36,11 +62,11 @@ export default function SalaryNegotiation() {
     seniorityLevel: '',
   });
   const [analysis, setAnalysis] = useState('');
-
-  // Chat mode state
   const [messages, setMessages] = useState([]);
   const [chatInput, setChatInput] = useState('');
   const [chatContext, setChatContext] = useState({});
+  const [sessionStarted, setSessionStarted] = useState(false);
+
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -48,17 +74,18 @@ export default function SalaryNegotiation() {
   }, [messages]);
 
   const getAuthHeader = () => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
+  // ── Analyze an offer ────────────────────────────────────────────────────────
   const handleAnalyze = async (e) => {
     e.preventDefault();
     setError('');
     setAnalysis('');
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/negotiation/analyze`, {
+      const res = await fetch('/api/negotiation/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
         body: JSON.stringify({
@@ -69,6 +96,7 @@ export default function SalaryNegotiation() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Analysis failed');
       setAnalysis(data.analysis);
+      setMode('analyze');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -76,6 +104,44 @@ export default function SalaryNegotiation() {
     }
   };
 
+  // ── Start a chat session ────────────────────────────────────────────────────
+  const startChatSession = async (fromAnalysis = false) => {
+    const ctx = {
+      jobTitle: offerForm.jobTitle,
+      companyName: offerForm.companyName,
+      offeredSalary: offerForm.offeredSalary ? parseInt(offerForm.offeredSalary.replace(/[^0-9]/g, ''), 10) : undefined,
+      location: offerForm.location,
+      seniorityLevel: offerForm.seniorityLevel,
+    };
+    setChatContext(ctx);
+    setMode('chat');
+    setLoading(true);
+    setError('');
+
+    try {
+      const res = await fetch('/api/negotiation/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+        body: JSON.stringify(ctx),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to start session');
+      setMessages([{ role: 'assistant', content: data.openingMessage }]);
+      setSessionStarted(true);
+    } catch (err) {
+      setError(err.message);
+      // Fallback opening message
+      setMessages([{
+        role: 'assistant',
+        content: `I'm ready to coach you through your salary negotiation${offerForm.companyName ? ` with ${offerForm.companyName}` : ''}. What would you like to work on first?`,
+      }]);
+      setSessionStarted(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ── Send a chat message ─────────────────────────────────────────────────────
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
@@ -88,7 +154,7 @@ export default function SalaryNegotiation() {
     setError('');
 
     try {
-      const res = await fetch(`${API_BASE}/api/negotiation/chat`, {
+      const res = await fetch('/api/negotiation/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
         body: JSON.stringify({
@@ -107,189 +173,242 @@ export default function SalaryNegotiation() {
     }
   };
 
-  const startChatFromAnalysis = () => {
-    setChatContext({
-      jobTitle: offerForm.jobTitle,
-      companyName: offerForm.companyName,
-      offeredSalary: parseInt(offerForm.offeredSalary.replace(/[^0-9]/g, ''), 10),
-      location: offerForm.location,
-      seniorityLevel: offerForm.seniorityLevel,
-    });
-    setMessages([{
-      role: 'assistant',
-      content: `I've reviewed your offer from ${offerForm.companyName || 'the company'}. I'm ready to coach you through the negotiation. What would you like to work on first — the counter-offer script, handling objections, or something else?`,
-    }]);
-    setMode('chat');
-  };
+  // ── Plan gate ───────────────────────────────────────────────────────────────
+  if (!isPro) {
+    return (
+      <div style={{ minHeight: '100vh', background: C.lightBg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+        <div style={{ maxWidth: 480, textAlign: 'center' }}>
+          <div style={{ fontSize: 56, marginBottom: 16 }}>💰</div>
+          <h2 style={{ fontSize: 24, fontWeight: 800, color: C.slate, marginBottom: 8, fontFamily: "'Montserrat', sans-serif" }}>Salary Negotiation Coach</h2>
+          <p style={{ fontSize: 15, color: C.gray, marginBottom: 24 }}>
+            AI-powered negotiation coaching is available on Pro and Concierge plans. Get exact counter-offer scripts, market analysis, and multi-round coaching.
+          </p>
+          <a href="/app/billing" style={{ display: 'inline-block', padding: '12px 28px', background: C.blue, color: C.white, borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
+            Upgrade to Pro →
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-3xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Salary Negotiation Coach</h1>
-          <p className="text-gray-500 mt-1">Get AI-powered guidance to maximize your compensation.</p>
-        </div>
+    <div style={{ minHeight: '100vh', background: C.lightBg, fontFamily: "'Inter', sans-serif" }}>
+      <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-        {/* Mode Toggle */}
-        <div className="flex gap-2 mb-6">
-          <button
-            onClick={() => setMode('analyze')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              mode === 'analyze' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
-            }`}
-          >
-            Analyze an Offer
-          </button>
-          <button
-            onClick={() => setMode('chat')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              mode === 'chat' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
-            }`}
-          >
-            Negotiation Chat
-          </button>
+      {/* Header */}
+      <div style={{ background: C.white, borderBottom: '1px solid #e5e7eb', padding: '20px 32px' }}>
+        <div style={{ maxWidth: 860, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: C.slate, fontFamily: "'Montserrat', sans-serif" }}>
+              Salary Negotiation Coach
+            </h1>
+            <p style={{ margin: '2px 0 0', fontSize: 13, color: C.gray }}>
+              {isConcierge ? 'Multi-round coaching · Concierge' : 'Counter-offer guidance · Pro'}
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {['setup', 'analyze', 'chat'].map(m => (
+              <button key={m} onClick={() => setMode(m)}
+                style={{ padding: '8px 16px', borderRadius: 8, border: `1.5px solid ${mode === m ? C.blue : '#e5e7eb'}`, background: mode === m ? C.blue : C.white, color: mode === m ? C.white : C.slate, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}>
+                {m === 'setup' ? '⚙️ Setup' : m === 'analyze' ? '📊 Analysis' : '💬 Chat Coach'}
+              </button>
+            ))}
+          </div>
         </div>
+      </div>
+
+      <div style={{ maxWidth: 860, margin: '0 auto', padding: '32px 24px' }}>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+          <div style={{ marginBottom: 16, padding: '12px 16px', background: 'rgba(239,68,68,0.08)', border: '1.5px solid rgba(239,68,68,0.3)', borderRadius: 10, color: '#dc2626', fontSize: 14 }}>
             {error}
           </div>
         )}
 
-        {/* Analyze Mode */}
-        {mode === 'analyze' && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">Enter Offer Details</h2>
-            <form onSubmit={handleAnalyze} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Job Title</label>
-                  <input
-                    type="text"
-                    value={offerForm.jobTitle}
-                    onChange={e => setOfferForm(f => ({ ...f, jobTitle: e.target.value }))}
-                    placeholder="e.g. Senior Product Manager"
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Company</label>
-                  <input
-                    type="text"
-                    value={offerForm.companyName}
-                    onChange={e => setOfferForm(f => ({ ...f, companyName: e.target.value }))}
-                    placeholder="e.g. Stripe"
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Offered Salary</label>
-                  <input
-                    type="text"
-                    value={offerForm.offeredSalary}
-                    onChange={e => setOfferForm(f => ({ ...f, offeredSalary: e.target.value }))}
-                    placeholder="e.g. $145,000"
-                    required
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-                  <input
-                    type="text"
-                    value={offerForm.location}
-                    onChange={e => setOfferForm(f => ({ ...f, location: e.target.value }))}
-                    placeholder="e.g. San Francisco, CA or Remote"
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Seniority Level</label>
-                  <select
-                    value={offerForm.seniorityLevel}
-                    onChange={e => setOfferForm(f => ({ ...f, seniorityLevel: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select level...</option>
-                    <option value="entry">Entry Level (0-2 years)</option>
-                    <option value="mid">Mid Level (3-5 years)</option>
-                    <option value="senior">Senior (6-10 years)</option>
-                    <option value="staff">Staff / Principal (10+ years)</option>
-                    <option value="director">Director / VP</option>
-                    <option value="executive">C-Suite / Executive</option>
-                  </select>
-                </div>
+        {/* ── Setup Mode ─────────────────────────────────────────────────────── */}
+        {mode === 'setup' && (
+          <div style={{ background: C.white, borderRadius: 16, border: '1px solid #e5e7eb', padding: 32 }}>
+            <h2 style={{ margin: '0 0 6px', fontSize: 18, fontWeight: 700, color: C.slate, fontFamily: "'Montserrat', sans-serif" }}>Enter Offer Details</h2>
+            <p style={{ margin: '0 0 24px', fontSize: 14, color: C.gray }}>
+              Provide the offer details and choose how you'd like to proceed — instant analysis or live coaching.
+            </p>
+
+            <form onSubmit={handleAnalyze}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+                {[
+                  { key: 'jobTitle', label: 'Job Title', placeholder: 'e.g. Senior Product Manager' },
+                  { key: 'companyName', label: 'Company', placeholder: 'e.g. Stripe' },
+                  { key: 'offeredSalary', label: 'Offered Salary *', placeholder: 'e.g. $145,000', required: true },
+                  { key: 'location', label: 'Location', placeholder: 'e.g. San Francisco, CA or Remote' },
+                ].map(({ key, label, placeholder, required }) => (
+                  <div key={key}>
+                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: C.slate, marginBottom: 6 }}>{label}</label>
+                    <input
+                      type="text"
+                      value={offerForm[key]}
+                      onChange={e => setOfferForm(f => ({ ...f, [key]: e.target.value }))}
+                      placeholder={placeholder}
+                      required={required}
+                      style={{ width: '100%', border: '1.5px solid #e5e7eb', borderRadius: 8, padding: '10px 12px', fontSize: 14, fontFamily: "'Inter', sans-serif", boxSizing: 'border-box', outline: 'none' }}
+                    />
+                  </div>
+                ))}
               </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium text-sm hover:bg-blue-700 disabled:opacity-50 transition-colors"
-              >
-                {loading ? 'Analyzing...' : 'Analyze This Offer'}
-              </button>
+
+              <div style={{ marginBottom: 24 }}>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: C.slate, marginBottom: 6 }}>Seniority Level</label>
+                <select
+                  value={offerForm.seniorityLevel}
+                  onChange={e => setOfferForm(f => ({ ...f, seniorityLevel: e.target.value }))}
+                  style={{ width: '100%', border: '1.5px solid #e5e7eb', borderRadius: 8, padding: '10px 12px', fontSize: 14, fontFamily: "'Inter', sans-serif", background: C.white, outline: 'none' }}
+                >
+                  <option value="">Select level...</option>
+                  <option value="entry">Entry Level (0–2 years)</option>
+                  <option value="mid">Mid Level (3–5 years)</option>
+                  <option value="senior">Senior (6–10 years)</option>
+                  <option value="staff">Staff / Principal (10+ years)</option>
+                  <option value="director">Director / VP</option>
+                  <option value="executive">C-Suite / Executive</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', gap: 12 }}>
+                <button type="submit" disabled={loading || !offerForm.offeredSalary}
+                  style={{ flex: 1, padding: '12px 0', background: loading ? '#93c5fd' : C.blue, color: C.white, border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: "'Inter', sans-serif" }}>
+                  {loading ? '⚙️ Analyzing...' : '📊 Analyze This Offer'}
+                </button>
+                <button type="button" onClick={() => startChatSession()} disabled={loading}
+                  style={{ flex: 1, padding: '12px 0', background: C.green, color: C.white, border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: "'Inter', sans-serif" }}>
+                  {loading ? '⚙️ Starting...' : '💬 Start Coaching Session'}
+                </button>
+              </div>
             </form>
 
-            {analysis && (
-              <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <h3 className="font-semibold text-gray-800 mb-3">Negotiation Analysis</h3>
-                <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans leading-relaxed">{analysis}</pre>
-                <button
-                  onClick={startChatFromAnalysis}
-                  className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
-                >
-                  Continue to Negotiation Chat →
+            {/* Quick-start prompts */}
+            <div style={{ marginTop: 24, padding: 16, background: C.lightBg, borderRadius: 10 }}>
+              <p style={{ margin: '0 0 10px', fontSize: 12, fontWeight: 700, color: C.gray, textTransform: 'uppercase', letterSpacing: 1 }}>Quick Start — Common Scenarios</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {[
+                  "I just received an offer and need a counter-offer script",
+                  "How do I negotiate without losing the offer?",
+                  "They said the salary is non-negotiable — what do I do?",
+                  "I have a competing offer — how do I use it as leverage?",
+                  isConcierge ? "Role-play the negotiation call with me" : null,
+                ].filter(Boolean).map((prompt, i) => (
+                  <button key={i} onClick={() => {
+                    setChatInput(prompt);
+                    if (mode !== 'chat') startChatSession();
+                  }}
+                    style={{ padding: '6px 12px', background: C.white, border: `1.5px solid ${C.blue}`, borderRadius: 20, fontSize: 12, color: C.blue, fontWeight: 600, cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}>
+                    {prompt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Analyze Mode ───────────────────────────────────────────────────── */}
+        {mode === 'analyze' && (
+          <div style={{ background: C.white, borderRadius: 16, border: '1px solid #e5e7eb', padding: 32 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+              <div>
+                <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: C.slate, fontFamily: "'Montserrat', sans-serif" }}>Negotiation Analysis</h2>
+                {offerForm.jobTitle && (
+                  <p style={{ margin: '4px 0 0', fontSize: 13, color: C.gray }}>
+                    {offerForm.jobTitle}{offerForm.companyName ? ` at ${offerForm.companyName}` : ''} — {offerForm.offeredSalary}
+                  </p>
+                )}
+              </div>
+              <button onClick={() => startChatSession(true)}
+                style={{ padding: '10px 20px', background: C.green, color: C.white, border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}>
+                Continue to Coaching →
+              </button>
+            </div>
+
+            {analysis ? (
+              <div style={{ fontSize: 14, color: C.slate, lineHeight: 1.7 }}>
+                {formatMarkdown(analysis)}
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: 40, color: C.gray }}>
+                <p>No analysis yet. Go to Setup to enter your offer details.</p>
+                <button onClick={() => setMode('setup')}
+                  style={{ marginTop: 12, padding: '10px 20px', background: C.blue, color: C.white, border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+                  ← Back to Setup
                 </button>
               </div>
             )}
           </div>
         )}
 
-        {/* Chat Mode */}
+        {/* ── Chat Mode ──────────────────────────────────────────────────────── */}
         {mode === 'chat' && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col" style={{ height: '60vh' }}>
-            <div className="p-4 border-b border-gray-100">
-              <h2 className="text-lg font-semibold text-gray-800">Negotiation Coach</h2>
-              <p className="text-xs text-gray-400">Ask anything about your negotiation strategy</p>
+          <div style={{ background: C.white, borderRadius: 16, border: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', height: '65vh' }}>
+            <div style={{ padding: '16px 24px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: C.slate, fontFamily: "'Montserrat', sans-serif" }}>
+                  Negotiation Coach
+                  <span style={{ marginLeft: 8, fontSize: 11, background: isConcierge ? 'rgba(0,196,204,0.1)' : 'rgba(47,109,246,0.1)', color: isConcierge ? C.aqua : C.blue, padding: '2px 8px', borderRadius: 20, fontWeight: 600 }}>
+                    {isConcierge ? 'Concierge' : 'Pro'}
+                  </span>
+                </h2>
+                <p style={{ margin: '2px 0 0', fontSize: 12, color: C.gray }}>
+                  {isConcierge ? 'Multi-round coaching · Role-play available' : 'Counter-offer guidance'}
+                  {chatContext.companyName ? ` · ${chatContext.companyName}` : ''}
+                </p>
+              </div>
+              <button onClick={() => { setMessages([]); setSessionStarted(false); setMode('setup'); }}
+                style={{ padding: '6px 14px', border: '1.5px solid #e5e7eb', borderRadius: 8, background: C.white, color: C.slate, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                New Session
+              </button>
             </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {messages.length === 0 && (
-                <div className="text-center text-gray-400 text-sm mt-8">
-                  Start by describing your situation or asking a question about your negotiation.
+
+            <div style={{ flex: 1, overflowY: 'auto', padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {messages.length === 0 && !loading && (
+                <div style={{ textAlign: 'center', color: C.gray, fontSize: 14, marginTop: 40 }}>
+                  <p>Go to Setup to configure your session, then start coaching.</p>
+                  <button onClick={() => setMode('setup')}
+                    style={{ marginTop: 12, padding: '8px 18px', background: C.blue, color: C.white, border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                    ← Go to Setup
+                  </button>
                 </div>
               )}
               {messages.map((msg, i) => (
-                <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-lg px-4 py-3 rounded-xl text-sm leading-relaxed ${
-                    msg.role === 'user'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {msg.content}
+                <div key={i} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                  <div style={{
+                    maxWidth: '72%',
+                    padding: '12px 16px',
+                    borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                    background: msg.role === 'user' ? C.blue : C.lightBg,
+                    color: msg.role === 'user' ? C.white : C.slate,
+                    fontSize: 14,
+                    lineHeight: 1.6,
+                  }}>
+                    {msg.role === 'assistant' ? formatMarkdown(msg.content) : msg.content}
                   </div>
                 </div>
               ))}
               {loading && (
-                <div className="flex justify-start">
-                  <div className="bg-gray-100 px-4 py-3 rounded-xl text-sm text-gray-500">
-                    Thinking...
+                <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                  <div style={{ padding: '12px 16px', borderRadius: '16px 16px 16px 4px', background: C.lightBg, color: C.gray, fontSize: 14 }}>
+                    ⚙️ Thinking...
                   </div>
                 </div>
               )}
               <div ref={messagesEndRef} />
             </div>
-            <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-100 flex gap-2">
+
+            <form onSubmit={handleSendMessage} style={{ padding: '16px 24px', borderTop: '1px solid #e5e7eb', display: 'flex', gap: 10 }}>
               <input
                 type="text"
                 value={chatInput}
                 onChange={e => setChatInput(e.target.value)}
-                placeholder="Ask your negotiation coach..."
-                className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder={isConcierge ? "Ask your coach or say 'Role-play the call with me'..." : "Ask your negotiation coach..."}
+                style={{ flex: 1, border: '1.5px solid #e5e7eb', borderRadius: 8, padding: '10px 14px', fontSize: 14, fontFamily: "'Inter', sans-serif", outline: 'none' }}
               />
-              <button
-                type="submit"
-                disabled={loading || !chatInput.trim()}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
-              >
+              <button type="submit" disabled={loading || !chatInput.trim()}
+                style={{ padding: '10px 20px', background: loading || !chatInput.trim() ? '#93c5fd' : C.blue, color: C.white, border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: loading || !chatInput.trim() ? 'not-allowed' : 'pointer', fontFamily: "'Inter', sans-serif" }}>
                 Send
               </button>
             </form>

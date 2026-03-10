@@ -2,11 +2,15 @@
  * routes/linkedin.js
  * ─────────────────────────────────────────────────────────────────────────────
  * LinkedIn Profile Optimization API Routes
+ * Available exclusively to Concierge (premium) subscribers.
  *
- * POST /api/linkedin/analyze — Analyze and score a LinkedIn profile
+ * POST /api/linkedin/optimize
+ *   Accepts an optional LinkedIn profile URL.
+ *   - URL provided  → scrapes profile, performs gap analysis, returns rewrite
+ *   - No URL        → builds a complete profile from scratch using resume data
  *
- * Concierge plan only.
- * TODO (Task 3.1): Wire linkedinService into the endpoint below.
+ * GET  /api/linkedin/last-result
+ *   Returns the user's most recently generated LinkedIn optimization document.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -17,22 +21,17 @@ import linkedinService from '../services/linkedinService.js';
 
 const router = express.Router();
 
-// ─── POST /api/linkedin/analyze ─────────────────────────────────────────────
-// Analyze a user's LinkedIn profile and return optimization recommendations.
-// Available to Concierge subscribers only.
-router.post('/analyze', authenticateToken, async (req, res) => {
+// ─── POST /api/linkedin/optimize ─────────────────────────────────────────────
+// Generate a LinkedIn profile optimization or build-from-scratch document.
+// Concierge (premium) subscribers only.
+router.post('/optimize', authenticateToken, async (req, res) => {
   try {
-    const { profileText } = req.body;
-    if (!profileText) return res.status(400).json({ error: 'profileText is required. Please paste your full LinkedIn profile.' });
+    const { linkedinUrl } = req.body;
 
     const user = await User.findById(req.userId).lean();
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     // Plan gate: Concierge (premium) only
-    // TIER LOGIC:
-    //   Starter  (plan: 'basic')   → no LinkedIn optimization
-    //   Pro      (plan: 'pro')     → no LinkedIn optimization
-    //   Concierge (plan: 'premium') → full LinkedIn profile review + update
     if (user.plan !== 'premium') {
       return res.status(403).json({
         error: 'LinkedIn profile optimization is a Concierge-level feature. Upgrade to Concierge to unlock this service.',
@@ -40,39 +39,56 @@ router.post('/analyze', authenticateToken, async (req, res) => {
       });
     }
 
-    const targetRoles = user.preferences?.targetTitles || user.jobPreferences?.targetTitles || [];
+    // Require resume data
+    if (!user.resumeData || (!user.resumeData.optimized && !user.resumeData.plainText)) {
+      return res.status(400).json({
+        error: 'No resume data found. Please complete the resume optimization step before requesting LinkedIn optimization.',
+      });
+    }
 
-    const analysis = await linkedinService.analyze({ profileText, user, targetRoles });
+    const targetRoles = (
+      user.onboardingData?.targetTitles ||
+      user.preferences?.targetTitles ||
+      user.jobPreferences?.targetTitles ||
+      []
+    );
 
-    // Save the analysis result to the user's record for future reference
-    await User.findByIdAndUpdate(req.userId, {
-      $set: {
-        'linkedinOptimization.lastAnalysis': analysis,
-        'linkedinOptimization.analyzedAt': new Date(),
-      }
+    const result = await linkedinService.generateOptimization({
+      linkedinUrl: linkedinUrl || null,
+      user,
+      targetRoles,
     });
 
-    return res.json({ success: true, analysis });
+    // Persist the result
+    await User.findByIdAndUpdate(req.userId, {
+      $set: {
+        'linkedinOptimization.lastResult': result,
+        'linkedinOptimization.generatedAt': new Date(),
+        'linkedinOptimization.linkedinUrl': linkedinUrl || null,
+      },
+    });
+
+    return res.json({ success: true, result });
   } catch (err) {
-    console.error('[linkedin/analyze] Error:', err.message);
-    return res.status(500).json({ error: err.message || 'Failed to analyze LinkedIn profile' });
+    console.error('[linkedin/optimize] Error:', err.message);
+    return res.status(500).json({ error: err.message || 'Failed to generate LinkedIn optimization' });
   }
 });
 
-// ─── GET /api/linkedin/last-analysis ────────────────────────────────────────
-// Retrieve the user's most recent LinkedIn analysis.
-router.get('/last-analysis', authenticateToken, async (req, res) => {
+// ─── GET /api/linkedin/last-result ───────────────────────────────────────────
+// Retrieve the user's most recently generated LinkedIn optimization document.
+router.get('/last-result', authenticateToken, async (req, res) => {
   try {
     const user = await User.findById(req.userId).lean();
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const analysis = user.linkedinOptimization?.lastAnalysis || null;
-    const analyzedAt = user.linkedinOptimization?.analyzedAt || null;
+    const result = user.linkedinOptimization?.lastResult || null;
+    const generatedAt = user.linkedinOptimization?.generatedAt || null;
 
-    return res.json({ success: true, analysis, analyzedAt });
+    return res.json({ success: true, result, generatedAt });
   } catch (err) {
-    console.error('[linkedin/last-analysis] Error:', err.message);
-    return res.status(500).json({ error: 'Failed to fetch LinkedIn analysis' });
+    console.error('[linkedin/last-result] Error:', err.message);
+    return res.status(500).json({ error: 'Failed to fetch LinkedIn optimization result' });
   }
 });
 

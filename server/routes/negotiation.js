@@ -3,10 +3,13 @@
  * ─────────────────────────────────────────────────────────────────────────────
  * Salary Negotiation API Routes
  *
- * POST /api/negotiation/chat    — Conversational coaching (Pro + Concierge)
- * POST /api/negotiation/analyze — One-shot offer analysis (Pro + Concierge)
+ * POST /api/negotiation/start    — Start a new coaching session (Pro + Concierge)
+ * POST /api/negotiation/chat     — Conversational coaching / role-play
+ * POST /api/negotiation/analyze  — One-shot offer analysis
  *
- * TODO (Task 2.2): Wire negotiationService into both endpoints below.
+ * Plan access:
+ *   Pro (pro)       — text-based role-play, single-round guidance
+ *   Concierge (premium) — full multi-round coaching, employer role-play
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -17,9 +20,59 @@ import negotiationService from '../services/negotiationService.js';
 
 const router = express.Router();
 
+// ─── Plan gate helper ─────────────────────────────────────────────────────────
+const ALLOWED_PLANS = ['pro', 'premium', 'concierge'];
+
+function isPlanAllowed(plan) {
+  return ALLOWED_PLANS.includes(plan);
+}
+
+// ─── POST /api/negotiation/start ─────────────────────────────────────────────
+// Initialize a new coaching session with an opening message from the coach.
+router.post('/start', authenticateToken, async (req, res) => {
+  try {
+    const { jobTitle, companyName, offeredSalary, location, seniorityLevel } = req.body;
+
+    const user = await User.findById(req.userId).lean();
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    if (!isPlanAllowed(user.plan)) {
+      return res.status(403).json({
+        error: 'Salary negotiation coaching is available on Pro and Concierge plans.',
+        upgradeRequired: true,
+      });
+    }
+
+    const desiredSalary = user.onboardingData?.s8?.salaryMin
+      ? parseInt(String(user.onboardingData.s8.salaryMin).replace(/[^0-9]/g, ''), 10)
+      : undefined;
+
+    const context = {
+      jobTitle: jobTitle || user.onboardingData?.s8?.targetTitles || 'Not specified',
+      companyName: companyName || 'Not specified',
+      offeredSalary: offeredSalary ? parseInt(String(offeredSalary).replace(/[^0-9]/g, ''), 10) : undefined,
+      desiredSalary,
+      location: location || user.onboardingData?.s8?.targetLocations || 'Not specified',
+      seniorityLevel: seniorityLevel || user.onboardingData?.s8?.seniority?.[0] || 'Not specified',
+      tier: user.plan,
+    };
+
+    const openingMessage = await negotiationService.startSession({ context });
+
+    return res.json({
+      success: true,
+      openingMessage,
+      context,
+      tier: user.plan,
+    });
+  } catch (err) {
+    console.error('[negotiation/start] Error:', err.message);
+    return res.status(500).json({ error: 'Failed to start negotiation session' });
+  }
+});
+
 // ─── POST /api/negotiation/chat ──────────────────────────────────────────────
-// Conversational salary negotiation coaching.
-// Available to Pro and Concierge subscribers.
+// Conversational salary negotiation coaching and role-play.
 router.post('/chat', authenticateToken, async (req, res) => {
   try {
     const { context, conversationHistory, message } = req.body;
@@ -28,18 +81,23 @@ router.post('/chat', authenticateToken, async (req, res) => {
     const user = await User.findById(req.userId).lean();
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    // Plan gate: only Pro and Concierge subscribers can access this feature
-    const allowedPlans = ['pro', 'premium', 'concierge'];
-    if (!allowedPlans.includes(user.plan)) {
-      return res.status(403).json({ error: 'Salary negotiation coaching is available on Pro and Concierge plans.' });
+    if (!isPlanAllowed(user.plan)) {
+      return res.status(403).json({
+        error: 'Salary negotiation coaching is available on Pro and Concierge plans.',
+        upgradeRequired: true,
+      });
     }
 
     // Enrich context with user data
+    const desiredSalary = user.onboardingData?.s8?.salaryMin
+      ? parseInt(String(user.onboardingData.s8.salaryMin).replace(/[^0-9]/g, ''), 10)
+      : context?.desiredSalary;
+
     const enrichedContext = {
       ...context,
       tier: user.plan,
-      desiredSalary: context?.desiredSalary || user.preferences?.desiredSalary,
-      location: context?.location || user.preferences?.location,
+      desiredSalary: desiredSalary || context?.desiredSalary,
+      location: context?.location || user.onboardingData?.s8?.targetLocations,
     };
 
     const reply = await negotiationService.chat({
@@ -57,7 +115,6 @@ router.post('/chat', authenticateToken, async (req, res) => {
 
 // ─── POST /api/negotiation/analyze ──────────────────────────────────────────
 // One-shot analysis of a specific job offer.
-// Available to Pro and Concierge subscribers.
 router.post('/analyze', authenticateToken, async (req, res) => {
   try {
     const { jobTitle, companyName, offeredSalary, location, seniorityLevel } = req.body;
@@ -66,18 +123,24 @@ router.post('/analyze', authenticateToken, async (req, res) => {
     const user = await User.findById(req.userId).lean();
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const allowedPlans = ['pro', 'premium', 'concierge'];
-    if (!allowedPlans.includes(user.plan)) {
-      return res.status(403).json({ error: 'Offer analysis is available on Pro and Concierge plans.' });
+    if (!isPlanAllowed(user.plan)) {
+      return res.status(403).json({
+        error: 'Offer analysis is available on Pro and Concierge plans.',
+        upgradeRequired: true,
+      });
     }
 
+    const desiredSalary = user.onboardingData?.s8?.salaryMin
+      ? parseInt(String(user.onboardingData.s8.salaryMin).replace(/[^0-9]/g, ''), 10)
+      : undefined;
+
     const context = {
-      jobTitle,
-      companyName,
-      offeredSalary,
-      location: location || user.preferences?.location,
-      seniorityLevel,
-      desiredSalary: user.preferences?.desiredSalary,
+      jobTitle: jobTitle || user.onboardingData?.s8?.targetTitles || 'Not specified',
+      companyName: companyName || 'Not specified',
+      offeredSalary: parseInt(String(offeredSalary).replace(/[^0-9]/g, ''), 10),
+      desiredSalary,
+      location: location || user.onboardingData?.s8?.targetLocations || 'Not specified',
+      seniorityLevel: seniorityLevel || user.onboardingData?.s8?.seniority?.[0] || 'Not specified',
       tier: user.plan,
     };
 

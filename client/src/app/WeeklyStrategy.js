@@ -5,22 +5,56 @@
  *
  * Generates a personalized weekly strategy brief based on the user's
  * application pipeline data, then allows conversational follow-up.
- *
- * ─────────────────────────────────────────────────────────────────────────────
- * TODO (Task 3.3):
- *   - The backend route POST /api/strategy/session is wired and ready.
- *   - The backend route POST /api/strategy/chat is wired and ready.
- *   - The backend route GET /api/strategy/history is wired and ready.
- *   - Implement strategyService.js on the backend to activate all three.
- *   - The UI below is complete and ready to use once the backend is live.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useAuth } from '../auth/AuthContext';
 
-const API_BASE = process.env.REACT_APP_API_URL || '';
+const C = {
+  blue: '#2F6DF6',
+  aqua: '#00C4CC',
+  slate: '#2C2F38',
+  gray: '#9FA6B2',
+  lightBg: '#F9FAFB',
+  white: '#FFFFFF',
+  green: '#10B981',
+  red: '#EF4444',
+  amber: '#F59E0B',
+};
+
+function formatMarkdown(text) {
+  if (!text) return null;
+  return text.split('\n').map((line, i) => {
+    const boldHeading = line.match(/^\*\*(.+)\*\*$/);
+    if (boldHeading) {
+      return <p key={i} style={{ fontWeight: 800, color: C.slate, marginBottom: 4, marginTop: 16, fontSize: 15, fontFamily: "'Montserrat', sans-serif" }}>{boldHeading[1]}</p>;
+    }
+    if (line.trim() === '') return <div key={i} style={{ height: 6 }} />;
+    // Inline bold
+    const parts = line.split(/\*\*(.+?)\*\*/g);
+    return (
+      <p key={i} style={{ marginBottom: 4, lineHeight: 1.75, fontSize: 14, color: '#374151' }}>
+        {parts.map((part, j) => j % 2 === 1 ? <strong key={j} style={{ color: C.slate }}>{part}</strong> : part)}
+      </p>
+    );
+  });
+}
+
+function StatCard({ label, value, color }) {
+  return (
+    <div style={{ background: C.white, border: '1px solid #e5e7eb', borderRadius: 10, padding: '14px 16px', textAlign: 'center' }}>
+      <p style={{ margin: 0, fontSize: 24, fontWeight: 800, color: color || C.slate, fontFamily: "'Montserrat', sans-serif" }}>{value ?? '—'}</p>
+      <p style={{ margin: '2px 0 0', fontSize: 12, color: C.gray }}>{label}</p>
+    </div>
+  );
+}
 
 export default function WeeklyStrategy() {
+  const { user: authUser } = useAuth();
+  const userPlan = authUser?.plan || localStorage.getItem('talendro_plan') || 'basic';
+  const isConcierge = userPlan === 'premium';
+
   const [brief, setBrief] = useState('');
   const [stats, setStats] = useState(null);
   const [history, setHistory] = useState([]);
@@ -31,10 +65,11 @@ export default function WeeklyStrategy() {
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
   const [view, setView] = useState('session'); // 'session' | 'history'
+  const [expandedHistory, setExpandedHistory] = useState(null);
   const messagesEndRef = useRef(null);
 
   const getAuthHeader = () => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
@@ -49,7 +84,7 @@ export default function WeeklyStrategy() {
   const loadHistory = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/api/strategy/history`, { headers: getAuthHeader() });
+      const res = await fetch('/api/strategy/history', { headers: getAuthHeader() });
       const data = await res.json();
       if (data.history) setHistory(data.history);
     } catch (err) {
@@ -66,7 +101,7 @@ export default function WeeklyStrategy() {
     setMessages([]);
     setGenerating(true);
     try {
-      const res = await fetch(`${API_BASE}/api/strategy/session`, {
+      const res = await fetch('/api/strategy/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
       });
@@ -93,7 +128,7 @@ export default function WeeklyStrategy() {
     setChatLoading(true);
 
     try {
-      const res = await fetch(`${API_BASE}/api/strategy/chat`, {
+      const res = await fetch('/api/strategy/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
         body: JSON.stringify({
@@ -112,184 +147,221 @@ export default function WeeklyStrategy() {
     }
   };
 
+  // ── Plan gate ───────────────────────────────────────────────────────────────
+  if (!isConcierge) {
+    return (
+      <div style={{ minHeight: '100vh', background: C.lightBg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+        <div style={{ maxWidth: 480, textAlign: 'center' }}>
+          <div style={{ fontSize: 56, marginBottom: 16 }}>🎯</div>
+          <h2 style={{ fontSize: 24, fontWeight: 800, color: C.slate, marginBottom: 8, fontFamily: "'Montserrat', sans-serif" }}>Weekly Strategy Sessions</h2>
+          <p style={{ fontSize: 15, color: C.gray, marginBottom: 24 }}>
+            Personalized weekly AI career strategy sessions are exclusive to Concierge subscribers. Get data-driven pipeline analysis and a tactical action plan every week.
+          </p>
+          <a href="/app/billing" style={{ display: 'inline-block', padding: '12px 28px', background: C.blue, color: C.white, borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
+            Upgrade to Concierge →
+          </a>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
+    <div style={{ minHeight: '100vh', background: C.lightBg, fontFamily: "'Inter', sans-serif" }}>
+      <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+      {/* Header */}
+      <div style={{ background: C.white, borderBottom: '1px solid #e5e7eb', padding: '20px 32px' }}>
+        <div style={{ maxWidth: 960, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Weekly Strategy Session</h1>
-            <p className="text-gray-500 mt-1">Your personalized AI career coach, updated weekly.</p>
+            <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: C.slate, fontFamily: "'Montserrat', sans-serif" }}>
+              Weekly Strategy Session
+            </h1>
+            <p style={{ margin: '2px 0 0', fontSize: 13, color: C.gray }}>
+              Concierge · Personalized AI career coaching
+            </p>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setView('session')}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                view === 'session' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 border border-gray-200'
-              }`}
-            >
-              This Week
-            </button>
-            <button
-              onClick={() => setView('history')}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                view === 'history' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 border border-gray-200'
-              }`}
-            >
-              History
-            </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {['session', 'history'].map(v => (
+              <button key={v} onClick={() => setView(v)}
+                style={{ padding: '8px 16px', borderRadius: 8, border: `1.5px solid ${view === v ? C.blue : '#e5e7eb'}`, background: view === v ? C.blue : C.white, color: view === v ? C.white : C.slate, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}>
+                {v === 'session' ? '⚡ This Week' : '📋 History'}
+              </button>
+            ))}
           </div>
         </div>
+      </div>
+
+      <div style={{ maxWidth: 960, margin: '0 auto', padding: '32px 24px' }}>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+          <div style={{ marginBottom: 16, padding: '12px 16px', background: 'rgba(239,68,68,0.08)', border: '1.5px solid rgba(239,68,68,0.3)', borderRadius: 10, color: '#dc2626', fontSize: 14 }}>
             {error}
           </div>
         )}
 
-        {/* Session View */}
+        {/* ── Session View ───────────────────────────────────────────────────── */}
         {view === 'session' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Stats Sidebar */}
+          <div>
+            {/* Stats Row */}
             {stats && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 h-fit">
-                <h3 className="font-semibold text-gray-800 mb-4">This Week's Numbers</h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Applications</span>
-                    <span className="font-semibold text-gray-800">{stats.weeklyApplications}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Total to Date</span>
-                    <span className="font-semibold text-gray-800">{stats.totalApplications}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Response Rate</span>
-                    <span className="font-semibold text-gray-800">
-                      {stats.responseRate !== null ? `${stats.responseRate}%` : '—'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Interviews</span>
-                    <span className="font-semibold text-gray-800">{stats.interviewsScheduled}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Offers</span>
-                    <span className="font-semibold text-gray-800">{stats.offersReceived}</span>
-                  </div>
-                </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12, marginBottom: 24 }}>
+                <StatCard label="This Week" value={stats.weeklyApplications} color={C.blue} />
+                <StatCard label="Total Applied" value={stats.totalApplications} color={C.slate} />
+                <StatCard label="Response Rate" value={stats.responseRate !== null ? `${stats.responseRate}%` : '—'} color={stats.responseRate > 10 ? C.green : C.amber} />
+                <StatCard label="Interviews" value={stats.interviewsScheduled} color={C.green} />
+                <StatCard label="Offers" value={stats.offersReceived} color={C.aqua} />
               </div>
             )}
 
-            {/* Main Content */}
-            <div className={`${stats ? 'lg:col-span-2' : 'lg:col-span-3'} space-y-4`}>
-              {!brief && !generating && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
-                  <div className="text-5xl mb-4">🎯</div>
-                  <h2 className="text-lg font-semibold text-gray-800 mb-2">Ready for your strategy session?</h2>
-                  <p className="text-gray-500 text-sm mb-6">
-                    I'll analyze your pipeline data and give you a personalized action plan for the coming week.
-                  </p>
-                  <button
-                    onClick={generateSession}
-                    className="px-6 py-2.5 bg-blue-600 text-white rounded-lg font-medium text-sm hover:bg-blue-700 transition-colors"
-                  >
-                    Start This Week's Session
-                  </button>
-                </div>
-              )}
+            {/* Empty State */}
+            {!brief && !generating && (
+              <div style={{ background: C.white, borderRadius: 16, border: '1px solid #e5e7eb', padding: 48, textAlign: 'center' }}>
+                <div style={{ fontSize: 52, marginBottom: 16 }}>🎯</div>
+                <h2 style={{ margin: '0 0 8px', fontSize: 20, fontWeight: 800, color: C.slate, fontFamily: "'Montserrat', sans-serif" }}>Ready for your strategy session?</h2>
+                <p style={{ margin: '0 0 24px', fontSize: 14, color: C.gray, maxWidth: 420, marginLeft: 'auto', marginRight: 'auto' }}>
+                  I'll analyze your application pipeline and deliver a personalized action plan for the coming week — including what's working, what isn't, and exactly what to do next.
+                </p>
+                <button onClick={generateSession}
+                  style={{ padding: '13px 32px', background: C.blue, color: C.white, border: 'none', borderRadius: 8, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}>
+                  Start This Week's Session →
+                </button>
+              </div>
+            )}
 
-              {generating && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
-                  <div className="text-5xl mb-4 animate-pulse">⚡</div>
-                  <p className="text-gray-500 text-sm">Analyzing your pipeline and preparing your strategy brief...</p>
-                </div>
-              )}
+            {/* Generating State */}
+            {generating && (
+              <div style={{ background: C.white, borderRadius: 16, border: '1px solid #e5e7eb', padding: 48, textAlign: 'center' }}>
+                <div style={{ fontSize: 52, marginBottom: 16 }}>⚡</div>
+                <p style={{ fontSize: 15, color: C.gray }}>Analyzing your pipeline and preparing your strategy brief...</p>
+                <p style={{ fontSize: 13, color: C.gray, marginTop: 8 }}>This usually takes 10–15 seconds.</p>
+              </div>
+            )}
 
-              {brief && (
-                <>
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h2 className="text-lg font-semibold text-gray-800">Your Strategy Brief</h2>
-                      <button
-                        onClick={generateSession}
-                        className="text-xs text-blue-600 hover:text-blue-700"
-                      >
-                        Regenerate
-                      </button>
-                    </div>
-                    <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans leading-relaxed">{brief}</pre>
+            {/* Brief + Chat */}
+            {brief && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+
+                {/* Strategy Brief */}
+                <div style={{ background: C.white, borderRadius: 16, border: '1px solid #e5e7eb', padding: 28 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                    <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: C.slate, fontFamily: "'Montserrat', sans-serif" }}>Your Strategy Brief</h2>
+                    <button onClick={generateSession}
+                      style={{ fontSize: 12, color: C.blue, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
+                      ↻ Regenerate
+                    </button>
                   </div>
-
-                  {/* Chat Follow-up */}
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col" style={{ height: '40vh' }}>
-                    <div className="p-4 border-b border-gray-100">
-                      <h3 className="font-medium text-gray-800 text-sm">Ask a follow-up question</h3>
-                    </div>
-                    <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                      {messages.length === 0 && (
-                        <p className="text-center text-gray-400 text-sm mt-4">
-                          Ask your coach anything about your strategy...
-                        </p>
-                      )}
-                      {messages.map((msg, i) => (
-                        <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`max-w-lg px-3 py-2 rounded-xl text-sm leading-relaxed ${
-                            msg.role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800'
-                          }`}>
-                            {msg.content}
-                          </div>
-                        </div>
-                      ))}
-                      {chatLoading && (
-                        <div className="flex justify-start">
-                          <div className="bg-gray-100 px-3 py-2 rounded-xl text-sm text-gray-500">Thinking...</div>
-                        </div>
-                      )}
-                      <div ref={messagesEndRef} />
-                    </div>
-                    <form onSubmit={handleSendMessage} className="p-3 border-t border-gray-100 flex gap-2">
-                      <input
-                        type="text"
-                        value={chatInput}
-                        onChange={e => setChatInput(e.target.value)}
-                        placeholder="Ask a follow-up question..."
-                        className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                      <button
-                        type="submit"
-                        disabled={chatLoading || !chatInput.trim()}
-                        className="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
-                      >
-                        Send
-                      </button>
-                    </form>
+                  <div style={{ fontSize: 14, lineHeight: 1.75, color: '#374151' }}>
+                    {formatMarkdown(brief)}
                   </div>
-                </>
-              )}
-            </div>
+                </div>
+
+                {/* Chat Follow-up */}
+                <div style={{ background: C.white, borderRadius: 16, border: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', height: 520 }}>
+                  <div style={{ padding: '16px 20px', borderBottom: '1px solid #e5e7eb' }}>
+                    <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: C.slate, fontFamily: "'Montserrat', sans-serif" }}>Ask Your Coach</h3>
+                    <p style={{ margin: '2px 0 0', fontSize: 12, color: C.gray }}>Follow-up questions about your strategy</p>
+                  </div>
+                  <div style={{ flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {messages.length === 0 && (
+                      <div>
+                        <p style={{ textAlign: 'center', color: C.gray, fontSize: 13, marginTop: 16 }}>Ask anything about your strategy brief...</p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 16 }}>
+                          {[
+                            "How do I improve my response rate?",
+                            "Which roles should I prioritize this week?",
+                            "What should I do if I'm not getting interviews?",
+                          ].map((q, i) => (
+                            <button key={i} onClick={() => setChatInput(q)}
+                              style={{ padding: '8px 12px', background: C.lightBg, border: `1px solid #e5e7eb`, borderRadius: 8, fontSize: 12, color: C.slate, textAlign: 'left', cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}>
+                              {q}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {messages.map((msg, i) => (
+                      <div key={i} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                        <div style={{
+                          maxWidth: '80%', padding: '10px 14px',
+                          borderRadius: msg.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
+                          background: msg.role === 'user' ? C.blue : C.lightBg,
+                          color: msg.role === 'user' ? C.white : C.slate,
+                          fontSize: 13, lineHeight: 1.6,
+                        }}>
+                          {msg.role === 'assistant' ? formatMarkdown(msg.content) : msg.content}
+                        </div>
+                      </div>
+                    ))}
+                    {chatLoading && (
+                      <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                        <div style={{ padding: '10px 14px', borderRadius: '14px 14px 14px 4px', background: C.lightBg, color: C.gray, fontSize: 13 }}>
+                          ⚙️ Thinking...
+                        </div>
+                      </div>
+                    )}
+                    <div ref={messagesEndRef} />
+                  </div>
+                  <form onSubmit={handleSendMessage} style={{ padding: '12px 16px', borderTop: '1px solid #e5e7eb', display: 'flex', gap: 8 }}>
+                    <input
+                      type="text"
+                      value={chatInput}
+                      onChange={e => setChatInput(e.target.value)}
+                      placeholder="Ask a follow-up question..."
+                      style={{ flex: 1, border: '1.5px solid #e5e7eb', borderRadius: 8, padding: '9px 12px', fontSize: 13, fontFamily: "'Inter', sans-serif", outline: 'none' }}
+                    />
+                    <button type="submit" disabled={chatLoading || !chatInput.trim()}
+                      style={{ padding: '9px 16px', background: chatLoading || !chatInput.trim() ? '#93c5fd' : C.blue, color: C.white, border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: chatLoading || !chatInput.trim() ? 'not-allowed' : 'pointer', fontFamily: "'Inter', sans-serif" }}>
+                      Send
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
-        {/* History View */}
+        {/* ── History View ───────────────────────────────────────────────────── */}
         {view === 'history' && (
-          <div className="space-y-4">
-            {loading && <p className="text-center text-gray-400 text-sm">Loading history...</p>}
+          <div>
+            {loading && <p style={{ textAlign: 'center', color: C.gray, fontSize: 14 }}>Loading history...</p>}
             {!loading && history.length === 0 && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
-                <p className="text-gray-400 text-sm">No previous sessions yet. Start your first session above.</p>
+              <div style={{ background: C.white, borderRadius: 16, border: '1px solid #e5e7eb', padding: 48, textAlign: 'center' }}>
+                <p style={{ color: C.gray, fontSize: 14 }}>No previous sessions yet. Start your first session to see it here.</p>
+                <button onClick={() => setView('session')}
+                  style={{ marginTop: 16, padding: '10px 20px', background: C.blue, color: C.white, border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+                  ← Go to This Week
+                </button>
               </div>
             )}
-            {history.map((session, i) => (
-              <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-gray-800">
-                    {new Date(session.generatedAt).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-                  </span>
-                  <span className="text-xs text-gray-400">{session.stats?.weeklyApplications || 0} applications that week</span>
-                </div>
-                <pre className="text-sm text-gray-600 whitespace-pre-wrap font-sans leading-relaxed line-clamp-4">{session.brief}</pre>
-              </div>
-            ))}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {history.map((session, i) => {
+                const isExpanded = expandedHistory === i;
+                const dateStr = new Date(session.generatedAt).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+                return (
+                  <div key={i} style={{ background: C.white, borderRadius: 12, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
+                    <div
+                      style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+                      onClick={() => setExpandedHistory(isExpanded ? null : i)}
+                    >
+                      <div>
+                        <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: C.slate }}>{dateStr}</p>
+                        <p style={{ margin: '2px 0 0', fontSize: 12, color: C.gray }}>
+                          {session.stats?.weeklyApplications || 0} applications · {session.stats?.responseRate !== null ? `${session.stats.responseRate}% response rate` : 'Response rate unknown'} · {session.stats?.interviewsScheduled || 0} interviews
+                        </p>
+                      </div>
+                      <span style={{ fontSize: 18, color: C.gray }}>{isExpanded ? '▲' : '▼'}</span>
+                    </div>
+                    {isExpanded && (
+                      <div style={{ padding: '0 20px 20px', borderTop: '1px solid #f3f4f6' }}>
+                        <div style={{ marginTop: 16, fontSize: 14, lineHeight: 1.75, color: '#374151' }}>
+                          {formatMarkdown(session.brief)}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>

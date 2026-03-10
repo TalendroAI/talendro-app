@@ -40,6 +40,7 @@ import ResumeReview from '../app/ResumeReview'
 import DocumentDelivery from '../app/DocumentDelivery'
 
 import Dashboard from '../pages/app/Dashboard'
+import JobMatches from '../app/JobMatches'
 import Profile from '../app/Profile'
 import Agents from '../app/Agents'
 import Applications from '../app/Applications'
@@ -161,6 +162,9 @@ function AppRoutes() {
           <Route path="/app/jobs" element={
             <ProtectedRoute><Jobs /></ProtectedRoute>
           } />
+          <Route path="/app/job-matches" element={
+            <ProtectedRoute><JobMatches /></ProtectedRoute>
+          } />
           <Route path="/app/resume" element={
             <ProtectedRoute><ResumeReview /></ProtectedRoute>
           } />
@@ -173,8 +177,17 @@ function AppRoutes() {
           <Route path="/app/linkedin" element={
             <ProtectedRoute><LinkedInOptimizer /></ProtectedRoute>
           } />
+          <Route path="/app/linkedin-optimizer" element={
+            <ProtectedRoute><LinkedInOptimizer /></ProtectedRoute>
+          } />
           <Route path="/app/strategy" element={
             <ProtectedRoute><WeeklyStrategy /></ProtectedRoute>
+          } />
+          <Route path="/app/weekly-strategy" element={
+            <ProtectedRoute><WeeklyStrategy /></ProtectedRoute>
+          } />
+          <Route path="/app/resume-review" element={
+            <ProtectedRoute><ResumeReview /></ProtectedRoute>
           } />
         </Routes>
       </main>

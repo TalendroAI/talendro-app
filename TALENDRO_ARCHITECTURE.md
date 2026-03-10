@@ -1,62 +1,74 @@
 # Talendro Engineering: System Architecture & Technical Deep Dive
 
-**Version:** 1.0
-**Date:** 2026-03-07
+**Version:** 2.1
+**Date:** 2026-03-10
 **Author:** Manus AI
 
 ## 1. Introduction
 
 This document provides a comprehensive technical overview of the Talendro platform. It serves as the definitive engineering reference for the system's architecture, technology stack, core components, database schema, API endpoints, and operational procedures. The goal is to create a single source of truth for both current and future development, ensuring clarity, consistency, and maintainability.
 
-Talendro is a SaaS platform designed to automate the entire job search and application process for job seekers. It leverages AI to discover relevant job openings, match them to user profiles, tailor resumes for specific roles, and (in the future) automatically submit applications on behalf of the user. The platform is built on a modern web stack and is deployed on Render.
+Talendro is a SaaS platform designed to automate the entire job search and application process for job seekers. It leverages AI to discover relevant job openings, match them to user profiles, tailor resumes for specific roles, and automatically submit applications on behalf of the user. The platform is built on a modern web stack and is deployed on Render.
 
 ## 2. High-Level Architecture
 
 The Talendro platform is a monolithic application composed of a React single-page application (SPA) client and a Node.js/Express backend server. This architecture was chosen for its simplicity in development and deployment. A MongoDB database serves as the primary data store, and the system integrates with several external APIs for job discovery, AI-powered content generation, and payment processing.
 
 ![Talendro System Architecture Diagram](https://s.manus.ai/g/g-talendro-app-1-onrender-com-2df6d1d-2024-07-12T18-45-01-000Z.png)
-*(A more detailed process flow diagram is available in the project repository as `FinalTalendroProcessFlow.drawio`)*
 
 ### Core Components:
 
-1.  **Frontend (React SPA):** The user-facing application built with React and Create React App. It handles all user interactions, including the marketing site, user authentication, onboarding, the main dashboard, and all subscriber-only features.
-2.  **Backend (Node.js/Express):** The API server that powers the frontend. It manages user data, authentication, job data, application tracking, and integrations with all external services (Stripe, OpenAI, Job Boards).
+1.  **Frontend (React SPA):** The user-facing application built with React. It handles all user interactions, including the marketing site, user authentication, onboarding, the main dashboard, and all subscriber-only features.
+2.  **Backend (Node.js/Express):** The API server that powers the frontend. It manages user data, authentication, job data, application tracking, and integrations with all external services.
 3.  **Database (MongoDB):** The central database storing all user, job, application, and company data.
-4.  **Job Discovery Pipeline:** A collection of scheduled services (`crawlerScheduler.js`) that run periodically to ingest job postings from multiple sources (Greenhouse, Lever, Fantastic.jobs, JSearch).
-5.  **AI Services Layer:** Integrations with OpenAI for resume tailoring and interview question generation, and xAI (Grok) for real-time voice in the Audio Mock Interview feature.
-6.  **Billing (Stripe):** Manages all subscription payments, tier management, and billing-related webhooks.
+4.  **Job Discovery Pipeline:** A collection of scheduled services that run periodically to ingest job postings from multiple sources.
+5.  **Auto-Apply Engine:** A queue-based system using Playwright to programmatically submit job applications to employer Applicant Tracking Systems (ATS).
+6.  **AI Services Layer:** Integrations with OpenAI for resume tailoring, interview preparation, salary negotiation, and career strategy sessions.
+7.  **Email Service:** A service using the Resend API to send transactional emails for application status updates, user onboarding, and system notifications.
+8.  **Billing (Stripe):** Manages all subscription payments, tier management, and billing-related webhooks.
 
+## 3. Master Tier Definitions
 
-## 3. Technology Stack
+This table is the permanent, authoritative record of all features and limits differentiating the three subscription tiers. All product cards, marketing copy, and plan-gating logic MUST align with this table. This is the locked master reference.
+
+| Feature | Starter | Pro | Concierge |
+| :--- | :--- | :--- | :--- |
+| **Price (Monthly)** | $49 | $99 | $249 |
+| **Job Search Frequency** | Every 4 hours | Every 60 minutes | Every 30 minutes |
+| **Max Posting Age** | 5 hours | 2 hours | 90 minutes |
+| **Applications/Month** | Up to 50 | Up to 200 | Unlimited |
+| **Resume Services** | ATS-optimized plain text | ATS plain text + Formatted PDF | ATS plain text + Formatted PDF |
+| **LinkedIn Optimization** | — | — | Full Profile Rewrite |
+| **Interview Coaching** | AI Quick Prep Report | AI Mock Interview (Chat) | AI Mock Interview (Voice) |
+| **Salary Negotiation** | — | AI Mock Negotiation (Chat) | AI Mock Negotiation (Voice) |
+| **Weekly Strategy Session**| — | — | AI-driven weekly brief |
+
+## 4. Technology Stack
 
 The platform utilizes a curated set of technologies chosen for their robustness, scalability, and developer productivity.
 
 | Category      | Technology / Service        | Purpose                                                                                             |
 | :------------ | :-------------------------- | :-------------------------------------------------------------------------------------------------- |
-| **Frontend**  | React 18 (via CRA)          | Core UI library for building the single-page application.                                           |
+| **Frontend**  | React 18                    | Core UI library for building the single-page application.                                           |
 |               | React Router v6             | Client-side routing for navigation within the SPA.                                                  |
 |               | TailwindCSS                 | Utility-first CSS framework for styling the user interface.                                         |
-|               | Recharts                    | Charting library used for data visualizations in the user dashboard.                                |
 | **Backend**   | Node.js                     | JavaScript runtime for the server-side application.                                                 |
 |               | Express.js                  | Web application framework for building the REST API.                                                |
 |               | Mongoose                    | Object Data Modeling (ODM) library for MongoDB, providing schema validation and business logic.     |
-| **Database**  | MongoDB Atlas               | Primary database-as-a-service for storing all application data (Users, Jobs, Applications).         |
-| **AI & ML**   | OpenAI API (gpt-4.1-mini)   | Used for AI-powered resume tailoring, interview question generation, and Boolean search string creation. |
-|               | xAI Grok (Realtime API)     | Powers the voice-based Audio Mock Interview feature via a WebSocket connection.                     |
+| **Database**  | MongoDB Atlas               | Primary database-as-a-service for storing all application data.                                     |
+| **Automation**| Playwright                  | Headless browser automation for the Auto-Apply Engine and LinkedIn scraping.                        |
+| **AI & ML**   | OpenAI API (gpt-4.1-mini)   | Powers resume optimization, interview prep, salary negotiation, and strategy sessions.              |
+| **Email**     | Resend                      | Transactional email delivery service for all system and user notifications.                         |
+| **SMS**       | Twilio                      | SMS text alert service for Exceptionally Rare role detections. Fires immediately on detection, regardless of location gate outcome. |
 | **Payments**  | Stripe                      | Handles all subscription billing, payment processing, and subscription lifecycle management.        |
 | **Deployment**| Render                      | Cloud platform for deploying and hosting the full-stack application and database.                   |
-| **Job Sources**| Greenhouse, Lever, JSearch | APIs used by the job discovery pipeline to ingest job postings from various employer career pages.    |
+| **Job Sources**| Greenhouse, Lever, JSearch | APIs used by the job discovery pipeline to ingest job postings.                                     |
 
-## 4. Database Schema
+## 5. Database Schema
 
-The data is stored in a MongoDB Atlas database. The schema is defined and enforced by Mongoose models within the backend application. There are four primary collections:
+The data is stored in a MongoDB Atlas database. The schema is defined and enforced by Mongoose models within the backend application. There are four primary collections: `users`, `jobs`, `applications`, and `companies`.
 
-*   `users`: Stores all user account information, including authentication, subscription status, onboarding data, and preferences.
-*   `jobs`: A catalog of all job postings discovered by the crawler services.
-*   `applications`: Tracks every job application submitted by the system or manually entered by the user.
-*   `companies`: A collection of companies with ATS boards that the crawlers monitor.
-
-### 4.1. `users` Collection
+### 5.1. `users` Collection
 
 This collection is central to the platform, linking a user to their subscription, activity, and preferences.
 
@@ -64,242 +76,138 @@ This collection is central to the platform, linking a user to their subscription
 | :--------------------- | :------------------ | :------------------------------------------------------------------------------------------------------ |
 | `_id`                  | `ObjectId`          | Unique identifier for the user record.                                                                  |
 | `email`                | `String` (unique)   | User's email address, used for login and communication.                                                 |
-| `name`                 | `String`            | User's full name.                                                                                       |
-| `passwordHash`         | `String`            | Hashed password for authentication. Can be `PENDING_REGISTRATION` for users created via webhook.        |
-| `stripeCustomerId`     | `String`            | The user's customer ID in Stripe.                                                                       |
-| `stripeSubscriptionId` | `String`            | The user's primary subscription ID in Stripe.                                                           |
-| `plan`                 | `String` (enum)     | The user's subscription tier (`basic`, `pro`, `premium`).                                               |
-| `subscriptionStatus`   | `String` (enum)     | The current status of the user's Stripe subscription (e.g., `active`, `canceled`).                     |
-| `onboardingProgress`   | `Object`            | Tracks the user's progress through the multi-step onboarding flow.                                      |
-| `onboardingData`       | `Mixed`             | A flexible object storing all data collected during the 11-step onboarding process.                     |
-| `resumeData`           | `Mixed`             | Parsed and structured data from the user's uploaded resume, used for matching and tailoring.            |
+| `passwordHash`         | `String`            | Hashed password for authentication.                                                                     |
+| `plan`                 | `String` (enum)     | The user's subscription tier (`starter`, `pro`, `concierge`).                                           |
+| `onboardingData`       | `Mixed`             | A flexible object storing all data collected during the onboarding process.                             |
+| `resumeData`           | `Mixed`             | Parsed and structured data from the user's uploaded resume.                                             |
+| `strategyHistory`      | `Array<Object>`     | Stores records of past weekly strategy sessions, including the generated brief and performance stats.   |
 | `stats`                | `Object`            | Aggregated statistics for the user, such as total applications and jobs discovered.                     |
-| `interviewSessions`    | `Array<Object>`     | Stores records of all interview prep sessions (Quick Prep, Full Mock, Audio Mock).                      |
 
-### 4.2. `jobs` Collection
+### 5.2. `jobs` Collection
 
 This collection stores all job postings aggregated from various sources.
 
 | Field             | Type       | Description                                                                                             |
 | :---------------- | :--------- | :------------------------------------------------------------------------------------------------------ |
-| `_id`             | `ObjectId` | Unique identifier for the job record.                                                                   |
 | `externalId`      | `String`   | The job's unique ID from its original source (e.g., Greenhouse job ID).                                 |
 | `source`          | `String`   | The platform where the job was discovered (e.g., `greenhouse`, `lever`).                                |
 | `title`           | `String`   | The job title.                                                                                          |
 | `company`         | `String`   | The name of the hiring company.                                                                         |
-| `location`        | `String`   | The primary location of the job.                                                                        |
-| `remote`          | `Boolean`  | Flag indicating if the job is fully remote.                                                             |
-| `descriptionText` | `String`   | The full job description in plain text.                                                                 |
 | `applyUrl`        | `String`   | The direct URL to the application page on the employer's ATS.                                           |
-| `postedAt`        | `Date`     | The date the employer originally posted the job.                                                        |
-| `firstSeenAt`     | `Date`     | The timestamp when our crawler first discovered this job.                                               |
-| `lastSeenAt`      | `Date`     | The most recent timestamp our crawler confirmed this job was still active.                              |
-| `isActive`        | `Boolean`  | A flag indicating if the job is still considered active by our system.                                  |
-| `normalizedTitle` | `String`   | A cleaned, lowercased version of the title used for efficient matching.                                 |
 
-### 4.3. `applications` Collection
+### 5.3. `applications` Collection
 
 This collection tracks the status and history of each job application.
 
 | Field        | Type              | Description                                                                                             |
 | :----------- | :---------------- | :------------------------------------------------------------------------------------------------------ |
-| `_id`        | `ObjectId`        | Unique identifier for the application record.                                                           |
 | `userId`     | `ObjectId` (ref)  | A reference to the `users` collection, linking the application to a user.                               |
 | `jobId`      | `ObjectId` (ref)  | A reference to the `jobs` collection, linking to the original job posting.                              |
-| `jobTitle`   | `String`          | Denormalized job title to persist even if the original job record is removed.                           |
-| `company`    | `String`          | Denormalized company name.                                                                              |
-| `status`     | `String` (enum)   | The current stage of the application (e.g., `applied`, `interview`, `offer`, `rejected`).               |
+| `status`     | `String` (enum)   | The current stage of the application (e.g., `queued`, `applied`, `interview`, `failed`).                |
 | `appliedAt`  | `Date`            | The timestamp when the application was submitted.                                                       |
-| `activities` | `Array<Object>`   | A log of all activities related to this application (e.g., status changes, notes, follow-ups).        |
-| `matchScore` | `Number`          | The calculated match score between the user's profile and the job at the time of application.         |
 
-### 4.4. `companies` Collection
-
-This collection maintains a list of companies to be crawled for new jobs.
-
-| Field         | Type       | Description                                                                        |
-| :------------ | :--------- | :--------------------------------------------------------------------------------- |
-| `_id`         | `ObjectId` | Unique identifier for the company record.                                          |
-| `name`        | `String`   | The name of the company.                                                           |
-| `slug`        | `String`   | The company's unique identifier on the ATS job board (e.g., "acme" for Greenhouse). |
-| `source`      | `String`   | The ATS provider for this company (e.g., `greenhouse`, `lever`).                   |
-| `lastCrawledAt` | `Date`     | The timestamp of the last time the crawler processed this company.                 |
-| `priority`    | `Number`   | A score from 1-10 indicating how frequently this company should be crawled.        |
-
-## 5. Core Systems & Workflows
+## 6. Core Systems & Workflows
 
 This section details the primary operational flows and backend systems that drive the Talendro platform.
 
-### 5.1. Authentication Flow
+### 6.1. Job Matching & Scoring Engine
 
-Authentication is managed via JSON Web Tokens (JWT). The flow is designed to handle both new user registrations and users who are created via a Stripe webhook after a successful payment.
+The job matching and scoring engine is the brain of the platform, responsible for identifying relevant roles and ranking them against a subscriber's profile. It uses a multi-stage process to ensure high accuracy and relevance.
 
-1.  **Registration (`/api/auth/register`):**
-    *   A new user provides their email, name, and password.
-    *   The backend hashes the password using `bcryptjs`.
-    *   A new `User` document is created in MongoDB.
-    *   If a placeholder user record already exists (created by a Stripe webhook with `passwordHash: 'PENDING_REGISTRATION'`), this registration completes the account by setting the real password hash.
-    *   A JWT is generated using `jsonwebtoken`, signed with the `JWT_SECRET`, and has an expiration of 30 days.
-    *   The token and a sanitized user object are returned to the client.
+1.  **Job Discovery Pipeline:** A collection of scheduled services that run periodically to ingest job postings from multiple sources. The primary sources are direct employer career portals and primary job board APIs (Greenhouse, Lever, Workday, iCIMS). Aggregators like LinkedIn and Indeed are used as secondary sources.
+2.  **Location Gate (Hard Filter):** The first filter applied. If a subscriber has specified a location preference (e.g., Remote or Orlando, FL), any role that is not remote and is outside a reasonable commute radius of that location is immediately filtered out. This is a hard gate, not a scoring penalty.
+3.  **Domain Filter (Hard Filter):** The second filter. The engine uses NLP to determine if the role's primary responsibility aligns with the subscriber's core domain (e.g., Talent Acquisition vs. generalist HR). Roles that do not match the subscriber's domain are filtered out.
+4.  **Rarity Classification:** The engine classifies the rarity of the role's title (Common, Rare, Exceptionally Rare) based on historical market data. This is used to trigger special alerts and dashboard treatments.
+5.  **Weighted Scoring (Chain-of-Thought):** Roles that pass the filters are scored using a weighted, multi-dimensional AI prompt. The AI evaluates:
+    *   **Hard Skill Alignment (40%):** Core skills match.
+    *   **Experience Recency & Seniority (30%):** Level and recency match.
+    *   **Quantifiable Impact (20%):** Alignment of past results with role demands.
+    *   **Contextual Fit (10%):** Industry, company size, etc.
+6.  **Dashboard Presentation (Above/Below the Line):**
+    *   **Above the Line:** Roles that passed all filters, including location. These are applied to automatically.
+    *   **Below the Line:** Roles that passed all filters *except* location. These are displayed on the dashboard but not applied to, giving the subscriber the option to adjust their criteria.
+7.  **Immediate Alerts:** For Exceptionally Rare roles, the system triggers an immediate **email** (`emailService.sendRareRoleAlert`) and **SMS text** (`smsService.sendExceptionalRoleAlert`) to the subscriber simultaneously, regardless of whether the role passed the location gate. For Rare (but not Exceptionally Rare) roles, an email alert is sent but no SMS, to avoid over-alerting.
 
-2.  **Login (`/api/auth/login`):**
-    *   The user provides their email and password.
-    *   The backend finds the user by email and compares the provided password with the stored `passwordHash` using `bcrypt.compare`.
-    *   On success, a new JWT is issued and returned to the client.
+### 6.2. Auto-Apply Engine
 
-3.  **Token Handling (Frontend):**
-    *   The JWT and user object are stored in `localStorage` by the `AuthContext`.
-    *   For subsequent API requests, the token is sent in the `Authorization: Bearer <token>` header.
+The Auto-Apply Engine is the core of the product promise, responsible for programmatically submitting job applications to employer Applicant Tracking Systems (ATS) on behalf of the user. It is a robust, queue-based system designed to handle the complexity and unreliability of interacting with dozens of different ATS platforms.
 
-4.  **Token Verification (Backend):**
-    *   The `authenticateToken` middleware (`/server/middleware/auth.js`) intercepts all protected routes.
-    *   It verifies the JWT's signature and expiration. If valid, it attaches the decoded user payload (containing `userId` and `email`) to the `req` object, allowing downstream route handlers to identify and authorize the user.
+1.  **Application Queue (`queueService.js`):** When a job is identified as a match, an "apply" task is added to an in-memory queue. This queue manages the flow of jobs to be processed by the workers.
+2.  **Task Worker (`applyWorker.js`):** A worker process consumes tasks from this queue. It is responsible for orchestrating the application submission process, including quota enforcement, error handling, and status updates.
+3.  **ATS Adapter Layer (`/services/ats/`):** The worker uses an "adapter" specific to the target ATS. This layer contains the logic for navigating and submitting an application on a specific platform. Implemented adapters include:
+    *   `greenhouseAdapter.js`: For jobs hosted on Greenhouse.
+    *   `leverAdapter.js`: For jobs hosted on Lever.
+    *   `genericAdapter.js`: A fallback adapter that attempts to fill common fields on unknown ATS platforms.
+4.  **Browser Automation (Playwright):** The adapters use Playwright to perform the application steps in a headless browser, including navigating to the URL, filling form fields by mapping user data, uploading the resume, and submitting the form.
+5.  **State Management & Notifications:** The worker tracks the application's state (`queued`, `submitted`, `failed`) and updates the `applications` collection in MongoDB. Upon completion or failure, it uses the `emailService` to send a real-time notification to the user.
 
-### 5.2. Job Discovery Pipeline
+### 6.2. Concierge LinkedIn Service (`linkedinService.js`)
 
-The job discovery process is orchestrated by the `crawlerScheduler.js` service, which runs a series of `node-cron` scheduled tasks to continuously ingest new job postings.
+The LinkedIn optimization service is a key deliverable for Concierge subscribers. The workflow is handled entirely by AI.
 
-*   **Scheduler:** `server/services/crawlerScheduler.js`
-*   **Cron Jobs:** The scheduler initiates different crawlers at set intervals:
-    *   **ATS Crawl (Greenhouse & Lever):** Runs every 30 minutes. It fetches a batch of companies from the `companies` collection and calls the respective crawler functions (`crawlGreenhouseCompany`, `crawlLeverCompany`) to scrape their job boards.
-    *   **Aggregator Ingestion (Fantastic.jobs & JSearch):** Runs every 60 minutes to pull jobs from large, third-party job aggregators.
-    *   **Company Discovery:** Runs once daily to find new companies using the Greenhouse and Lever APIs.
-    *   **Stale Job Cleanup:** Runs once daily to mark jobs as `isActive: false` if they haven't been seen by the crawlers for 72 hours.
-*   **Data Flow:**
-    1.  The cron job triggers a crawler function.
-    2.  The crawler makes API requests to the target job source (e.g., a company's Greenhouse job board API).
-    3.  The raw job data is transformed into the `Job` schema format.
-    4.  The system uses `Job.findOneAndUpdate` with the `externalId` and `source` as a unique key to either create a new job record or update an existing one (updating `lastSeenAt`).
+*   **User Input:** During onboarding, Concierge subscribers are prompted to provide their public LinkedIn profile URL (optional).
+*   **URL Provided (Update/Rewrite):** If a URL is submitted, the `linkedinService` uses Playwright to scrape the profile content. It then performs a comprehensive analysis against the user's optimized resume and generates a full rewrite, delivered as a document with explicit instructions.
+*   **URL Not Provided (Build from Scratch):** If the user leaves the URL field blank, the service generates a complete, ready-to-use LinkedIn profile from scratch based on the user's resume data.
 
-### 5.3. Job Matching & Scoring Engine
+### 6.3. AI-Powered Feature Suite
 
-Once a user has completed their onboarding, the system can score jobs against their profile to determine relevance. This is the core logic behind the personalized job feed.
+Talendro integrates OpenAI's `gpt-4.1-mini` model across several features to provide advanced, AI-driven value to subscribers.
 
-*   **Location:** `server/routes/jobs.js` (the `scoreJobFull` function)
-*   **Process:**
-    1.  When a user requests their job feed (`/api/jobs/feed`), the system fetches their `onboardingData`.
-    2.  It retrieves a large pool of candidate jobs from the database, pre-filtering where possible (e.g., by job titles).
-    3.  Each job is passed through the `scoreJobFull` function, which calculates a match score out of 100 based on a weighted 7-factor model:
-        *   **Title Relevance (35 pts):** How closely the job title matches the user's target titles.
-        *   **Seniority Match (20 pts):** Compares inferred seniority from the job title with the user's preferred experience levels.
-        *   **Work Arrangement (15 pts):** Matches remote/hybrid/onsite preferences.
-        *   **Employment Type (10 pts):** Matches full-time, contract, etc.
-        *   **Skills Overlap (10 pts):** Checks for keyword overlap between the user's skills and the job description.
-        *   **Location Match (5 pts):** Checks if the job location is within the user's target areas.
-        *   **Recency Bonus (5 pts):** Awards points for newer job postings.
-    4.  **Thresholding:** Only jobs that score **75% or higher** are included in the final feed delivered to the user, ensuring high relevance.
+*   **Resume Bullet Generation:** In the `ResumeUpdate` flow, users can click "Generate with AI" to automatically create strong, achievement-oriented bullet points for a new job position based on its title and company.
+*   **Salary Negotiation Role-Play (`negotiationService.js`):** A dedicated service and UI for Pro and Concierge subscribers to practice salary negotiation. It features an AI-powered chat that analyzes offers, provides counter-offer strategies, and simulates a role-play conversation with a hiring manager.
+*   **Weekly Strategy Sessions (`strategyService.js`):** An exclusive feature for Concierge subscribers. The service analyzes the user's weekly application data (applications sent, response rate, interviews) and generates a personalized strategy brief with tactical recommendations. The UI includes a conversational chat for follow-up questions.
 
-### 5.4. Subscription & Billing Management
+### 6.4. Email Notification Service (`emailService.js`)
 
-Billing is handled entirely by Stripe. The backend integrates with Stripe for creating checkout sessions and handling webhooks to keep user subscription status in sync.
+All transactional emails are managed by the `emailService`, which integrates with the Resend API. The service uses pre-designed HTML templates to send a variety of notifications, ensuring users are kept informed of critical events.
 
-*   **Checkout (`/api/stripe/create-checkout-session`):** When a user selects a plan, the frontend sends the `priceId` to this endpoint. The backend creates a Stripe Checkout Session and returns the session URL, to which the user is redirected to complete payment.
-*   **Webhooks (`/api/webhooks/stripe`):** A dedicated webhook handler processes events from Stripe. This is critical for managing the subscription lifecycle asynchronously.
-    *   The endpoint uses `express.raw({ type: 'application/json' })` to receive the raw request body for signature verification.
-    *   It verifies the `stripe-signature` header to ensure the request is genuinely from Stripe.
-    *   Key events handled:
-        *   `invoice.payment_succeeded`: A payment was successful. The backend can use this to provision or continue access.
-        *   `customer.subscription.updated`: The subscription status changed (e.g., to `past_due`).
-        *   `customer.subscription.deleted`: The subscription was canceled. was canceled. canceled. canceled. canceled. canceled. canceled. canceled. canceled. canceled. The backend updates the user's record to reflect this.
+*   **Key Notifications:**
+    *   `sendApplicationConfirmation`: Sent when an application is successfully submitted by the auto-apply engine.
+    *   `sendApplicationFailure`: Sent when an application fails, including the reason for the failure.
+    *   `sendDocumentsReady`: Notifies the user when their optimized resume and other documents are ready for review.
+    *   `sendQuotaWarning`: Informs users when they are approaching their monthly application limit.
+    *   `sendWelcomeEmail`: Sent to new users upon registration.
 
-## 6. API Endpoints
+## 7. API Endpoints
 
-The backend exposes a RESTful API to be consumed by the React frontend. All API routes are prefixed with `/api`. Authentication is required for most endpoints that handle user-specific data.
+The backend exposes a RESTful API consumed by the React frontend. All routes are prefixed with `/api`.
 
-| Endpoint                               | Method | Auth? | Description                                                                                                                               |
-| :------------------------------------- | :----- | :---- | :---------------------------------------------------------------------------------------------------------------------------------------- |
-| **Authentication**                     |        |       |                                                                                                                                           |
-| `/auth/register`                       | `POST` | No    | Creates a new user account or completes a pending registration.                                                                           |
-| `/auth/login`                          | `POST` | No    | Authenticates a user and returns a JWT.                                                                                                   |
-| `/auth/me`                             | `GET`  | Yes   | Fetches the profile of the currently authenticated user.                                                                                  |
-| `/auth/progress`                       | `PUT`  | Yes   | Saves the user's progress during the onboarding flow.                                                                                     |
-| **Jobs & Applications**                |        |       |                                                                                                                                           |
-| `/jobs/feed`                           | `GET`  | Yes   | Returns a personalized and scored list of jobs that meet the 75% match threshold.                                                         |
-| `/jobs/search`                         | `GET`  | Yes   | Performs a keyword-based job search without a strict match threshold.                                                                     |
-| `/applications`                        | `GET`  | Yes   | Lists all of the user's tracked applications with filtering and pagination.                                                               |
-| `/applications`                        | `POST` | Yes   | Creates a new application record, typically for manual entry.                                                                             |
-| `/applications/:id`                    | `PATCH`| Yes   | Updates the status or details of a specific application.                                                                                  |
-| **AI & Interview Prep**                |        |       |                                                                                                                                           |
-| `/ai/generate-search-string`           | `POST` | Yes   | Uses OpenAI to generate a Boolean search string based on the user's profile.                                                              |
-| `/interview/voice-token`               | `POST` | Yes   | Fetches an ephemeral token for the xAI Realtime API to conduct an Audio Mock Interview.                                                     |
-| `/interview/chat`                      | `POST` | Yes   | Handles the back-and-forth chat interaction with the AI interview coach for all prep modes.                                               |
-| **Billing (Stripe)**                   |        |       |                                                                                                                                           |
-| `/stripe/create-checkout-session`      | `POST` | Yes   | Creates a Stripe Checkout session for a user to subscribe to a plan.                                                                      |
-| `/stripe/create-portal-session`        | `POST` | Yes   | Creates a Stripe Customer Portal session for the user to manage their subscription.                                                       |
-| `/webhooks/stripe`                     | `POST` | No    | Handles incoming webhooks from Stripe to manage subscription lifecycle events. This endpoint has special middleware to process the raw body. |
+| Endpoint                               | Method | Auth? | Description                                                                                             |
+| :------------------------------------- | :----- | :---- | :------------------------------------------------------------------------------------------------------ |
+| **Authentication**                     |        |       |                                                                                                         |
+| `/auth/register`                       | `POST` | No    | Creates a new user account.                                                                             |
+| `/auth/login`                          | `POST` | No    | Authenticates a user and returns a JWT.                                                                 |
+| **Resume & Documents**                 |        |       |                                                                                                         |
+| `/resume/optimize`                     | `POST` | Yes   | Initiates the AI-powered resume optimization process.                                                   |
+| `/resume/generate-bullets`             | `POST` | Yes   | Generates AI-written achievement bullets for a job position.                                            |
+| `/linkedin/optimize`                   | `POST` | Yes   | Triggers the LinkedIn profile scrape, analysis, and rewrite/generation service.                         |
+| **Auto-Apply & Jobs**                  |        |       |                                                                                                         |
+| `/jobs/feed`                           | `GET`  | Yes   | Returns a personalized and scored list of jobs.                                                         |
+| `/applications`                        | `GET`  | Yes   | Lists all of the user's tracked applications.                                                           |
+| **AI Coaching Services**               |        |       |                                                                                                         |
+| `/negotiation/start`                   | `POST` | Yes   | Starts a new salary negotiation session.                                                                |
+| `/negotiation/chat`                    | `POST` | Yes   | Handles the conversational back-and-forth for the negotiation role-play.                                |
+| `/strategy/session`                    | `POST` | Yes   | Generates a new weekly strategy session brief for a Concierge user.                                     |
+| `/strategy/chat`                       | `POST` | Yes   | Handles conversational follow-up during a strategy session.                                             |
+| `/strategy/history`                    | `GET`  | Yes   | Retrieves a user's past strategy session briefs.                                                        |
+| **Billing (Stripe)**                   |        |       |                                                                                                         |
+| `/stripe/create-checkout-session`      | `POST` | Yes   | Creates a Stripe Checkout session for a user to subscribe to a plan.                                    |
+| `/webhooks/stripe`                     | `POST` | No    | Handles incoming webhooks from Stripe to manage subscription lifecycle events.                          |
 
-## 7. Deployment
+## 8. Deployment
 
-The application is configured for continuous deployment on Render. The process is defined in the `render.yaml` file at the root of the repository.
+The application is configured for continuous deployment on Render via the `render.yaml` file.
 
-*   **Service Type:** The application is deployed as a single `web` service.
-*   **Environment:** The environment is `node`.
-*   **Build Command:** `npm run install:all && npm run build`
-    1.  `npm run install:all`: This custom script runs `npm install` in both the `client/` and `server/` directories concurrently to install all dependencies for both the frontend and backend.
-    2.  `npm run build`: This script runs `react-scripts build` within the `client/` directory, which creates a production-ready, optimized static build of the React application in `client/build/`.
-*   **Start Command:** `cd server && npm start`
-    *   After the build is complete, Render changes to the `server/` directory and runs `npm start`, which executes `node index.js`. The Node.js server then serves both the API and the static React application from the `client/build` directory.
-*   **Environment Variables:** All secrets (API keys, database URI, JWT secret) are configured as environment variables within the Render dashboard. The `render.yaml` file is configured to sync these variables.
-
-## 8. Future Work: The Auto-Apply Engine
-
-The most critical missing component in the Talendro platform is the **Auto-Apply Engine**. This system is the core of the product promise, responsible for programmatically submitting job applications to employer Applicant Tracking Systems (ATS) on behalf of the user. Its implementation is the highest priority for future development.
-
-### Conceptual Architecture:
-
-The engine will likely be a new, separate service or a distinct module within the existing backend. It will require a robust, queue-based architecture to handle the complexity and unreliability of interacting with dozens of different ATS platforms.
-
-1.  **Application Queue:** When a job is identified as a match (and approved by the user, depending on their settings), an "apply" task will be added to a message queue (e.g., RabbitMQ or AWS SQS).
-2.  **Task Worker:** A pool of worker processes will consume tasks from this queue.
-3.  **ATS Adapter Layer:** Each worker will use an "adapter" specific to the target ATS (e.g., a `GreenhouseAdapter`, `LeverAdapter`). This adapter will contain the logic for navigating and submitting an application on that specific platform.
-4.  **Browser Automation:** The adapters will use a headless browser automation tool like **Puppeteer** or **Playwright** to perform the application steps:
-    *   Navigate to the `applyUrl`.
-    *   Fill in the application form fields by mapping the user's `onboardingData` and tailored resume to the form inputs.
-    *   Upload the tailored resume file.
-    *   Handle any required checkboxes (e.g., work authorization, EEO questions).
-    *   Submit the form.
-5.  **State Management & Error Handling:** The worker must track the application's state (`in_progress`, `submitted`, `failed`) and update the `applications` collection in MongoDB. It needs sophisticated error handling to manage CAPTCHAs, unexpected form fields, or changes in the ATS interface.
-
-This component represents a significant engineering challenge and will be the primary focus of the next development cycle.
+*   **Service Type:** A single `web` service.
+*   **Build Command:** `npm run install:all && npm run build` (installs dependencies for client/server, then builds the React app).
+*   **Start Command:** `cd server && npm start` (runs the Node.js server, which serves the API and the static React build).
+*   **Environment Variables:** All secrets (API keys, database URI, JWT secret) are configured as environment variables within the Render dashboard.
 
 ## 9. Conclusion
 
 This document provides a foundational understanding of the Talendro platform's architecture and technical implementation. It is a living document that should be updated as the system evolves. By maintaining a clear and comprehensive reference, the engineering team can build, scale, and maintain the platform effectively, ensuring the successful delivery of a powerful and reliable job search automation tool for our users.
 
-### 5.5. Resume Generation & Tiered Delivery
 
-The resume optimization and generation system is a core feature available to all subscribers. While the underlying AI-powered optimization process is consistent across all tiers—focusing on ATS compatibility, keyword alignment, and human readability—the final deliverables are differentiated based on the user's subscription plan. This ensures that value scales with the subscription level.
+## 10. Brand & UI Specification
 
-The process is available through three primary user flows, all of which feed into the same backend optimization service:
-
-1.  **Resume Build:** For users who do not have an existing resume and need to create one from scratch.
-2.  **Resume Update:** For users who need to add a new job or make other content changes to an existing resume before re-optimizing.
-3.  **Resume Optimize:** For users who have a complete, up-to-date resume and want to optimize it as-is.
-
-Regardless of the entry point, the final output is determined by the user's active subscription plan at the time of the request.
-
-#### Tiered Output Structure:
-
-| Tier        | Optimized Plain Text Resume | Optimized HTML Formatted Resume | LinkedIn Profile Review & Update |
-| :---------- | :-------------------------: | :-----------------------------: | :------------------------------: |
-| **Starter**   |              ✅             |                ❌               |                ❌                |
-| **Pro**       |              ✅             |                ✅               |                ❌                |
-| **Concierge** |              ✅             |                ✅               |                ✅                |
-
-*   **Optimized Plain Text Resume:** A clean, text-only version of the resume. This format is designed for maximum compatibility with all Applicant Tracking Systems (ATS), ensuring the content can be parsed correctly without any formatting issues. It is the baseline deliverable for all tiers.
-*   **Optimized HTML Formatted Resume:** A beautifully designed, professional resume rendered in HTML. This version is intended for direct-to-human delivery, such as emailing to a recruiter or hiring manager, where visual presentation is important. This is available for Pro and Concierge subscribers.
-*   **LinkedIn Profile Review & Update:** A comprehensive service for Concierge subscribers that includes a full review of their LinkedIn profile, with AI-powered suggestions and manual updates to align it with their newly optimized resume and career goals.
-
-This tiered delivery model is enforced at the API level within the resume generation routes. The backend services will check the user's `plan` field before generating and returning the appropriate artifacts.
-
-### 5.6. The Five Core Differentiators
-
-The entire product offering is built on five key pillars that scale in value across the three subscription tiers. The platform is fully autonomous, with all services delivered by AI systems, not humans.
-
-| Differentiator | Starter | Pro | Concierge |
-|---|---|---|---|
-| **Resume Services** | AI builds, updates, or optimizes your resume → delivers ATS-optimized plain text output | AI builds, updates, or optimizes your resume → delivers ATS-optimized plain text + beautifully formatted HTML resume | AI builds, updates, or optimizes your resume → delivers ATS-optimized plain text + beautifully formatted HTML resume + AI-powered LinkedIn profile analysis and updated copy |
-| **Job Search Frequency** | AI searches every 4 hours | AI searches every 60 minutes | AI searches every 30 minutes |
-| **Applications/Month** | Up to 50 AI-submitted applications | Up to 200 AI-submitted applications | Unlimited AI-submitted applications |
-| **Interview Coaching** | AI-generated Quick Prep report — key questions, talking points, and company brief delivered before your interview | AI-conducted Full Mock Interview — real-time chat session with AI coaching, feedback, and performance scoring | AI-conducted live voice Mock Interview — real-time spoken conversation with the AI, instant feedback, and full performance debrief |
-| **Salary Negotiation** | Not included | AI-conducted Full Mock salary negotiation role-play | AI-conducted live voice Mock salary negotiation role-play |
+All subscriber-facing UI components MUST adhere to the official brand and UI specification as defined in `TALENDRO_BRAND_SPEC.md`. This file is the single source of truth for all colors, typography, spacing, and component styles. No deviation from this specification is permitted without explicit user approval.

@@ -460,7 +460,7 @@ app.use((req, res, next) => {
 })
 
 // Connect to MongoDB Atlas with retry logic
-const MONGO_URI = process.env.MONGODB_URI || 'mongodb+srv://greg_db_user:ggeS08121989@ac-yaqbt9c.oeu8lvm.mongodb.net/talendro?retryWrites=true&w=majority';
+const MONGO_URI = process.env.MONGODB_URI || 'mongodb+srv://greg_db_user:REDACTED_OLD_PASSWORD@talendrocluster.0hrgtda.mongodb.net/talendro?retryWrites=true&w=majority&appName=TalendroCluster';
 
 async function connectMongoDB(retries = 5, delayMs = 5000) {
   for (let attempt = 1; attempt <= retries; attempt++) {

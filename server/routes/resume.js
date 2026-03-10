@@ -2,7 +2,8 @@ import express from 'express';
 import { authenticateToken } from '../middleware/auth.js';
 import User from '../models/User.js';
 import { optimize as optimizeResume, tailor as tailorResume } from '../services/resumeTailorService.js';
-import { generate as generateCoverLetter } from '../services/coverLetterService.js';
+import coverLetterService from '../services/coverLetterService.js';
+const generateCoverLetter = coverLetterService.generate;
 import { generateResumePdf } from '../services/pdfService.js';
 
 const router = express.Router();
@@ -281,6 +282,51 @@ router.post('/feedback', authenticateToken, async (req, res) => {
   } catch (err) {
     console.error('[resume/feedback] Error:', err.message);
     return res.status(500).json({ error: 'Failed to save feedback' });
+  }
+});
+
+// ─── POST /api/resume/generate-bullets ─────────────────────────────────────
+// Generate AI-written achievement bullets for a job position.
+// Used by ResumeUpdate.js "Generate with AI" button.
+router.post('/generate-bullets', authenticateToken, async (req, res) => {
+  try {
+    const { title, company, description } = req.body;
+    if (!title && !company) {
+      return res.status(400).json({ error: 'title or company is required' });
+    }
+
+    const OpenAI = (await import('openai')).default;
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+    const prompt = `Write 4-5 strong, achievement-oriented resume bullet points for the following job position.
+
+Job Title: ${title || 'Not specified'}
+Company: ${company || 'Not specified'}
+${description ? `Context provided by candidate: ${description}` : ''}
+
+Rules:
+- Start each bullet with a strong action verb (Led, Built, Increased, Reduced, Managed, etc.)
+- Include quantified results where possible (%, $, time saved, team size, etc.)
+- Make bullets ATS-optimized with relevant keywords for this role
+- Do NOT fabricate specific numbers unless they are plausible for the role
+- Return ONLY the bullet points, one per line, each starting with a bullet character •
+- No headers, no explanations, no numbering`;
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4.1-mini',
+      messages: [
+        { role: 'system', content: 'You are an expert resume writer specializing in achievement-oriented bullet points.' },
+        { role: 'user', content: prompt },
+      ],
+      temperature: 0.6,
+      max_tokens: 400,
+    });
+
+    const bullets = response.choices[0].message.content.trim();
+    return res.json({ success: true, bullets });
+  } catch (err) {
+    console.error('[resume/generate-bullets] Error:', err.message);
+    return res.status(500).json({ error: 'Failed to generate bullets' });
   }
 });
 

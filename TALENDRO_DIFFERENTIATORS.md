@@ -1,18 +1,18 @@
-# Talendro — The Five Core Differentiators
+# Talendro — Master Tier Feature Definitions
 
-> **Last Updated:** March 8, 2026
-> **Source of Truth:** This document is the permanent, authoritative record of the five key feature pillars that differentiate the three subscription tiers. All product cards, marketing copy, and plan-gating logic must align with this table.
+> **Last Updated:** March 10, 2026
+> **Source of Truth:** This document is the permanent, authoritative record of all features and limits differentiating the three subscription tiers. All product cards, marketing copy, and plan-gating logic MUST align with this table. This is the locked master reference.
 
-## Autonomous AI Platform
+## The Tiers
 
-Every feature on this platform is AI-delivered, AI-executed, and AI-coached. The user is not in the loop. The product is the Autonomous Search and Apply Navigator (ASAN) and its associated AI systems.
-
-## The Five Pillars
-
-| Differentiator | Starter | Pro | Concierge |
-|---|---|---|---|
-| **Resume Services** | AI builds, updates, or optimizes your resume → delivers ATS-optimized plain text output | AI builds, updates, or optimizes your resume → delivers ATS-optimized plain text + beautifully formatted HTML resume | AI builds, updates, or optimizes your resume → delivers ATS-optimized plain text + beautifully formatted HTML resume + AI-powered LinkedIn profile analysis and updated copy |
-| **Job Search Frequency** | AI searches every 4 hours | AI searches every 60 minutes | AI searches every 30 minutes |
-| **Applications/Month** | Up to 50 AI-submitted applications | Up to 200 AI-submitted applications | Unlimited AI-submitted applications |
-| **Interview Coaching** | AI-generated Quick Prep report — key questions, talking points, and company brief delivered before your interview | AI-conducted Full Mock Interview — real-time chat session with AI coaching, feedback, and performance scoring | AI-conducted live voice Mock Interview — real-time spoken conversation with the AI, instant feedback, and full performance debrief |
-| **Salary Negotiation** | Not included | AI-conducted Full Mock salary negotiation role-play | AI-conducted live voice Mock salary negotiation role-play |
+| Feature | Starter | Pro | Concierge |
+| :--- | :--- | :--- | :--- |
+| **Price (Monthly)** | $49 | $99 | $249 |
+| **Job Search Frequency** | Every 4 hours | Every 60 minutes | Every 30 minutes |
+| **Max Posting Age** | 5 hours | 2 hours | 90 minutes |
+| **Applications/Month** | Up to 50 | Up to 200 | Unlimited |
+| **Resume Services** | ATS-optimized plain text | ATS plain text + Formatted PDF | ATS plain text + Formatted PDF |
+| **LinkedIn Optimization** | — | — | Full Profile Rewrite |
+| **Interview Coaching** | AI Quick Prep Report | AI Mock Interview (Chat) | AI Mock Interview (Voice) |
+| **Salary Negotiation** | — | AI Mock Negotiation (Chat) | AI Mock Negotiation (Voice) |
+| **Weekly Strategy Session**| — | — | AI-driven weekly brief |

@@ -4,6 +4,15 @@ import Company from '../models/Company.js';
 import User from '../models/User.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { getCrawlerStats, triggerDiscovery, triggerCrawl } from '../services/crawlerScheduler.js';
+import {
+  passedDomainFilter,
+  classifyLocation,
+  classifyRarity,
+  passesFreshnessGate,
+  scoreJob as scoreJobNew,
+  evaluateBatchForSubscriber,
+  TIER_CONFIG,
+} from '../services/jobScoringService.js';
 
 const router = express.Router();
 
@@ -424,6 +433,60 @@ router.post('/admin/trigger-crawl', authenticateToken, async (req, res) => {
 router.post('/admin/trigger-discovery', authenticateToken, async (req, res) => {
   triggerDiscovery();
   res.json({ success: true, message: 'Discovery triggered' });
+});
+
+
+// ─── GET /api/jobs/matches — full above/below-the-line job matches ─────────────
+// This is the primary endpoint for the JobMatches page.
+router.get('/matches', authenticateToken, async (req, res) => {
+  try {
+    const { page = 1, limit = 50 } = req.query;
+    const pageNum  = Math.max(1, parseInt(page));
+    const limitNum = Math.min(100, parseInt(limit) || 50);
+
+    const user = await User.findById(req.userId).lean();
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const tier = (() => {
+      const p = (user.plan || 'basic').toLowerCase();
+      if (p === 'premium' || p === 'concierge') return 'concierge';
+      if (p === 'pro') return 'pro';
+      return 'starter';
+    })();
+
+    const tierConfig = TIER_CONFIG[tier];
+    const cutoff = new Date(Date.now() - tierConfig.maxAgeMs);
+
+    const recentJobs = await Job.find({
+      isActive: true,
+      firstSeenAt: { $gte: cutoff },
+    }).limit(500).select('-descriptionHtml -__v').lean();
+
+    const { aboveLine, belowLine, filtered, rarityAlerts, stats } = evaluateBatchForSubscriber(recentJobs, user);
+
+    // Paginate above-the-line
+    const skip = (pageNum - 1) * limitNum;
+    const pagedAbove = aboveLine.slice(skip, skip + limitNum);
+
+    return res.json({
+      success: true,
+      stats,
+      aboveLine: pagedAbove,
+      belowLine: belowLine.slice(0, 20),
+      filtered: filtered.slice(0, 20),
+      rarityAlerts: rarityAlerts.slice(0, 5),
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total: aboveLine.length,
+        pages: Math.ceil(aboveLine.length / limitNum),
+        hasMore: skip + pagedAbove.length < aboveLine.length,
+      },
+    });
+  } catch (err) {
+    console.error('[Jobs] Matches error:', err);
+    res.status(500).json({ success: false, message: 'Failed to fetch job matches' });
+  }
 });
 
 export default router;

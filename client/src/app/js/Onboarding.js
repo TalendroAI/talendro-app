@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from '../../auth/AuthContext';
 
 /* ═══════════════════════════════════════════════════════════════
    TALENDRO APPLY — 10-STEP CANDIDATE ONBOARDING
@@ -781,7 +782,7 @@ const StepReferences = ({ data, set }) => (
   </div>
 );
 
-const StepPreferences = ({ data, set }) => {
+const StepPreferences = ({ data, set, userPlan }) => {
   const u = f => v => set({ ...data, [f]:v });
   return (
     <div>
@@ -821,6 +822,24 @@ const StepPreferences = ({ data, set }) => {
       </Grid>
       <div style={{ height:12 }} />
       <Input label="Earliest Start Date" required type="date" value={data.startDate} onChange={u("startDate")} style={{ maxWidth:420 }} />
+      {userPlan === 'premium' && (
+        <>
+          <div style={{ height:32 }} />
+          <h4 style={{ fontSize:13,fontWeight:700,color:C.slate,textTransform:"uppercase",letterSpacing:1,marginBottom:12,fontFamily:"'Montserrat', sans-serif" }}>LinkedIn Profile</h4>
+          <div style={{ padding:"14px 16px",borderRadius:10,background:"rgba(47,109,246,0.04)",border:"1.5px solid rgba(47,109,246,0.2)",marginBottom:16 }}>
+            <p style={{ margin:0,fontSize:13,color:C.slate,fontFamily:"'Inter', sans-serif" }}>
+              <strong>Concierge Benefit:</strong> We will scrape your LinkedIn profile, analyze it against your optimized resume, and deliver a complete rewrite. If you don't have a LinkedIn profile yet, leave this blank and we'll build one from scratch for you.
+            </p>
+          </div>
+          <Input
+            label="LinkedIn Profile URL (Optional — Concierge)"
+            value={data.linkedinUrl || ''}
+            onChange={u('linkedinUrl')}
+            placeholder="https://www.linkedin.com/in/yourname"
+            hint="Leave blank if you don't have a LinkedIn profile yet"
+          />
+        </>
+      )}
       <div style={{ height:24 }} />
       <h4 style={{ fontSize:13,fontWeight:700,color:C.slate,textTransform:"uppercase",letterSpacing:1,marginBottom:12,fontFamily:"'Montserrat', sans-serif" }}>Schedule & Travel</h4>
       <Grid cols={2}>
@@ -1008,6 +1027,8 @@ const StepReview = ({ formData, setStep }) => {
 
 export default function Onboarding() {
   const navigate = useNavigate();
+  const { user: authUser } = useAuth();
+  const userPlan = authUser?.plan || localStorage.getItem('talendro_plan') || 'basic';
   const [step, setStep] = useState(0);
   const [formData, setFormData] = useState({
     s0: {},
@@ -1236,7 +1257,7 @@ export default function Onboarding() {
     <StepEducation   data={formData.s5} set={setSD("s5")} />,
     <StepCertsSkills data={formData.s6} set={setSD("s6")} />,
     <StepReferences  data={formData.s7} set={setSD("s7")} />,
-    <StepPreferences data={formData.s8} set={setSD("s8")} />,
+    <StepPreferences data={formData.s8} set={setSD("s8")} userPlan={userPlan} />,
     <StepDisclosures data={formData.s9} set={setSD("s9")} />,
     <StepReview      formData={formData} setStep={setStep} />,
   ];

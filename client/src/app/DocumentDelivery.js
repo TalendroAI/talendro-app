@@ -59,25 +59,29 @@ export default function DocumentDelivery() {
           setPdfReady(true);
         }
 
-        // For Concierge — load LinkedIn analysis
+        // For Concierge — load or generate LinkedIn optimization
         if (userPlan === 'premium') {
-          const linkedinRes = await fetch('/api/linkedin/latest-analysis', { headers });
-          if (linkedinRes.ok) {
-            const liData = await linkedinRes.json();
-            setLinkedinData(liData);
-            setLinkedinReady(true);
-          } else {
-            // Trigger LinkedIn analysis if not yet done
-            const profileData = JSON.parse(localStorage.getItem('talendro_profile') || '{}');
-            const analyzeRes = await fetch('/api/linkedin/analyze', {
-              method: 'POST',
-              headers: { ...headers, 'Content-Type': 'application/json' },
-              body: JSON.stringify({ profileData }),
-            });
-            if (analyzeRes.ok) {
-              const liData = await analyzeRes.json();
-              setLinkedinData(liData);
+          // First check if we already have a result saved
+          const lastRes = await fetch('/api/linkedin/last-result', { headers });
+          if (lastRes.ok) {
+            const liData = await lastRes.json();
+            if (liData.result) {
+              setLinkedinData(liData.result);
               setLinkedinReady(true);
+            } else {
+              // No saved result — trigger generation now
+              const profileData = JSON.parse(localStorage.getItem('talendro_profile') || '{}');
+              const linkedinUrl = profileData?.s8?.linkedinUrl || null;
+              const optimizeRes = await fetch('/api/linkedin/optimize', {
+                method: 'POST',
+                headers: { ...headers, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ linkedinUrl }),
+              });
+              if (optimizeRes.ok) {
+                const liData = await optimizeRes.json();
+                setLinkedinData(liData.result);
+                setLinkedinReady(true);
+              }
             }
           }
         }
@@ -279,41 +283,89 @@ export default function DocumentDelivery() {
 
               {linkedinReady && linkedinData ? (
                 <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+                  {/* Path indicator */}
+                  {linkedinData.path && (
+                    <div style={{ background:'rgba(0,196,204,0.1)', borderRadius:8, padding:'8px 14px', display:'inline-flex', alignItems:'center', gap:8 }}>
+                      <span style={{ color:'#67e8f9', fontSize:12, fontWeight:700 }}>
+                        {linkedinData.path === 'rewrite' ? '✓ Profile Rewrite — Based on your existing LinkedIn profile' : '✓ Profile Built from Scratch — Ready to create your LinkedIn account'}
+                      </span>
+                    </div>
+                  )}
+                  {/* Note (e.g., scraping fallback) */}
+                  {linkedinData.note && (
+                    <div style={{ background:'rgba(245,158,11,0.1)', borderRadius:8, padding:'10px 14px', border:'1px solid rgba(245,158,11,0.3)' }}>
+                      <p style={{ color:'#fcd34d', fontSize:13, margin:0 }}>{linkedinData.note}</p>
+                    </div>
+                  )}
                   {/* Headline */}
-                  {linkedinData.headline && (
+                  {(linkedinData.headline?.rewritten || linkedinData.headline?.text) && (
                     <div style={{ background:'rgba(0,0,0,0.2)', borderRadius:10, padding:20 }}>
-                      <p style={{ color:C.aqua, fontSize:12, fontWeight:700, margin:'0 0 8px',
-                        textTransform:'uppercase', letterSpacing:1 }}>Recommended Headline</p>
-                      <p style={{ color:'#fff', fontSize:15, margin:0 }}>{linkedinData.headline}</p>
+                      <p style={{ color:C.aqua, fontSize:12, fontWeight:700, margin:'0 0 8px', textTransform:'uppercase', letterSpacing:1 }}>
+                        {linkedinData.path === 'rewrite' ? 'Rewritten Headline' : 'Recommended Headline'}
+                      </p>
+                      <p style={{ color:'#fff', fontSize:15, margin:'0 0 8px' }}>
+                        {linkedinData.headline?.rewritten || linkedinData.headline?.text}
+                      </p>
+                      {linkedinData.headline?.rationale && (
+                        <p style={{ color:'#9ca3af', fontSize:12, margin:0, fontStyle:'italic' }}>{linkedinData.headline.rationale}</p>
+                      )}
                     </div>
                   )}
                   {/* About */}
-                  {linkedinData.about && (
+                  {(linkedinData.about?.rewritten || linkedinData.about?.text) && (
                     <div style={{ background:'rgba(0,0,0,0.2)', borderRadius:10, padding:20 }}>
-                      <p style={{ color:C.aqua, fontSize:12, fontWeight:700, margin:'0 0 8px',
-                        textTransform:'uppercase', letterSpacing:1 }}>Updated About Section</p>
-                      <p style={{ color:'#e5e7eb', fontSize:14, margin:0, lineHeight:1.7,
-                        whiteSpace:'pre-wrap' }}>{linkedinData.about}</p>
+                      <p style={{ color:C.aqua, fontSize:12, fontWeight:700, margin:'0 0 8px', textTransform:'uppercase', letterSpacing:1 }}>
+                        {linkedinData.path === 'rewrite' ? 'Rewritten About Section' : 'About Section'}
+                      </p>
+                      <p style={{ color:'#e5e7eb', fontSize:14, margin:0, lineHeight:1.7, whiteSpace:'pre-wrap' }}>
+                        {linkedinData.about?.rewritten || linkedinData.about?.text}
+                      </p>
                     </div>
                   )}
-                  {/* Recommendations */}
-                  {linkedinData.recommendations?.length > 0 && (
+                  {/* Experience */}
+                  {linkedinData.experience?.length > 0 && (
                     <div style={{ background:'rgba(0,0,0,0.2)', borderRadius:10, padding:20 }}>
-                      <p style={{ color:C.aqua, fontSize:12, fontWeight:700, margin:'0 0 12px',
-                        textTransform:'uppercase', letterSpacing:1 }}>Key Recommendations</p>
-                      {linkedinData.recommendations.map((rec, i) => (
-                        <div key={i} style={{ display:'flex', gap:10, marginBottom:10 }}>
-                          <span style={{ color:C.green, fontSize:16, flexShrink:0 }}>✓</span>
-                          <p style={{ color:'#e5e7eb', fontSize:14, margin:0 }}>{rec}</p>
+                      <p style={{ color:C.aqua, fontSize:12, fontWeight:700, margin:'0 0 12px', textTransform:'uppercase', letterSpacing:1 }}>Experience Bullets</p>
+                      {linkedinData.experience.map((exp, i) => (
+                        <div key={i} style={{ marginBottom:16 }}>
+                          <p style={{ color:'#fff', fontSize:14, fontWeight:600, margin:'0 0 6px' }}>{exp.title} — {exp.company}</p>
+                          {(exp.rewritten_bullets || exp.bullets || []).map((b, j) => (
+                            <div key={j} style={{ display:'flex', gap:8, marginBottom:4 }}>
+                              <span style={{ color:C.aqua, flexShrink:0 }}>•</span>
+                              <p style={{ color:'#e5e7eb', fontSize:13, margin:0 }}>{b}</p>
+                            </div>
+                          ))}
                         </div>
                       ))}
+                    </div>
+                  )}
+                  {/* Skills */}
+                  {linkedinData.skills?.recommended?.length > 0 && (
+                    <div style={{ background:'rgba(0,0,0,0.2)', borderRadius:10, padding:20 }}>
+                      <p style={{ color:C.aqua, fontSize:12, fontWeight:700, margin:'0 0 12px', textTransform:'uppercase', letterSpacing:1 }}>Recommended Skills</p>
+                      <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
+                        {linkedinData.skills.recommended.map((s, i) => (
+                          <span key={i} style={{ background:'rgba(0,196,204,0.15)', color:'#67e8f9', padding:'4px 12px', borderRadius:20, fontSize:12, fontWeight:600 }}>{s}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {/* Instructions / Setup Guide */}
+                  {(linkedinData.instructions || linkedinData.setup_guide) && (
+                    <div style={{ background:'rgba(16,185,129,0.08)', borderRadius:10, padding:20, border:'1px solid rgba(16,185,129,0.2)' }}>
+                      <p style={{ color:'#10B981', fontSize:12, fontWeight:700, margin:'0 0 8px', textTransform:'uppercase', letterSpacing:1 }}>
+                        {linkedinData.path === 'build' ? 'Setup Guide' : 'How to Apply These Changes'}
+                      </p>
+                      <p style={{ color:'#e5e7eb', fontSize:13, margin:0, lineHeight:1.7, whiteSpace:'pre-wrap' }}>
+                        {linkedinData.instructions || linkedinData.setup_guide}
+                      </p>
                     </div>
                   )}
                 </div>
               ) : (
                 <div style={{ textAlign:'center', padding:20 }}>
                   <div style={{ color:'#9ca3af', fontSize:14 }}>
-                    {linkedinReady ? 'Analysis complete.' : '⚙️ Generating your LinkedIn analysis...'}
+                    {linkedinReady ? 'Optimization complete.' : '⚙️ Generating your LinkedIn profile optimization...'}
                   </div>
                 </div>
               )}
