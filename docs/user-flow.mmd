@@ -1,0 +1,98 @@
+flowchart TD
+    %% ─── STYLES ───────────────────────────────────────────────────────────
+    classDef page        fill:#EFF6FF,stroke:#2F6DF6,stroke-width:2px,color:#1e3a5f,font-weight:bold
+    classDef decision    fill:#FFF7ED,stroke:#F97316,stroke-width:2px,color:#7c2d12,font-weight:bold
+    classDef ai          fill:#F0FDF4,stroke:#10B981,stroke-width:2px,color:#064e3b,font-weight:bold
+    classDef output      fill:#FAF5FF,stroke:#8B5CF6,stroke-width:2px,color:#4c1d95,font-weight:bold
+    classDef stripe      fill:#FDF2F8,stroke:#EC4899,stroke-width:2px,color:#831843,font-weight:bold
+    classDef dashboard   fill:#1e3a5f,stroke:#2F6DF6,stroke-width:3px,color:#ffffff,font-weight:bold
+
+    %% ─── MARKETING FUNNEL ─────────────────────────────────────────────────
+    A([🌐 Landing Page]):::page
+    B([📋 Services Page]):::page
+    C([💳 Pricing Page\nStarter · Pro · Concierge]):::page
+    D([💰 Stripe Checkout\nSecure Payment]):::stripe
+
+    A --> B --> C --> D
+
+    %% ─── ACCOUNT CREATION ─────────────────────────────────────────────────
+    E([🔐 Create Account\nSet Password]):::page
+    D --> E
+
+    %% ─── RESUME GATE ───────────────────────────────────────────────────────
+    F{Do you have\na resume?}:::decision
+    E --> F
+
+    %% ─── PATH A: COMPLETE / CURRENT RESUME ────────────────────────────────
+    G([📤 Upload Resume\nPDF · Word · Text]):::page
+    H([🤖 AI Parses Resume\nExtracts all fields]):::ai
+    F -->|"Yes — upload it"| G
+    G --> H
+
+    %% ─── PATH B: PARTIAL / DATED RESUME ───────────────────────────────────
+    I([📤 Upload Old Resume\n'Even if outdated — we'll update it']):::page
+    J([🤖 AI Parses What Exists\nPre-fills available fields]):::ai
+    K([✏️ What's Changed?\nAdd new jobs · skills · education]):::page
+    L{Need help writing\njob description?}:::decision
+    M([🤖 AI Generates\nJob Description\nfrom Title + Company]):::ai
+    N([✅ User Edits &\nConfirms Description]):::page
+    F -->|"Yes — but it's outdated\nor missing my current job"| I
+    I --> J --> K --> L
+    L -->|"Yes — ✨ Generate with AI"| M --> N --> K
+    L -->|"No — I'll type it"| K
+
+    %% ─── PATH C: NO RESUME ─────────────────────────────────────────────────
+    O([📝 Resume Build\nContact · Summary]):::page
+    P([💼 Add Work Experience\nCompany + Job Title]):::page
+    Q{Need help writing\njob description?}:::decision
+    R([🤖 AI Generates\nJob Description\nfrom Title + Company]):::ai
+    S([✅ User Edits &\nConfirms Description]):::page
+    T([🎓 Education &\nCertifications]):::page
+    U([⚡ Skills &\nTechnologies]):::page
+    F -->|"No — I don't have one"| O
+    O --> P --> Q
+    Q -->|"Yes — ✨ Generate with AI"| R --> S --> P
+    Q -->|"No — I'll type it"| P
+    P --> T --> U
+
+    %% ─── RESUME OPTIMIZATION (ALL PATHS CONVERGE) ─────────────────────────
+    V([🤖 AI Resume Optimizer\nATS · Keywords · Conceptual\nTextual · Recruiter-Ready]):::ai
+    H --> V
+    N --> V
+    U --> V
+
+    %% ─── TIER-BASED OUTPUT ─────────────────────────────────────────────────
+    W{Which plan?}:::decision
+    V --> W
+
+    X([📄 Plain Text Resume\nATS-Optimized]):::output
+    Y([📄 Plain Text Resume\n+\n🎨 HTML Formatted Resume\nBeautifully Designed PDF]):::output
+    Z([📄 Plain Text Resume\n+\n🎨 HTML Formatted Resume\n+\n🔗 LinkedIn Profile\nAI Analysis & Updated Copy]):::output
+
+    W -->|"Starter"| X
+    W -->|"Pro"| Y
+    W -->|"Concierge"| Z
+
+    %% ─── ONBOARDING QUESTIONNAIRE ──────────────────────────────────────────
+    AA([📋 Onboarding — 10 Steps\nPre-populated from resume\nUser confirms or fills gaps]):::page
+    X --> AA
+    Y --> AA
+    Z --> AA
+
+    AA_1([Step 1: Personal Info\nName · Location · Contact]):::page
+    AA_2([Step 2: Career Objective\nTarget roles · Industries]):::page
+    AA_3([Step 3: Work History\nPre-filled or manually entered]):::page
+    AA_4([Step 4: Education\nDegrees · Certifications]):::page
+    AA_5([Step 5: Skills\nTechnical · Soft · Tools]):::page
+    AA_6([Step 6: Job Preferences\nRemote · Salary · Travel]):::page
+    AA_7([Step 7: Application Settings\nAuto-apply ON/OFF · Filters]):::page
+    AA_8([Step 8: Interview Preferences\nAvailability · Format]):::page
+    AA_9([Step 9: LinkedIn\nURL · Sync preferences]):::page
+    AA_10([Step 10: Review & Confirm\nAll data verified]):::page
+
+    AA --> AA_1 --> AA_2 --> AA_3 --> AA_4 --> AA_5
+    AA_5 --> AA_6 --> AA_7 --> AA_8 --> AA_9 --> AA_10
+
+    %% ─── DASHBOARD ─────────────────────────────────────────────────────────
+    BB([🚀 Dashboard\nLive Job Feed · AI Match Scores\nApplications · Interview Prep]):::dashboard
+    AA_10 --> BB
