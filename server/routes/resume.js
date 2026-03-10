@@ -249,5 +249,39 @@ router.get('/download-pdf', authenticateToken, async (req, res) => {
   }
 });
 
-export default router;
+// ─── GET /latest — return the user's most recent optimized resume text ───────
+router.get('/latest', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select('resumeData firstName name');
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    const optimizedText = user.resumeData?.optimizedText || user.resumeData?.rawText || '';
+    return res.json({ optimizedText, name: user.firstName || user.name || '' });
+  } catch (err) {
+    console.error('[resume/latest] Error:', err.message);
+    return res.status(500).json({ error: 'Failed to load resume' });
+  }
+});
 
+// ─── POST /feedback — store user feedback for AI revision ───────────────────
+router.post('/feedback', authenticateToken, async (req, res) => {
+  try {
+    const { feedback } = req.body;
+    if (!feedback?.trim()) return res.status(400).json({ error: 'Feedback is required' });
+    await User.findByIdAndUpdate(req.userId, {
+      $push: {
+        'resumeData.feedback': {
+          text: feedback.trim(),
+          createdAt: new Date(),
+          status: 'pending',
+        }
+      }
+    });
+    // TODO: Trigger async AI revision job once revision queue is implemented
+    return res.json({ success: true, message: 'Feedback received. Your documents will be revised shortly.' });
+  } catch (err) {
+    console.error('[resume/feedback] Error:', err.message);
+    return res.status(500).json({ error: 'Failed to save feedback' });
+  }
+});
+
+export default router;

@@ -3,84 +3,104 @@ flowchart TD
     classDef page        fill:#EFF6FF,stroke:#2F6DF6,stroke-width:2px,color:#1e3a5f,font-weight:bold
     classDef decision    fill:#FFF7ED,stroke:#F97316,stroke-width:2px,color:#7c2d12,font-weight:bold
     classDef ai          fill:#F0FDF4,stroke:#10B981,stroke-width:2px,color:#064e3b,font-weight:bold
-    classDef note        fill:#FFFBEB,stroke:#D97706,stroke-width:1px,color:#78350f,font-style:italic
+    classDef delivery    fill:#FAF5FF,stroke:#8B5CF6,stroke-width:2px,color:#4c1d95,font-weight:bold
     classDef stripe      fill:#FDF2F8,stroke:#EC4899,stroke-width:2px,color:#831843,font-weight:bold
     classDef dashboard   fill:#1e3a5f,stroke:#2F6DF6,stroke-width:3px,color:#ffffff,font-weight:bold
 
     %% ─── MARKETING FUNNEL ─────────────────────────────────────────────────
     A([🌐 Landing Page]):::page
     B([📋 Services Page]):::page
-    C([💳 Pricing Page\nStarter · Pro · Concierge]):::page
+    C([💳 Pricing Page\nStarter · Pro · Concierge\nResume status irrelevant — we handle all cases]):::page
     D([💰 Stripe Checkout\nSecure Payment]):::stripe
-
-    A --> B --> C --> D
-
-    %% ─── ACCOUNT CREATION ─────────────────────────────────────────────────
     E([🔐 Create Account\nSet Password]):::page
-    D --> E
+
+    A --> B --> C --> D --> E
 
     %% ─── RESUME GATE ───────────────────────────────────────────────────────
-    F{Do you have\na resume?}:::decision
+    F{What is your\nresume situation?}:::decision
     E --> F
 
     %% ─── PATH A: COMPLETE / CURRENT RESUME ────────────────────────────────
     G([📤 Upload Resume\nPDF · Word · Text]):::page
     H([🤖 AI Parses Resume\nExtracts all fields]):::ai
-    F -->|"Yes — it's current"| G
-    G --> H
+    F -->|"I have a current resume"| G --> H
 
     %% ─── PATH B: PARTIAL / DATED RESUME ───────────────────────────────────
-    I([📤 Upload Old Resume\n'Even if outdated — we'll update it']):::page
+    I([📤 Upload Existing Resume\n'Even if outdated — we'll update it']):::page
     J([🤖 AI Parses What Exists\nPre-fills available fields]):::ai
     K([✏️ What's Changed?\nAdd new jobs · skills · education]):::page
     L{Need help writing\njob description?}:::decision
-    M([🤖 AI Generates\nJob Description\nfrom Title + Company]):::ai
-    N([✅ User Edits &\nConfirms Description]):::page
-    F -->|"Yes — but it's outdated\nor missing my current job"| I
+    M([🤖 AI Generates Job Description\nfrom Company + Title]):::ai
+    N([✅ User Edits & Confirms]):::page
+
+    F -->|"My resume is outdated\nor missing my current job"| I
     I --> J --> K --> L
     L -->|"Yes — ✨ Generate with AI"| M --> N --> K
     L -->|"No — I'll type it"| K
 
     %% ─── PATH C: NO RESUME ─────────────────────────────────────────────────
-    O([📝 Resume Build\nContact · Summary]):::page
+    O([📝 Build Resume\nContact Info · Career Summary]):::page
     P([💼 Add Work Experience\nCompany + Job Title]):::page
     Q{Need help writing\njob description?}:::decision
-    R([🤖 AI Generates\nJob Description\nfrom Title + Company]):::ai
-    S([✅ User Edits &\nConfirms Description]):::page
-    T([🎓 Education &\nCertifications]):::page
-    U([⚡ Skills &\nTechnologies]):::page
-    F -->|"No — I don't have one"| O
+    R([🤖 AI Generates Job Description\nfrom Company + Title]):::ai
+    S([✅ User Edits & Confirms]):::page
+    T([🎓 Education & Certifications]):::page
+    U([⚡ Skills & Technologies]):::page
+
+    F -->|"I don't have a resume"| O
     O --> P --> Q
     Q -->|"Yes — ✨ Generate with AI"| R --> S --> P
     Q -->|"No — I'll type it"| P
     P --> T --> U
 
     %% ─── RESUME OPTIMIZATION (ALL PATHS CONVERGE) ─────────────────────────
-    V([🤖 AI Resume Optimizer\nATS · Keywords · Conceptual\nTextual · Recruiter-Ready\n\nTier-based output generated silently\nStarter: Plain Text\nPro: + HTML Formatted PDF\nConcierge: + LinkedIn Analysis]):::ai
+    V([🤖 AI Resume Optimizer\nATS · Keywords · Conceptual · Textual · Recruiter-Ready\nTier-based outputs generated silently in background]):::ai
 
     H --> V
     N --> V
     U --> V
 
-    %% ─── ONBOARDING (DIRECTLY AFTER OPTIMIZATION) ─────────────────────────
-    AA([📋 Onboarding — 10 Steps\nPre-populated from resume\nUser confirms or fills gaps]):::page
+    %% ─── ONBOARDING ────────────────────────────────────────────────────────
+    W([📋 Onboarding\nPre-populated from resume\nUser confirms or fills gaps]):::page
 
-    V --> AA
+    V --> W
 
-    AA_1([Step 1: Personal Info\nName · Location · Contact]):::page
-    AA_2([Step 2: Career Objective\nTarget roles · Industries]):::page
-    AA_3([Step 3: Work History\nPre-filled or manually entered]):::page
-    AA_4([Step 4: Education\nDegrees · Certifications]):::page
-    AA_5([Step 5: Skills\nTechnical · Soft · Tools]):::page
-    AA_6([Step 6: Job Preferences\nRemote · Salary · Travel]):::page
-    AA_7([Step 7: Application Settings\nAuto-apply ON/OFF · Filters]):::page
-    AA_8([Step 8: Interview Preferences\nAvailability · Format]):::page
-    AA_9([Step 9: LinkedIn\nURL · Sync preferences]):::page
-    AA_10([Step 10: Review & Confirm\nAll data verified]):::page
+    W1([Step 1: Personal Info · Contact]):::page
+    W2([Step 2: Target Roles · Industries]):::page
+    W3([Step 3: Work History Confirmation]):::page
+    W4([Step 4: Education · Certifications]):::page
+    W5([Step 5: Skills · Technologies]):::page
+    W6([Step 6: Location · Remote · Travel]):::page
+    W7([Step 7: Salary Expectations]):::page
+    W8([Step 8: Auto-Apply Settings\nON/OFF · Filters · Preferences]):::page
+    W9([Step 9: Interview Availability]):::page
+    W10([Step 10: Review & Confirm All]):::page
 
-    AA --> AA_1 --> AA_2 --> AA_3 --> AA_4 --> AA_5
-    AA_5 --> AA_6 --> AA_7 --> AA_8 --> AA_9 --> AA_10
+    W --> W1 --> W2 --> W3 --> W4 --> W5
+    W5 --> W6 --> W7 --> W8 --> W9 --> W10
+
+    %% ─── DOCUMENT DELIVERY ─────────────────────────────────────────────────
+    X([📬 Document Delivery\nYour career assets are ready]):::delivery
+
+    W10 --> X
+
+    XA([📄 Starter\nATS-Optimized\nPlain Text Resume]):::delivery
+    XB([📄 Pro\nATS-Optimized Plain Text Resume\n+\n🎨 Beautifully Formatted HTML Resume PDF]):::delivery
+    XC([📄 Concierge\nATS-Optimized Plain Text Resume\n+\n🎨 Beautifully Formatted HTML Resume PDF\n+\n🔗 LinkedIn Profile Analysis\n& Updated Copy]):::delivery
+
+    X --> XA
+    X --> XB
+    X --> XC
+
+    %% ─── FEEDBACK OR PROCEED ───────────────────────────────────────────────
+    Y{Happy with\nyour documents?}:::decision
+    XA --> Y
+    XB --> Y
+    XC --> Y
+
+    Z([✏️ Submit Feedback\nAI revises and redelivers]):::page
+    Y -->|"I have feedback"| Z --> X
+    Y -->|"Proceed to Dashboard"| BB
 
     %% ─── DASHBOARD ─────────────────────────────────────────────────────────
-    BB([🚀 Dashboard\nLive Job Feed · AI Match Scores\nApplications · Interview Prep]):::dashboard
-    AA_10 --> BB
+    BB([🚀 Dashboard\nJobs already identified during onboarding\nLive Feed · AI Match Scores · Applications · Interview Prep]):::dashboard

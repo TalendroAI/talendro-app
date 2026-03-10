@@ -1217,9 +1217,9 @@ export default function Onboarding() {
               style={{ padding:"14px 32px",border:"1.5px solid #E5E7EB",borderRadius:10,fontSize:15,fontWeight:600,cursor:"pointer",background:C.white,color:C.slate,fontFamily:"'Inter', sans-serif" }}>
               ← Review & Edit
             </button>
-            <button onClick={() => navigate("/app/dashboard")}
+            <button onClick={() => navigate("/app/document-delivery")}
               style={{ padding:"14px 40px",border:"none",borderRadius:10,fontSize:15,fontWeight:700,cursor:"pointer",background:C.blue,color:C.white,fontFamily:"'Inter', sans-serif",boxShadow:"0 4px 16px rgba(47,109,246,0.4)" }}>
-              Go to Dashboard →
+              View My Career Documents →
             </button>
           </div>
         </div>

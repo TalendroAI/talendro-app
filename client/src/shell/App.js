@@ -37,6 +37,7 @@ import ResumeUpdate from '../app/resume/ResumeUpdate'
 import ResumeCreate from '../app/resume/ResumeCreate'
 import ResumeOptimize from '../app/resume/ResumeOptimize'
 import ResumeReview from '../app/ResumeReview'
+import DocumentDelivery from '../app/DocumentDelivery'
 
 import Dashboard from '../pages/app/Dashboard'
 import Profile from '../app/Profile'
@@ -62,6 +63,7 @@ const NO_CHROME_ROUTES = [
   '/app/resume/optimize',
   '/app/resume',
   '/app/onboarding',
+  '/app/document-delivery',
   '/app/create-account',
   '/auth/sign-in',
 ];
@@ -125,6 +127,11 @@ function AppRoutes() {
           } />
           <Route path="/app/resume/optimize" element={
             <ProtectedRoute><ResumeOptimize /></ProtectedRoute>
+          } />
+
+          {/* ── Protected: Document Delivery (post-onboarding, pre-dashboard) ── */}
+          <Route path="/app/document-delivery" element={
+            <ProtectedRoute><DocumentDelivery /></ProtectedRoute>
           } />
 
           {/* ── Protected: Onboarding ── */}
