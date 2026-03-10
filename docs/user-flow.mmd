@@ -3,7 +3,7 @@ flowchart TD
     classDef page        fill:#EFF6FF,stroke:#2F6DF6,stroke-width:2px,color:#1e3a5f,font-weight:bold
     classDef decision    fill:#FFF7ED,stroke:#F97316,stroke-width:2px,color:#7c2d12,font-weight:bold
     classDef ai          fill:#F0FDF4,stroke:#10B981,stroke-width:2px,color:#064e3b,font-weight:bold
-    classDef output      fill:#FAF5FF,stroke:#8B5CF6,stroke-width:2px,color:#4c1d95,font-weight:bold
+    classDef note        fill:#FFFBEB,stroke:#D97706,stroke-width:1px,color:#78350f,font-style:italic
     classDef stripe      fill:#FDF2F8,stroke:#EC4899,stroke-width:2px,color:#831843,font-weight:bold
     classDef dashboard   fill:#1e3a5f,stroke:#2F6DF6,stroke-width:3px,color:#ffffff,font-weight:bold
 
@@ -26,7 +26,7 @@ flowchart TD
     %% ─── PATH A: COMPLETE / CURRENT RESUME ────────────────────────────────
     G([📤 Upload Resume\nPDF · Word · Text]):::page
     H([🤖 AI Parses Resume\nExtracts all fields]):::ai
-    F -->|"Yes — upload it"| G
+    F -->|"Yes — it's current"| G
     G --> H
 
     %% ─── PATH B: PARTIAL / DATED RESUME ───────────────────────────────────
@@ -56,28 +56,16 @@ flowchart TD
     P --> T --> U
 
     %% ─── RESUME OPTIMIZATION (ALL PATHS CONVERGE) ─────────────────────────
-    V([🤖 AI Resume Optimizer\nATS · Keywords · Conceptual\nTextual · Recruiter-Ready]):::ai
+    V([🤖 AI Resume Optimizer\nATS · Keywords · Conceptual\nTextual · Recruiter-Ready\n\nTier-based output generated silently\nStarter: Plain Text\nPro: + HTML Formatted PDF\nConcierge: + LinkedIn Analysis]):::ai
+
     H --> V
     N --> V
     U --> V
 
-    %% ─── TIER-BASED OUTPUT ─────────────────────────────────────────────────
-    W{Which plan?}:::decision
-    V --> W
-
-    X([📄 Plain Text Resume\nATS-Optimized]):::output
-    Y([📄 Plain Text Resume\n+\n🎨 HTML Formatted Resume\nBeautifully Designed PDF]):::output
-    Z([📄 Plain Text Resume\n+\n🎨 HTML Formatted Resume\n+\n🔗 LinkedIn Profile\nAI Analysis & Updated Copy]):::output
-
-    W -->|"Starter"| X
-    W -->|"Pro"| Y
-    W -->|"Concierge"| Z
-
-    %% ─── ONBOARDING QUESTIONNAIRE ──────────────────────────────────────────
+    %% ─── ONBOARDING (DIRECTLY AFTER OPTIMIZATION) ─────────────────────────
     AA([📋 Onboarding — 10 Steps\nPre-populated from resume\nUser confirms or fills gaps]):::page
-    X --> AA
-    Y --> AA
-    Z --> AA
+
+    V --> AA
 
     AA_1([Step 1: Personal Info\nName · Location · Contact]):::page
     AA_2([Step 2: Career Objective\nTarget roles · Industries]):::page
