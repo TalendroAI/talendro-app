@@ -456,6 +456,37 @@ const StepWorkAuth = ({ data, set }) => {
 const StepEmployment = ({ data, set }) => {
   const entries = data.entries || [{ ...EMPTY_JOB }];
   const setEntries = e => set({ ...data, entries:e });
+  const [generatingIdx, setGeneratingIdx] = useState(null);
+
+  const generateJobDescription = async (i) => {
+    const item = entries[i];
+    if (!item.company || !item.title) {
+      alert('Please enter a Company Name and Job Title first, then click Generate.');
+      return;
+    }
+    setGeneratingIdx(i);
+    try {
+      const token = localStorage.getItem('authToken');
+      const res = await fetch('/api/ai/generate-job-description', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ company: item.company, title: item.title }),
+      });
+      const json = await res.json();
+      if (json.success && json.description) {
+        const n = [...entries];
+        n[i] = { ...n[i], duties: json.description };
+        setEntries(n);
+      } else {
+        alert('Could not generate description. Please try again or type it manually.');
+      }
+    } catch (err) {
+      alert('Network error. Please check your connection and try again.');
+    } finally {
+      setGeneratingIdx(null);
+    }
+  };
+
   let totalMonths = 0;
   entries.forEach(e => {
     if (e.startDate) {
@@ -546,7 +577,34 @@ const StepEmployment = ({ data, set }) => {
                   </Grid>
                 </div>
                 <Input label="Reason for Leaving" required value={item.reason} onChange={v=>upd(i,"reason",v)} />
-                <TextArea label="Job Duties / Responsibilities" required value={item.duties} onChange={v=>upd(i,"duties",v)} rows={4} placeholder="Describe your key responsibilities and contributions..." />
+                <div>
+                  <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6 }}>
+                    <label style={{ fontSize:13,fontWeight:600,color:C.slate,fontFamily:"'Inter', sans-serif" }}>Job Duties / Responsibilities <span style={{ color:"#ef4444" }}>*</span></label>
+                    <button
+                      type="button"
+                      onClick={() => generateJobDescription(i)}
+                      disabled={generatingIdx === i}
+                      style={{ padding:"5px 14px",border:`1.5px solid ${C.blue}`,borderRadius:6,fontSize:12,fontWeight:600,cursor:generatingIdx===i?"not-allowed":"pointer",background:generatingIdx===i?"#e5e7eb":"rgba(47,109,246,0.06)",color:generatingIdx===i?C.gray:C.blue,fontFamily:"'Inter', sans-serif",transition:"all 0.2s",display:"flex",alignItems:"center",gap:6 }}
+                    >
+                      {generatingIdx === i ? (
+                        <><span style={{ display:"inline-block",width:12,height:12,border:`2px solid ${C.blue}`,borderTopColor:"transparent",borderRadius:"50%",animation:"spin 0.7s linear infinite" }} /> Generating...</>
+                      ) : (
+                        <>✨ Generate with AI</>
+                      )}
+                    </button>
+                  </div>
+                  <textarea
+                    required
+                    value={item.duties}
+                    onChange={e => upd(i,"duties",e.target.value)}
+                    rows={5}
+                    placeholder={item.company && item.title ? `Click "Generate with AI" above to auto-fill, or type your responsibilities here...` : "Enter Company and Job Title above, then click Generate with AI — or type your responsibilities here..."}
+                    style={{ width:"100%",padding:"10px 14px",border:`1.5px solid #e5e7eb`,borderRadius:8,fontSize:14,fontFamily:"'Inter', sans-serif",color:C.slate,background:C.white,resize:"vertical",outline:"none",boxSizing:"border-box",lineHeight:1.6 }}
+                  />
+                  {!item.duties && item.company && item.title && (
+                    <p style={{ fontSize:12,color:C.blue,marginTop:4,fontStyle:"italic" }}>💡 Tip: Click "Generate with AI" to get a starting point based on your role — then edit it to match your actual experience.</p>
+                  )}
+                </div>
               </div>
             </div>
           );

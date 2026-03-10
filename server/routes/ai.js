@@ -139,4 +139,49 @@ Return ONLY valid JSON (no markdown, no extra text):
 }`;
 }
 
+/**
+ * POST /api/ai/generate-job-description
+ * Given a company name and job title, generate a realistic AI job description
+ * that the user can edit to match their actual experience.
+ * Used in the onboarding employment step for users with no resume.
+ */
+router.post('/generate-job-description', async (req, res) => {
+  try {
+    const { company, title, industry } = req.body;
+
+    if (!company || !title) {
+      return res.status(400).json({ success: false, error: 'company and title are required' });
+    }
+
+    const openai = getOpenAI();
+
+    const prompt = `Generate a realistic, professional job description for someone who worked as a "${title}" at "${company}"${industry ? ` in the ${industry} industry` : ''}.
+
+Write 4-6 bullet points describing typical responsibilities and accomplishments for this role.
+Use strong action verbs (Managed, Developed, Led, Implemented, Analyzed, etc.).
+Include specific, quantifiable achievements where realistic (e.g., "Reduced processing time by 30%").
+Write in first-person past tense as if the candidate is describing their own experience.
+Do NOT fabricate specific names, dates, or proprietary information.
+
+Return ONLY the bullet points as plain text, one per line, each starting with a dash (-). No intro text, no headers.`;
+
+    const response = await openai.chat.completions.create({
+      model: MODEL,
+      messages: [
+        { role: 'system', content: 'You are an expert resume writer. Return only the requested bullet points, nothing else.' },
+        { role: 'user', content: prompt },
+      ],
+      temperature: 0.7,
+      max_tokens: 400,
+    });
+
+    const description = response.choices[0].message.content.trim();
+
+    return res.json({ success: true, description });
+  } catch (error) {
+    console.error('[ai/generate-job-description] Error:', error.message);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;

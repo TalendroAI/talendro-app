@@ -102,10 +102,41 @@ export default function ResumeCreate() {
   const [skills, setSkills] = useState({ technical: "", soft: "", languages: "", certs: "", tools: "" });
   const [goals, setGoals] = useState({ targetTitle: "", targetIndustry: "", salaryMin: "", salaryMax: "", workType: "", arrangement: "", openToRelocation: false, careerLevel: "" });
 
+  const [generatingIdx, setGeneratingIdx] = useState(null);
   const updateJob = (i, field, val) => setJobs(prev => prev.map((j, idx) => idx === i ? { ...j, [field]: val } : j));
   const updateBullet = (i, bi, val) => setJobs(prev => prev.map((j, idx) => idx === i ? { ...j, bullets: j.bullets.map((b, bidx) => bidx === bi ? val : b) } : j));
   const addJob = () => setJobs(prev => [...prev, { ...EMPTY_JOB }]);
   const removeJob = (i) => setJobs(prev => prev.filter((_, idx) => idx !== i));
+
+  const generateBullets = async (i) => {
+    const job = jobs[i];
+    if (!job.company || !job.title) {
+      alert('Please enter a Job Title and Company first.');
+      return;
+    }
+    setGeneratingIdx(i);
+    try {
+      const token = localStorage.getItem('authToken');
+      const res = await fetch('/api/ai/generate-job-description', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ company: job.company, title: job.title }),
+      });
+      const json = await res.json();
+      if (json.success && json.description) {
+        // Parse the bullet lines into the 3-bullet array
+        const lines = json.description.split('\n').map(l => l.replace(/^[-•\s]+/, '').trim()).filter(Boolean).slice(0, 3);
+        while (lines.length < 3) lines.push('');
+        setJobs(prev => prev.map((j, idx) => idx === i ? { ...j, bullets: lines } : j));
+      } else {
+        alert('Could not generate. Please try again or type manually.');
+      }
+    } catch (err) {
+      alert('Network error. Please check your connection.');
+    } finally {
+      setGeneratingIdx(null);
+    }
+  };
   const updateEdu = (i, field, val) => setEducation(prev => prev.map((e, idx) => idx === i ? { ...e, [field]: val } : e));
   const addEdu = () => setEducation(prev => [...prev, { ...EMPTY_EDU }]);
   const removeEdu = (i) => setEducation(prev => prev.filter((_, idx) => idx !== i));
@@ -175,8 +206,14 @@ export default function ResumeCreate() {
                 <span style={{ fontSize: 14, color: C.slate }}>I currently work here</span>
               </label>
               <div>
-                <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: C.slate, marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.7 }}>Key Achievements (up to 3 bullet points)</label>
-                <p style={{ margin: "0 0 10px", fontSize: 12, color: C.gray }}>Start with action verbs: "Led...", "Built...", "Increased...", "Managed..." — AI will polish these.</p>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                  <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: C.slate, textTransform: "uppercase", letterSpacing: 0.7 }}>Key Achievements (up to 3 bullet points)</label>
+                  <button type="button" onClick={() => generateBullets(i)} disabled={generatingIdx === i}
+                    style={{ padding: "5px 14px", border: `1.5px solid ${C.purple}`, borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: generatingIdx === i ? "not-allowed" : "pointer", background: generatingIdx === i ? "#e5e7eb" : "rgba(139,92,246,0.06)", color: generatingIdx === i ? C.gray : C.purple, fontFamily: "'Inter', sans-serif", transition: "all 0.2s" }}>
+                    {generatingIdx === i ? "Generating..." : "✨ Generate with AI"}
+                  </button>
+                </div>
+                <p style={{ margin: "0 0 10px", fontSize: 12, color: C.gray }}>Start with action verbs: "Led...", "Built...", "Increased...", "Managed..." — AI will polish these. Or click Generate with AI to auto-fill.</p>
                 {job.bullets.map((b, bi) => (
                   <input key={bi} type="text" value={b} onChange={e => updateBullet(i, bi, e.target.value)}
                     placeholder={`Achievement ${bi + 1}...`}
