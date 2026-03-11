@@ -28,6 +28,7 @@ import { fetchAndIngestFantasticJobs } from './fantasticJobsService.js';
 import { fetchAndIngestJSearchJobs } from './jsearchService.js';
 import { evaluateBatchForUser, TIER_CONFIG } from './jobScoringService.js';
 import emailService from './emailService.js';
+import applicationQueue from './queueService.js';
 
 const BATCH_SIZE = 50;        // companies to crawl per run
 const CONCURRENCY = 3;        // max parallel requests
@@ -122,6 +123,26 @@ async function runSubscriberScoringPass() {
         try {
           const result = await evaluateBatchForUser(recentJobs, user);
           usersScored++;
+
+          // ── Auto-Apply: enqueue above-the-line jobs that should auto-apply ──
+          if (process.env.ENABLE_AUTO_APPLY === 'true' && result.aboveLine && result.aboveLine.length > 0) {
+            for (const match of result.aboveLine) {
+              if (!match.shouldAutoApply) continue;
+              const jobDoc = match.job;
+              const applyUrl = jobDoc.applyUrl || jobDoc.jobUrl;
+              if (!applyUrl) continue;
+              // Derive atsType from job source
+              const sourceToAts = { greenhouse: 'greenhouse', lever: 'lever' };
+              const atsType = sourceToAts[jobDoc.source] || 'generic';
+              applicationQueue.enqueue({
+                userId: String(user._id),
+                jobId:  String(jobDoc._id),
+                atsType,
+                applyUrl,
+                matchScore: match.score,
+              });
+            }
+          }
 
           if (result.rarityAlerts && result.rarityAlerts.length > 0 && user.email) {
             const lastSent = rarityAlertSentAt.get(String(user._id)) || 0;
