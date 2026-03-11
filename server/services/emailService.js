@@ -464,6 +464,86 @@ async function sendRareRoleAlert({
   });
 }
 
+// ─── 9. Weekly Digest ────────────────────────────────────────────────────────
+/**
+ * Weekly digest email sent every Monday morning summarising the past 7 days:
+ * applications submitted, jobs discovered, and top upcoming matches.
+ *
+ * @param {object} opts
+ * @param {string} opts.toEmail
+ * @param {string} opts.userName
+ * @param {string} opts.plan  — 'basic' | 'pro' | 'premium'
+ * @param {number} opts.applicationsThisWeek
+ * @param {number} opts.jobsDiscovered
+ * @param {Array<{title:string, company:string, score:number, url:string}>} opts.topMatches
+ */
+async function sendWeeklyDigest({ toEmail, userName, plan, applicationsThisWeek = 0, jobsDiscovered = 0, topMatches = [] }) {
+  const firstName = userName?.split(' ')[0] || 'there';
+  const planLabel = plan === 'premium' ? 'Concierge' : plan === 'pro' ? 'Pro' : 'Starter';
+  const dashboardUrl = `${FRONTEND_URL}/app/dashboard`;
+
+  const matchRows = topMatches.slice(0, 5).map(m => `
+    <tr>
+      <td style="padding:10px 0;border-bottom:1px solid #f0f0f0;">
+        <a href="${m.url || dashboardUrl}" style="font-size:14px;font-weight:600;color:${BRAND_BLUE};text-decoration:none;">${m.title}</a>
+        <span style="font-size:13px;color:#6B7280;"> at ${m.company}</span>
+      </td>
+      <td style="padding:10px 0;border-bottom:1px solid #f0f0f0;text-align:right;">
+        <span style="display:inline-block;background:${BRAND_BLUE};color:#fff;font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;">${m.score}% match</span>
+      </td>
+    </tr>`).join('');
+
+  const bodyHtml = `
+    <td style="padding:40px 40px 32px;">
+      <h2 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#2C2F38;">Your weekly job search digest</h2>
+      <p style="margin:0 0 28px;font-size:14px;color:#6B7280;">Hi ${firstName}, here's what Talendro accomplished for you this week.</p>
+
+      <!-- Stats row -->
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
+        <tr>
+          <td width="50%" style="padding-right:8px;">
+            <div style="background:#f0f7ff;border-radius:12px;padding:20px;text-align:center;">
+              <div style="font-size:32px;font-weight:800;color:${BRAND_BLUE};">${applicationsThisWeek}</div>
+              <div style="font-size:13px;color:#6B7280;margin-top:4px;">Applications submitted</div>
+            </div>
+          </td>
+          <td width="50%" style="padding-left:8px;">
+            <div style="background:#f0fdf4;border-radius:12px;padding:20px;text-align:center;">
+              <div style="font-size:32px;font-weight:800;color:#10B981;">${jobsDiscovered}</div>
+              <div style="font-size:13px;color:#6B7280;margin-top:4px;">Jobs discovered</div>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      ${topMatches.length > 0 ? `
+      <h3 style="margin:0 0 12px;font-size:16px;font-weight:700;color:#2C2F38;">Top matches this week</h3>
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+        ${matchRows}
+      </table>` : ''}
+
+      <table cellpadding="0" cellspacing="0" style="margin:0 auto 24px;">
+        <tr>
+          <td style="background:${BRAND_BLUE};border-radius:10px;padding:14px 36px;">
+            <a href="${dashboardUrl}" style="color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;display:block;">View Full Dashboard →</a>
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin:0;font-size:12px;color:#9FA6B2;text-align:center;">
+        You're on the <strong>${planLabel}</strong> plan. Talendro searches for new jobs every 30 minutes so you're always first to apply.
+      </p>
+    </td>`;
+
+  const html = wrapEmail(bodyHtml, `${applicationsThisWeek} applications submitted this week — view your digest`);
+  return sendEmail({
+    to: toEmail,
+    subject: `📊 Your Talendro weekly digest — ${applicationsThisWeek} applications this week`,
+    html,
+    text: `Hi ${firstName},\n\nHere's your Talendro weekly summary:\n\n• Applications submitted: ${applicationsThisWeek}\n• Jobs discovered: ${jobsDiscovered}\n\nView your full dashboard: ${dashboardUrl}`,
+  });
+}
+
 // ─── Exports ──────────────────────────────────────────────────────────────────
 
 export default {
@@ -475,4 +555,5 @@ export default {
   sendQuotaWarning,
   sendDocumentsReady,
   sendRareRoleAlert,
+  sendWeeklyDigest,
 };

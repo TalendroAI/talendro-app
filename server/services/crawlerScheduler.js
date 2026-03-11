@@ -333,7 +333,62 @@ async function cleanupStaleJobs() {
   }
 }
 
-// ─── Initialize the scheduler ─────────────────────────────────────────────────
+// ─── Weekly digest sender ───────────────────────────────────────────────────────────
+async function sendWeeklyDigestToAllSubscribers() {
+  try {
+    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const subscribers = await User.find({
+      subscriptionStatus: 'active',
+      email: { $exists: true, $ne: '' },
+    }).select('email name plan stats').lean();
+
+    console.log(`[Scheduler] Sending weekly digest to ${subscribers.length} active subscribers`);
+    let sent = 0;
+    let failed = 0;
+
+    for (const user of subscribers) {
+      try {
+        // Count applications submitted in the past 7 days
+        const Application = (await import('../models/Application.js')).default;
+        const applicationsThisWeek = await Application.countDocuments({
+          userId: user._id,
+          appliedAt: { $gte: oneWeekAgo },
+        });
+
+        // Top job matches from the past week
+        const topJobs = await Job.find({
+          isActive: true,
+          postedAt: { $gte: oneWeekAgo },
+        }).sort({ score: -1 }).limit(5).lean();
+
+        const topMatches = topJobs.map(j => ({
+          title: j.title,
+          company: j.company,
+          score: j.score || 80,
+          url: j.applyUrl || '',
+        }));
+
+        await emailService.sendWeeklyDigest({
+          toEmail: user.email,
+          userName: user.name || user.email.split('@')[0],
+          plan: user.plan || 'pro',
+          applicationsThisWeek,
+          jobsDiscovered: user.stats?.totalJobsDiscovered || 0,
+          topMatches,
+        });
+        sent++;
+      } catch (userErr) {
+        console.error(`[Scheduler] Weekly digest failed for ${user.email}:`, userErr.message);
+        failed++;
+      }
+    }
+    console.log(`[Scheduler] Weekly digest complete: ${sent} sent, ${failed} failed`);
+  } catch (err) {
+    console.error('[Scheduler] Weekly digest batch error:', err.message);
+  }
+}
+
+// ─── Initialize the scheduler ───────────────────────────────────────────────────────────
 export function initCrawlerScheduler() {
   console.log('[Scheduler] Initializing crawler scheduler...');
 
@@ -372,6 +427,12 @@ export function initCrawlerScheduler() {
   cron.schedule('*/15 * * * *', () => {
     console.log('[Scheduler] 15-minute subscriber scoring pass triggered');
     runSubscriberScoringPass();
+  });
+
+  // Weekly digest email — every Monday at 8 AM
+  cron.schedule('0 8 * * 1', () => {
+    console.log('[Scheduler] Weekly digest email triggered');
+    sendWeeklyDigestToAllSubscribers();
   });
 
   // Startup sequence — stagger to avoid hammering everything at once

@@ -5,6 +5,7 @@ import { optimize as optimizeResume, tailor as tailorResume } from '../services/
 import coverLetterService from '../services/coverLetterService.js';
 const generateCoverLetter = coverLetterService.generate;
 import { generateResumePdf } from '../services/pdfService.js';
+import emailService from '../services/emailService.js';
 
 const router = express.Router();
 
@@ -110,6 +111,17 @@ router.post('/optimize', authenticateToken, async (req, res) => {
       }
     });
 
+    // Fire-and-forget: notify user that their optimized documents are ready
+    try {
+      const freshUser = await User.findById(req.userId).select('email name plan');
+      if (freshUser?.email) {
+        emailService.sendDocumentsReady({
+          toEmail: freshUser.email,
+          userName: freshUser.name || freshUser.email.split('@')[0],
+          plan: freshUser.plan || 'pro',
+        }).catch(e => console.error('[resume/optimize] Documents-ready email failed:', e.message));
+      }
+    } catch (_) { /* non-fatal */ }
     return res.json({ success: true, resume: result, scores, savedToProfile: true });
   } catch (err) {
     console.error('[resume/optimize] Error:', err.message);

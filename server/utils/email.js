@@ -7,7 +7,7 @@ const resend = process.env.RESEND_API_KEY
   ? new Resend(process.env.RESEND_API_KEY)
   : null;
 const FROM = 'Talendro <support@talendro.com>';
-const APP_URL = process.env.APP_URL || 'https://talendro-app-1.onrender.com';
+const APP_URL = process.env.APP_URL || 'https://talendro.com';
 
 /**
  * Send email verification link to a newly registered user.
