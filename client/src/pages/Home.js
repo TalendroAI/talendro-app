@@ -8,7 +8,7 @@ const Home = () => {
   const plans = {
     starter: {
       name: "Starter",
-      price: { monthly: 49, annual: 39 },
+      price: { monthly: 39, annual: 31 },
       description: "For professionals ready to put their job search on autopilot.",
       features: [
         "AI searches for matching jobs every 4 hours",

@@ -24,7 +24,7 @@ export default function Page(){
           
           <div className="card">
             <h3 className="h3 mb-3">What does it cost?</h3>
-            <p className="body">Plans start at $49/month (Starter), with Pro at $99/month and Concierge at $249/month. All tiers include ASAN automated job search and application submission. Higher tiers unlock faster search frequency, more monthly applications, PDF resume formatting, and advanced interview and salary negotiation tools. Cancel anytime.</p>
+            <p className="body">Plans start at $39/month (Starter), with Pro at $99/month and Concierge at $249/month. All tiers include ASAN automated job search and application submission. Higher tiers unlock faster search frequency, more monthly applications, PDF resume formatting, and advanced interview and salary negotiation tools. Cancel anytime.</p>
           </div>
           
           <div className="card">

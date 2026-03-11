@@ -352,7 +352,7 @@ export function SessionResultsView({
                       className="flex-1 gap-2"
                     >
                       <Sparkles className="h-4 w-4" />
-                      {isUpsellLoading ? 'Loading...' : 'Upgrade to Pro — $79/month'}
+                      {isUpsellLoading ? 'Loading...' : 'Upgrade to Pro — $99/month'}
                     </Button>
                   )}
                 </>

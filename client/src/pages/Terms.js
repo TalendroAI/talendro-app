@@ -13,7 +13,7 @@ export default function Page(){
             <div className="space-y-4">
               <div>
                 <h4 className="font-medium mb-2 text-talBlue">Subscription Plans</h4>
-                <p className="body text-sm">Talendro™ is available in three tiers: Starter ($49/month), Pro ($99/month), and Concierge ($249/month). Annual billing is available at a discount. Your chosen plan is billed to your payment method at the start of each billing period.</p>
+                <p className="body text-sm">Talendro™ is available in three tiers: Starter ($39/month), Pro ($99/month), and Concierge ($249/month). Annual billing is available at a discount. Your chosen plan is billed to your payment method at the start of each billing period.</p>
               </div>
               <div>
                 <h4 className="font-medium mb-2 text-talBlue">Automatic Renewal</h4>

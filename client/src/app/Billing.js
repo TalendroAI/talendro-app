@@ -25,7 +25,7 @@ const PLAN_DETAILS = {
     name: 'Starter',
     color: C.blue,
     bg: C.blueLight,
-    price: '$79/mo',
+    price: '$39/mo',
     features: [
       'ATS-Optimized resume build',
       'Resume update & optimization',
@@ -41,7 +41,7 @@ const PLAN_DETAILS = {
     name: 'Pro',
     color: '#7C3AED',
     bg: '#F5F3FF',
-    price: '$149/mo',
+    price: '$99/mo',
     features: [
       'ATS + Branded resume build',
       'Resume update & optimization',
@@ -57,7 +57,7 @@ const PLAN_DETAILS = {
     name: 'Concierge',
     color: '#D97706',
     bg: '#FFFBEB',
-    price: '$299/mo',
+    price: '$249/mo',
     features: [
       'Executive resume package',
       'Resume update & optimization',

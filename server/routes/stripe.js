@@ -24,8 +24,8 @@ const PLAN_MAP = { starter: 'basic', pro: 'pro', concierge: 'premium' };
 const PLANS = {
     starter: {
         name: 'Starter',
-        price: 79,
-        priceId: process.env.STRIPE_PRICE_ID_STARTER_APPLY || 'price_starter_79',
+        price: 39,
+        priceId: process.env.STRIPE_PRICE_ID_STARTER_APPLY || 'price_starter_39',
         features: [
             'ATS-Optimized resume build',
             'Resume update & optimization',
@@ -39,8 +39,8 @@ const PLANS = {
     },
     pro: {
         name: 'Pro',
-        price: 149,
-        priceId: process.env.STRIPE_PRICE_ID_PRO_APPLY || 'price_pro_149',
+        price: 99,
+        priceId: process.env.STRIPE_PRICE_ID_PRO_APPLY || 'price_pro_99',
         features: [
             'ATS + Branded resume build',
             'Resume update & optimization',
@@ -54,8 +54,8 @@ const PLANS = {
     },
     concierge: {
         name: 'Concierge',
-        price: 299,
-        priceId: process.env.STRIPE_PRICE_ID_CONCIERGE_APPLY || 'price_concierge_299',
+        price: 249,
+        priceId: process.env.STRIPE_PRICE_ID_CONCIERGE_APPLY || 'price_concierge_249',
         features: [
             'Executive resume package',
             'Resume update & optimization',

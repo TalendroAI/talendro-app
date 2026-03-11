@@ -96,7 +96,7 @@ export default function Page(){
             </div>
             <div>
               <p className="body font-medium mb-2">Flexible Pricing Plans</p>
-              <p className="body text-sm">Choose Starter ($49), Pro ($99), or Concierge ($249) based on your job search intensity. All tiers include ASAN autonomous submission.</p>
+              <p className="body text-sm">Choose Starter ($39), Pro ($99), or Concierge ($249) based on your job search intensity. All tiers include ASAN autonomous submission.</p>
             </div>
             <div>
               <p className="body font-medium mb-2">Proven Results</p>

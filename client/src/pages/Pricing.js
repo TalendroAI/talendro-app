@@ -8,8 +8,8 @@ export default function Page() {
   const plans = {
     starter: {
       name: 'Starter',
-      monthly: 49,
-      annual: 39,
+      monthly: 39,
+      annual: 31,
       description: 'For professionals ready to put their job search on autopilot',
       features: [
         'AI searches for matching jobs every 4 hours',
@@ -216,8 +216,8 @@ export default function Page() {
             </thead>
             <tbody>
               {[
-                ['Monthly price', '$49', '$99', '$249'],
-                ['Annual price', '$39/mo', '$79/mo', '$199/mo'],
+                ['Monthly price', '$39', '$99', '$249'],
+                ['Annual price', '$31/mo', '$79/mo', '$199/mo'],
                 ['Job search frequency', 'Every 4 hours', 'Every 60 min', 'Every 30 min'],
                 ['Applications per month', '50', '200', 'Unlimited'],
                 ['Resume output', 'ATS plain text', 'Plain text + HTML resume', 'Plain text + HTML resume + LinkedIn update'],
@@ -330,7 +330,7 @@ export default function Page() {
             Start with Pro — $99/month
           </button>
           <button onClick={() => handleSelectPlan('starter')} className="bg-transparent text-white border-2 border-white font-semibold px-8 py-3 rounded-xl hover:bg-white hover:text-talBlue transition-colors">
-            Try Starter — $49/month
+            Try Starter — $39/month
           </button>
         </div>
         <p className="text-blue-200 text-sm mt-4">No contracts. Cancel anytime. Veterans save 20%.</p>
