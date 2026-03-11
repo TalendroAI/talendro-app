@@ -232,29 +232,67 @@ export function scoreJob(job, resumeData = {}, onboarding = {}) {
   if (hardSkillScore >= 30) strengths.push('Strong keyword alignment with job requirements');
   else if (hardSkillScore < 15) concerns.push('Limited keyword overlap with job description');
 
-  // ── Factor 2: Recency & Seniority (0–30) ──────────────────────────────────
+  // ── Factor 2: Title Match & Seniority (0–30) ───────────────────────
+  //
+  // TITLE MATCH IS THE PRIMARY GATE.
+  //
+  // When a subscriber has stated target titles, the job title MUST match one of them
+  // (exactly or closely) for the job to be considered a genuine match.
+  //
+  // Scoring tiers:
+  //   Exact match (e.g. "VP Talent Acquisition" == "VP Talent Acquisition"):  30 pts
+  //   Strong match (job title contains or is contained by a target):          24 pts
+  //   Partial match (shared key words, e.g. "Talent Acquisition" in both):   16 pts
+  //   No match when targets are set:                                           0 pts  ← HARD CAP
+  //   No targets set (subscriber hasn’t specified):                           8 pts (neutral)
+  //
+  // A hard cap is applied to the TOTAL score when there is no title match:
+  //   If the subscriber has target titles and the job matches none of them,
+  //   the total score is capped at 49 (below the 50-point “Good” threshold).
+  //   This prevents keyword-rich but wrong-function roles from scoring “Excellent”.
+
   const userTargetTitles = (s8.targetTitles || '').toLowerCase();
   const jobTitleLower = (job.title || '').toLowerCase();
   const jobNormTitle = (job.normalizedTitle || jobTitleLower);
 
-  // Title match
   let titleMatch = 0;
+  let titleMatchFound = false;
+
   if (userTargetTitles) {
     const targets = userTargetTitles.split(/[,\n]+/).map(t => t.trim()).filter(Boolean);
     for (const t of targets) {
-      if (jobNormTitle === t) { titleMatch = 15; break; }
-      if (jobNormTitle.includes(t) || t.includes(jobNormTitle)) { titleMatch = Math.max(titleMatch, 12); }
-      else {
-        const tw = t.split(/\s+/), jw = jobNormTitle.split(/\s+/);
+      if (jobNormTitle === t) {
+        titleMatch = 30; titleMatchFound = true; break;          // exact match
+      }
+      if (jobNormTitle.includes(t) || t.includes(jobNormTitle)) {
+        titleMatch = Math.max(titleMatch, 24); titleMatchFound = true; // strong match
+      } else {
+        const tw = t.split(/\s+/).filter(w => w.length > 2);   // ignore short words
+        const jw = jobNormTitle.split(/\s+/);
         const overlap = tw.filter(w => jw.includes(w)).length;
-        if (overlap > 0) titleMatch = Math.max(titleMatch, Math.round(12 * overlap / Math.max(tw.length, 1)));
+        if (overlap > 0) {
+          const partialScore = Math.round(16 * overlap / Math.max(tw.length, 1));
+          if (partialScore > titleMatch) {
+            titleMatch = partialScore;
+            titleMatchFound = true;
+          }
+        }
       }
     }
+    // If no target title matched at all, titleMatch stays 0
+    if (!titleMatchFound) {
+      concerns.push('Job title does not match your stated target roles');
+    } else if (titleMatch >= 24) {
+      strengths.push('Job title closely matches your target role');
+    } else if (titleMatch >= 16) {
+      strengths.push('Job title partially aligns with your target role');
+    }
   } else {
-    titleMatch = 8; // neutral if no target titles set
+    titleMatch = 8; // neutral — subscriber hasn’t set target titles yet
+    titleMatchFound = true;
   }
 
-  // Seniority match
+  // Seniority match (0–15 pts, used only when title matched or no targets set)
   const userSeniority = Array.isArray(s8.seniority) ? s8.seniority : [];
   const jobSeniority = inferSeniority(job.title);
   let seniorityMatch = 0;
@@ -270,11 +308,14 @@ export function scoreJob(job, resumeData = {}, onboarding = {}) {
     seniorityMatch = exact ? 15 : adjacent ? 10 : 3;
   }
 
-  const recencySeniorityScore = Math.min(30, titleMatch + seniorityMatch);
+  // Title match is the dominant signal; seniority is a secondary modifier.
+  // Cap the combined factor at 30 pts.
+  const recencySeniorityScore = Math.min(30, titleMatch + (titleMatchFound ? seniorityMatch : 0));
   breakdown.recencySeniority = recencySeniorityScore;
+  breakdown.titleMatchFound = titleMatchFound;
 
-  if (seniorityMatch >= 12) strengths.push('Seniority level aligns with target role');
-  else if (seniorityMatch <= 3) concerns.push('Seniority level may not align with your target');
+  if (seniorityMatch >= 12 && titleMatchFound) strengths.push('Seniority level aligns with target role');
+  else if (seniorityMatch <= 3 && titleMatchFound) concerns.push('Seniority level may not align with your target');
 
   // ── Factor 3: Quantifiable Impact (0–20) ──────────────────────────────────
   // Look for evidence of metrics in the resume
@@ -331,9 +372,18 @@ export function scoreJob(job, resumeData = {}, onboarding = {}) {
   if (job.applicantCount && job.applicantCount > 100) {
     concerns.push(`High competition — ${job.applicantCount}+ applicants already`);
   }
+  // ── Total Score ────────────────────────────────────────────────────────────────────────
+  let totalScore = hardSkillScore + recencySeniorityScore + impactScore + contextScore;
 
-  // ── Total Score ────────────────────────────────────────────────────────────
-  const totalScore = hardSkillScore + recencySeniorityScore + impactScore + contextScore;
+  // HARD CAP: If the subscriber has stated target titles and the job title matched
+  // none of them, cap the total score at 49 regardless of keyword overlap.
+  // This prevents wrong-function roles (e.g. CHRO for a TA executive) from
+  // appearing as “Good”, “Strong”, or “Excellent” matches.
+  // Score bands: Excellent ≥ 80, Strong ≥ 65, Good ≥ 50, Possible ≥ 35, Poor < 35
+  if (userTargetTitles && !titleMatchFound) {
+    totalScore = Math.min(totalScore, 49);
+    breakdown.titleCapApplied = true;
+  }
 
   return {
     score: totalScore,
@@ -343,7 +393,7 @@ export function scoreJob(job, resumeData = {}, onboarding = {}) {
   };
 }
 
-// ─── Full Job Evaluation Pipeline ────────────────────────────────────────────
+// ─── Full Job Evaluation Pipeline ─────────────────────────────────────────────
 
 /**
  * Run the complete evaluation pipeline for a single job against a subscriber.

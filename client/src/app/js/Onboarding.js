@@ -789,7 +789,9 @@ const StepPreferences = ({ data, set, userPlan }) => {
       <SectionHeader icon="🎯" title="Job Search Preferences" color={C.blue} subtitle="AI uses these to match you with the right opportunities." />
       <h4 style={{ fontSize:13,fontWeight:700,color:C.slate,textTransform:"uppercase",letterSpacing:1,marginBottom:12,fontFamily:"'Montserrat', sans-serif" }}>Target Roles</h4>
       <Grid cols={2}>
-        <TextArea label="Target Job Titles" required value={data.targetTitles} onChange={u("targetTitles")} rows={2} placeholder="e.g., Senior Software Engineer, Tech Lead" hint="Comma-separated. AI will expand to include related and adjacent titles." />
+        <div>
+          <TextArea label="Target Job Titles — Where You Want to Go Next" required value={data.targetTitles} onChange={u("targetTitles")} rows={3} placeholder="e.g., VP Talent Acquisition, Director Talent Acquisition, Head of Recruiting" hint="Enter the exact titles you are targeting — comma-separated. We pre-filled these from your résumé but please review and edit them to reflect where you want to go next, not just where you have been. These titles are the primary filter for every job match we find for you." />
+        </div>
         <TextArea label="Target Industries (Optional)" value={data.targetIndustries} onChange={u("targetIndustries")} rows={2} placeholder="e.g., Technology, Healthcare" hint="Comma-separated" />
       </Grid>
       <div style={{ height:16 }} />
@@ -1128,10 +1130,22 @@ export default function Onboarding() {
       );
 
       // Build suggested target job titles from current job title + top work titles
+      // Also suggest the next logical seniority level so subscribers see forward-looking options
       const currentTitle = basics.currentJobTitle || (work[0]?.jobTitle) || (work[0]?.title) || '';
       const relatedTitles = work.slice(0, 3).map(j => j.jobTitle || j.title || '').filter(Boolean);
       const uniqueTitles = [...new Set([currentTitle, ...relatedTitles])].filter(Boolean);
-      const suggestedTargetTitles = uniqueTitles.join(', ');
+      // Infer next-level title suggestions
+      const nextLevelTitles = [];
+      const titleLower = currentTitle.toLowerCase();
+      if (titleLower.match(/\bdirector\b/) && !titleLower.match(/\bvp\b|\bvice president\b/)) {
+        nextLevelTitles.push(currentTitle.replace(/director/i, 'VP').replace(/Director/i, 'VP'));
+      } else if (titleLower.match(/\bmanager\b/) && !titleLower.match(/\bdirector\b/)) {
+        nextLevelTitles.push(currentTitle.replace(/manager/i, 'Director').replace(/Manager/i, 'Director'));
+      } else if (titleLower.match(/\bsenior\b/) && !titleLower.match(/\blead\b|\bmanager\b/)) {
+        nextLevelTitles.push(currentTitle.replace(/senior/i, 'Lead').replace(/Senior/i, 'Lead'));
+      }
+      const allSuggestions = [...new Set([...uniqueTitles, ...nextLevelTitles.filter(Boolean)])].filter(Boolean);
+      const suggestedTargetTitles = allSuggestions.join(', ');
 
       // Infer seniority from job titles
       const titleText = suggestedTargetTitles.toLowerCase();
