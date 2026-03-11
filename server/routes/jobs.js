@@ -256,11 +256,27 @@ router.get('/feed', authenticateToken, async (req, res) => {
     if (company)       filter.company        = { $regex: company, $options: 'i' };
     if (search)        filter.$text          = { $search: search };
 
-    // Load user's full onboarding data
-    const user = await User.findById(req.user.userId).select('onboardingData').lean();
+    // Load user's full profile (onboarding + stats for delta window)
+    const user = await User.findById(req.user.userId).select('onboardingData stats plan').lean();
     const onboarding    = user?.onboardingData || {};
     const s8            = onboarding.s8 || {};
     const userHasPrefs  = hasOnboardingData(onboarding);
+
+    // ── Delta window: only apply when no explicit postedWithin filter ──────────
+    // First-ever run (no lastJobSearchRun): show jobs from last 24 hours only.
+    // Subsequent runs: show only jobs discovered since the last run.
+    if (!postedWithin) {
+      const lastRun = user?.stats?.lastJobSearchRun;
+      const deltaStart = lastRun
+        ? new Date(lastRun)
+        : new Date(Date.now() - 24 * 60 * 60 * 1000);
+      filter.firstSeenAt = { $gte: deltaStart };
+      // Update lastJobSearchRun for next delta
+      await User.updateOne(
+        { _id: user._id },
+        { $set: { 'stats.lastJobSearchRun': new Date() } }
+      );
+    }
 
     // Pre-filter at DB level by title (efficiency — reduces candidate pool)
     if (!search && s8.targetTitles) {
@@ -282,7 +298,7 @@ router.get('/feed', authenticateToken, async (req, res) => {
     }
 
     // Fetch a larger candidate pool to account for threshold filtering
-    const candidateLimit = userHasPrefs ? Math.min(limitNum * 8, 500) : limitNum;
+    const candidateLimit = userHasPrefs ? Math.min(limitNum * 8, 2000) : limitNum;
 
     const candidates = await Job.find(filter)
       .sort({ firstSeenAt: -1 })
@@ -452,20 +468,26 @@ router.get('/matches', authenticateToken, async (req, res) => {
     const user = await User.findById(req.userId).lean();
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
-    const tier = (() => {
-      const p = (user.plan || 'starter').toLowerCase();
-      if (p === 'concierge') return 'concierge';
-      if (p === 'pro') return 'pro';
-      return 'starter';
-    })();
-
-    const tierConfig = TIER_CONFIG[tier];
-    const cutoff = new Date(Date.now() - tierConfig.maxAgeMs);
+    // ── Delta window logic ────────────────────────────────────────────────────
+    // First-ever run (no lastJobSearchRun): show jobs from last 24 hours only.
+    // This gives a clean, fresh starting snapshot — not a backlog of aged listings.
+    // Subsequent runs: show only jobs discovered since the last run (the delta).
+    // This ensures subscribers always have a genuine first-mover advantage.
+    const lastRun = user.stats?.lastJobSearchRun;
+    const cutoff = lastRun
+      ? new Date(lastRun)                                         // delta: since last run
+      : new Date(Date.now() - 24 * 60 * 60 * 1000);             // initial: last 24 hours
 
     const recentJobs = await Job.find({
       isActive: true,
       firstSeenAt: { $gte: cutoff },
-    }).limit(500).select('-descriptionHtml -__v').lean();
+    }).limit(2000).select('-descriptionHtml -__v').lean();
+
+    // Update lastJobSearchRun so the next call returns only the new delta
+    await User.updateOne(
+      { _id: user._id },
+      { $set: { 'stats.lastJobSearchRun': new Date() } }
+    );
 
     const { aboveLine, belowLine, filtered, rarityAlerts, stats } = evaluateBatchForSubscriber(recentJobs, user);
 
