@@ -3,16 +3,18 @@
  * ─────────────────────────────────────────────────────────────────────────────
  * Production job scoring engine for Talendro.
  *
+ * Talendro serves job seekers across ALL industries and roles — no domain
+ * restrictions apply. Every job that passes the freshness gate is evaluated.
+ *
  * Implements:
- *   1. Domain Filter  — hard gate: must be TA/Recruiting/HR-tech leadership
- *   2. Location Gate  — hard gate: remote OR within subscriber's target metro
- *   3. Rarity Classifier — flags exceptionally rare roles for immediate alerts
- *   4. Four-factor weighted scoring:
+ *   1. Freshness Gate      — hard gate: posting must be within tier's max age
+ *   2. Rarity Classifier   — flags exceptionally rare roles for immediate alerts
+ *   3. Four-factor weighted scoring:
  *        Hard Skill Alignment     40 pts
  *        Recency & Seniority      30 pts
  *        Quantifiable Impact      20 pts
  *        Contextual Fit           10 pts
- *   5. Above/Below-the-line classification
+ *   4. Above/Below-the-line classification (location gate)
  *
  * Tier freshness windows (max posting age = search interval + 1 hr):
  *   Starter    — every 4 hrs  → max age 5 hrs
@@ -20,65 +22,67 @@
  *   Concierge  — every 30 min → max age 90 min
  */
 
-// ─── Domain Definitions ───────────────────────────────────────────────────────
+// ─── Rarity Tiers ─────────────────────────────────────────────────────────────
+// Flags roles that appear very infrequently nationally, across all industries.
+// These trigger immediate alerts regardless of match score.
 
-// Titles that PASS the domain filter (TA / Recruiting / HR-Tech leadership)
-const DOMAIN_PASS_PATTERNS = [
-  /talent\s*acquisition/i,
-  /\brecruiting\b/i,
-  /\brecruitment\b/i,
-  /\brecruiter\b/i,
-  /talent\s*management/i,
-  /head\s+of\s+talent/i,
-  /chief\s+talent/i,
-  /\bta\s+leader/i,
-  /\bta\s+director/i,
-  /\bta\s+vp\b/i,
-  /workforce\s+planning/i,
-  /employer\s+branding/i,
-  /\brpo\b/i,
-  /\bmsp\b/i,
-  /hr\s+tech/i,
-  /hrtech/i,
-  /people\s+operations/i,
-];
-
-// Titles that FAIL the domain filter regardless of other matches
-const DOMAIN_FAIL_PATTERNS = [
-  /\bchro\b/i,
-  /chief\s+human\s+resources/i,
-  /chief\s+people\s+officer/i,
-  /\bcpo\b/i,
-  /vp\s+human\s+resources(?!\s*.*talent)/i,
-  /svp\s+human\s+resources(?!\s*.*talent)/i,
-  /vp\s+hr(?!\s*.*talent)/i,
-  /learning\s+(&|and)\s+development/i,
-  /\bl&d\b/i,
-  /talent\s+development/i,
-  /talent\s+engagement/i,
-  /compensation\s+(&|and)\s+benefits/i,
-  /\bdei\b/i,
-  /diversity\s+(&|and)\s+inclusion/i,
-  /payroll/i,
-  /benefits\s+administration/i,
-];
-
-// Rarity tiers — how many times per year these titles appear nationally
 const RARITY_TIERS = {
   EXCEPTIONALLY_RARE: [
-    /chief\s+talent\s+acquisition\s+officer/i,
-    /chief\s+talent\s+officer/i,
-    /\bctao\b/i,
-    /\bcto\b.*talent/i,
-    /global\s+head\s+of\s+talent\s+acquisition/i,
-    /evp.*talent\s+acquisition/i,
+    // C-suite across any function
+    /\bceo\b/i,
+    /chief\s+executive\s+officer/i,
+    /\bcto\b/i,
+    /chief\s+technology\s+officer/i,
+    /\bcoo\b/i,
+    /chief\s+operating\s+officer/i,
+    /\bcfo\b/i,
+    /chief\s+financial\s+officer/i,
+    /\bcmo\b/i,
+    /chief\s+marketing\s+officer/i,
+    /\bcpo\b/i,
+    /chief\s+product\s+officer/i,
+    /\bchro\b/i,
+    /chief\s+human\s+resources\s+officer/i,
+    /chief\s+people\s+officer/i,
+    /\bcsco\b/i,
+    /chief\s+supply\s+chain\s+officer/i,
+    /\bccso\b/i,
+    /chief\s+customer\s+success\s+officer/i,
+    /\bciso\b/i,
+    /chief\s+information\s+security\s+officer/i,
+    /\bcdo\b/i,
+    /chief\s+data\s+officer/i,
+    /\bclco\b/i,
+    /chief\s+legal\s+officer/i,
+    /\bgeneral\s+counsel\b/i,
+    // Global heads
+    /global\s+head\s+of/i,
+    /head\s+of\s+global/i,
+    // President / Founder
+    /\bpresident\b.*(?:global|north\s+america|americas|emea|apac)/i,
+    /\bfounder\b/i,
+    /co-founder/i,
   ],
   RARE: [
-    /svp.*talent\s+acquisition/i,
-    /senior\s+vice\s+president.*talent/i,
-    /vp.*global.*talent/i,
-    /global\s+vp.*talent/i,
-    /head\s+of\s+global\s+talent/i,
+    // EVP / SVP across any function
+    /\bevp\b/i,
+    /executive\s+vice\s+president/i,
+    /\bsvp\b/i,
+    /senior\s+vice\s+president/i,
+    // VP Global / VP of [anything] at enterprise scale
+    /vp.*global/i,
+    /global\s+vp/i,
+    // Managing Director
+    /managing\s+director/i,
+    // Partner (professional services)
+    /\bpartner\b.*(?:law|legal|consulting|advisory|investment|private\s+equity|venture)/i,
+    // Principal / Distinguished / Fellow (technical)
+    /\bdistinguished\s+engineer\b/i,
+    /\bfellow\b.*(?:engineer|scientist|researcher|technologist)/i,
+    /\bstaff\s+engineer\b/i,
+    /\bprincipal\s+engineer\b/i,
+    /\bprincipal\s+scientist\b/i,
+    /\bprincipal\s+architect\b/i,
   ],
 };
 
@@ -90,22 +94,20 @@ export const TIER_CONFIG = {
   concierge: { searchIntervalMs: 30 * 60 * 1000,           maxAgeMs: 90 * 60 * 1000 },
 };
 
-// ─── Domain Filter ────────────────────────────────────────────────────────────
+// ─── Rarity Classifier ────────────────────────────────────────────────────────
 
 /**
- * Returns true if the job title is within the TA/Recruiting domain.
- * Hard fail patterns take precedence over pass patterns.
+ * Returns 'EXCEPTIONALLY_RARE', 'RARE', or null.
+ * Works across all industries — no domain restriction.
  */
-export function passedDomainFilter(title = '') {
-  // Check fail patterns first — these are hard excludes
-  for (const pattern of DOMAIN_FAIL_PATTERNS) {
-    if (pattern.test(title)) return false;
+export function classifyRarity(title = '') {
+  for (const pattern of RARITY_TIERS.EXCEPTIONALLY_RARE) {
+    if (pattern.test(title)) return 'EXCEPTIONALLY_RARE';
   }
-  // Check pass patterns
-  for (const pattern of DOMAIN_PASS_PATTERNS) {
-    if (pattern.test(title)) return true;
+  for (const pattern of RARITY_TIERS.RARE) {
+    if (pattern.test(title)) return 'RARE';
   }
-  return false;
+  return null;
 }
 
 // ─── Location Gate ────────────────────────────────────────────────────────────
@@ -153,21 +155,6 @@ export function classifyLocation(job, userPrefs = {}) {
   return 'below';
 }
 
-// ─── Rarity Classifier ────────────────────────────────────────────────────────
-
-/**
- * Returns 'EXCEPTIONALLY_RARE', 'RARE', or null.
- */
-export function classifyRarity(title = '') {
-  for (const pattern of RARITY_TIERS.EXCEPTIONALLY_RARE) {
-    if (pattern.test(title)) return 'EXCEPTIONALLY_RARE';
-  }
-  for (const pattern of RARITY_TIERS.RARE) {
-    if (pattern.test(title)) return 'RARE';
-  }
-  return null;
-}
-
 // ─── Freshness Gate ───────────────────────────────────────────────────────────
 
 /**
@@ -193,6 +180,9 @@ export function passesFreshnessGate(job, tier = 'starter') {
  *   Quantifiable Impact    20 pts  — evidence of measurable results in resume
  *   Contextual Fit         10 pts  — industry, company size, work arrangement
  *
+ * Works for any industry and role — scoring is driven entirely by the
+ * subscriber's own resume and target preferences, not by domain whitelists.
+ *
  * @param {Object} job          — job document
  * @param {Object} resumeData   — subscriber's parsed/optimized resume data
  * @param {Object} onboarding   — subscriber's onboarding preferences
@@ -217,29 +207,26 @@ export function scoreJob(job, resumeData = {}, onboarding = {}) {
   const resumeText = buildResumeText(resumeData).toLowerCase();
 
   let skillMatches = 0;
-  let totalSkills = Math.max(resumeSkills.length, 1);
+  const totalSkills = Math.max(resumeSkills.length, 1);
 
   for (const skill of resumeSkills) {
     if (jobText.includes(skill.toLowerCase())) skillMatches++;
   }
 
-  // Also check for TA-specific keyword overlap
-  const taKeywords = [
-    'talent acquisition', 'recruiting', 'recruitment', 'sourcing', 'applicant tracking',
-    'ats', 'greenhouse', 'lever', 'workday', 'icims', 'employer branding',
-    'candidate experience', 'workforce planning', 'rpo', 'msp', 'diversity hiring',
-    'executive search', 'full cycle recruiting', 'high volume recruiting',
-    'onboarding', 'offer management', 'headcount', 'pipeline', 'boolean search',
-  ];
-
-  let taMatches = 0;
-  for (const kw of taKeywords) {
-    if (jobText.includes(kw) && resumeText.includes(kw)) taMatches++;
-  }
-
   const skillRatio = skillMatches / totalSkills;
-  const taBonus = Math.min(10, taMatches * 1.5);
-  const hardSkillScore = Math.min(40, Math.round(skillRatio * 30 + taBonus));
+
+  // Bonus: count how many of the job's own keywords appear in the resume
+  // (industry-agnostic — uses the job's actual keywords, not a hardcoded list)
+  const jobKeywords = (job.keywords || []).map(k => k.toLowerCase());
+  let jobKwMatches = 0;
+  for (const kw of jobKeywords) {
+    if (resumeText.includes(kw)) jobKwMatches++;
+  }
+  const jobKwBonus = Math.min(10, jobKeywords.length > 0
+    ? Math.round((jobKwMatches / jobKeywords.length) * 10)
+    : 0);
+
+  const hardSkillScore = Math.min(40, Math.round(skillRatio * 30 + jobKwBonus));
 
   breakdown.hardSkills = hardSkillScore;
   if (hardSkillScore >= 30) strengths.push('Strong keyword alignment with job requirements');
@@ -294,13 +281,15 @@ export function scoreJob(job, resumeData = {}, onboarding = {}) {
   const metricPatterns = [
     /\$[\d,.]+[kmb]?/i,
     /\d+[%]/,
-    /\d+\+?\s*(employees|hires|candidates|requisitions|positions|roles|openings)/i,
+    /\d+\+?\s*(employees|hires|candidates|requisitions|positions|roles|openings|users|customers|clients|accounts|projects|products)/i,
     /reduced\s+\w+\s+by\s+\d+/i,
     /increased\s+\w+\s+by\s+\d+/i,
     /saved\s+\$[\d,.]+/i,
     /managed\s+\$[\d,.]+/i,
     /\d+\s*million/i,
     /\d+\s*billion/i,
+    /grew\s+\w+\s+(?:by\s+)?\d+/i,
+    /delivered\s+\w+\s+(?:in\s+)?\d+/i,
   ];
 
   let metricCount = 0;
@@ -331,7 +320,7 @@ export function scoreJob(job, resumeData = {}, onboarding = {}) {
 
   // Industry/company size signals from description
   const hasEnterpriseSignals = /fortune\s*\d+|enterprise|global|multi.national|publicly\s+traded/i.test(jobText);
-  const resumeHasEnterprise = /ibm|cox|bae\s+systems|fortune|enterprise|global/i.test(resumeText);
+  const resumeHasEnterprise = /fortune|enterprise|global|publicly\s+traded|nasdaq|nyse/i.test(resumeText);
   if (hasEnterpriseSignals && resumeHasEnterprise) contextScore += 3;
   else contextScore += 1;
 
@@ -359,8 +348,8 @@ export function scoreJob(job, resumeData = {}, onboarding = {}) {
 /**
  * Run the complete evaluation pipeline for a single job against a subscriber.
  *
- * Returns a rich result object with all classification data needed by the
- * dashboard and job matches UI.
+ * No domain restriction — all industries and roles are evaluated.
+ * Only gates are: freshness (tier-based) and location (subscriber preference).
  *
  * @param {Object} job          — job document from DB
  * @param {Object} user         — subscriber user document (includes plan, onboardingData, resumeData)
@@ -372,17 +361,7 @@ export function evaluateJobForSubscriber(job, user) {
   const resumeData = user.resumeData || {};
   const s8 = onboarding.s8 || {};
 
-  // Step 1: Domain filter — hard gate
-  if (!passedDomainFilter(job.title)) {
-    return {
-      job,
-      passed: false,
-      filterReason: 'domain',
-      filterLabel: 'Outside TA/Recruiting domain',
-    };
-  }
-
-  // Step 2: Freshness gate
+  // Step 1: Freshness gate — only hard gate
   if (!passesFreshnessGate(job, tier)) {
     return {
       job,
@@ -392,16 +371,16 @@ export function evaluateJobForSubscriber(job, user) {
     };
   }
 
-  // Step 3: Score the job
+  // Step 2: Score the job
   const { score, breakdown, strengths, concerns } = scoreJob(job, resumeData, onboarding);
 
-  // Step 4: Location gate — determines above/below the line
+  // Step 3: Location gate — determines above/below the line
   const locationLine = classifyLocation(job, s8);
 
-  // Step 5: Rarity classification
+  // Step 4: Rarity classification (all industries)
   const rarity = classifyRarity(job.title);
 
-  // Step 6: Build tags
+  // Step 5: Build tags
   const tags = [];
   if (job.remote) tags.push({ label: 'Remote', color: 'green' });
   else if (job.hybrid) tags.push({ label: 'Hybrid', color: 'amber' });
@@ -413,7 +392,7 @@ export function evaluateJobForSubscriber(job, user) {
     tags.push({ label: 'Employer anonymous', color: 'amber' });
   }
 
-  // Step 7: Determine if we should auto-apply
+  // Step 6: Determine if we should auto-apply
   const shouldAutoApply = locationLine === 'above' && score >= 70;
 
   return {
@@ -441,9 +420,9 @@ export function evaluateJobForSubscriber(job, user) {
 export function evaluateBatchForSubscriber(jobs, user) {
   const results = jobs.map(job => evaluateJobForSubscriber(job, user));
 
-  const aboveLine  = results.filter(r => r.passed && r.locationLine === 'above').sort((a, b) => b.score - a.score);
-  const belowLine  = results.filter(r => r.passed && r.locationLine === 'below').sort((a, b) => b.score - a.score);
-  const filtered   = results.filter(r => !r.passed);
+  const aboveLine    = results.filter(r => r.passed && r.locationLine === 'above').sort((a, b) => b.score - a.score);
+  const belowLine    = results.filter(r => r.passed && r.locationLine === 'below').sort((a, b) => b.score - a.score);
+  const filtered     = results.filter(r => !r.passed);
   const rarityAlerts = results.filter(r => r.passed && r.rarity === 'EXCEPTIONALLY_RARE');
 
   return {
@@ -466,7 +445,7 @@ export function evaluateBatchForSubscriber(jobs, user) {
 function inferSeniority(title = '') {
   const t = title.toLowerCase();
   const map = {
-    'C-Level':    ['ceo', 'cto', 'coo', 'cfo', 'chief', 'president', 'founder', 'ctao'],
+    'C-Level':    ['ceo', 'cto', 'coo', 'cfo', 'cmo', 'cpo', 'chro', 'ciso', 'cdo', 'chief', 'president', 'founder', 'general counsel'],
     'VP':         ['vp', 'vice president', 'svp', 'evp'],
     'Director':   ['director', 'dir'],
     'Manager':    ['manager', 'mgr', 'supervisor', 'head of'],
@@ -516,7 +495,6 @@ function buildResumeText(resumeData) {
 export const evaluateBatchForUser = evaluateBatchForSubscriber;
 
 export default {
-  passedDomainFilter,
   classifyLocation,
   classifyRarity,
   passesFreshnessGate,

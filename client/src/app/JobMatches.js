@@ -6,7 +6,7 @@
  * Three-section layout (matches job_matches_v3.html prototype):
  *   1. Above the Line  — jobs Talendro has applied to (or will apply to)
  *   2. Below the Line  — strong matches held due to location preference
- *   3. Domain Filtered — jobs outside TA/Recruiting domain
+ *   3. Filtered Out — jobs that did not pass the freshness gate for your tier
  *
  * Action buttons:
  *   Above: View Posting
@@ -545,7 +545,7 @@ export default function JobMatches() {
               title="Filtered Out"
               count={filtered.length}
               color="gray"
-              description="These jobs were removed before scoring. Domain-filtered roles are outside TA/Recruiting. Freshness-filtered roles are too old for your tier."
+              description="These jobs were removed before scoring. Freshness-filtered roles are too old for your tier."
             />
             {filtered.length > 0 ? (
               filtered.map((job, i) => (
@@ -565,7 +565,7 @@ export default function JobMatches() {
               <div style={{ textAlign: 'center', padding: '60px 0', color: C.grayLight }}>
                 <div style={{ fontSize: 48, marginBottom: 16 }}>✅</div>
                 <div style={{ fontSize: 16, fontWeight: 600, color: C.slate, marginBottom: 8 }}>Nothing filtered out</div>
-                <div style={{ fontSize: 14 }}>All discovered jobs passed the domain and freshness filters.</div>
+                <div style={{ fontSize: 14 }}>All discovered jobs passed the freshness filter for your tier.</div>
               </div>
             )}
           </div>

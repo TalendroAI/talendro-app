@@ -5,7 +5,6 @@ import User from '../models/User.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { getCrawlerStats, triggerDiscovery, triggerCrawl } from '../services/crawlerScheduler.js';
 import {
-  passedDomainFilter,
   classifyLocation,
   classifyRarity,
   passesFreshnessGate,

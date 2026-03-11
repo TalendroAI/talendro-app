@@ -20,7 +20,6 @@ import User from '../models/User.js';
 import Job from '../models/Job.js';
 import Application from '../models/Application.js';
 import {
-  passedDomainFilter,
   classifyLocation,
   classifyRarity,
   passesFreshnessGate,
@@ -139,22 +138,9 @@ router.get('/job-matches/:cid', authenticateToken, async (req, res) => {
     const aboveLine = [];
     const belowLine = [];
     const filtered = [];
-    let domainFiltered = 0;
     let freshnessFiltered = 0;
 
     for (const job of recentJobs) {
-      if (!passedDomainFilter(job.title)) {
-        domainFiltered++;
-        filtered.push({
-          id: job._id,
-          title: job.title,
-          company: job.company,
-          filterReason: 'domain',
-          filterLabel: 'Outside TA/Recruiting domain',
-        });
-        continue;
-      }
-
       if (!passesFreshnessGate(job, tier)) {
         freshnessFiltered++;
         filtered.push({
@@ -214,7 +200,6 @@ router.get('/job-matches/:cid', authenticateToken, async (req, res) => {
         aboveLineCount: aboveLine.length,
         belowLineCount: belowLine.length,
         filteredCount: filtered.length,
-        domainFiltered,
         freshnessFiltered,
         rarityAlertCount: rarityAlerts.length,
       },
@@ -382,7 +367,6 @@ router.get('/initial-search/:cid', authenticateToken, async (req, res) => {
 
     const scored = [];
     for (const job of recentJobs) {
-      if (!passedDomainFilter(job.title)) continue;
       if (!passesFreshnessGate(job, tier)) continue;
       const { score } = scoreJob(job, resumeData, onboarding);
       const locationLine = classifyLocation(job, onboarding.s8 || {});
