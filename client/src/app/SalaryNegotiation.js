@@ -12,6 +12,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../auth/AuthContext';
+import NegotiationVoiceInterface from './NegotiationVoiceInterface';
 
 const C = {
   blue: '#2F6DF6',
@@ -196,10 +197,10 @@ export default function SalaryNegotiation() {
             </p>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
-            {['setup', 'analyze', 'chat'].map(m => (
+            {['setup', 'analyze', 'chat', ...(isConcierge ? ['voice'] : [])].map(m => (
               <button key={m} onClick={() => setMode(m)}
                 style={{ padding: '8px 16px', borderRadius: 8, border: `1.5px solid ${mode === m ? C.blue : '#e5e7eb'}`, background: mode === m ? C.blue : C.white, color: mode === m ? C.white : C.slate, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}>
-                {m === 'setup' ? '⚙️ Setup' : m === 'analyze' ? '📊 Analysis' : '💬 Chat Coach'}
+                {m === 'setup' ? '⚙️ Setup' : m === 'analyze' ? '📊 Analysis' : m === 'chat' ? '💬 Chat Coach' : '🎙️ Voice Role-Play'}
               </button>
             ))}
           </div>
@@ -329,6 +330,23 @@ export default function SalaryNegotiation() {
               </div>
             )}
           </div>
+        )}
+
+        {/* ── Voice Mode (Concierge only) ────────────────────────────────── */}
+        {mode === 'voice' && isConcierge && (
+          <NegotiationVoiceInterface
+            context={{
+              jobTitle: offerForm.jobTitle,
+              companyName: offerForm.companyName,
+              offeredSalary: offerForm.offeredSalary ? parseInt(offerForm.offeredSalary.replace(/[^0-9]/g, ''), 10) : undefined,
+              location: offerForm.location,
+              seniorityLevel: offerForm.seniorityLevel,
+            }}
+            onSessionEnd={({ transcript: t }) => {
+              // Session complete — transcript available for review
+              console.log('[SalaryNegotiation] Voice session ended, turns:', t.length);
+            }}
+          />
         )}
 
         {/* ── Chat Mode ──────────────────────────────────────────────────────── */}

@@ -94,6 +94,21 @@ const UserSchema = new mongoose.Schema({
       updatedAt: { type: Date, default: Date.now },
     },
   ],
+  // Weekly strategy session history (Concierge only)
+  strategyHistory: [
+    {
+      brief: { type: String, required: true },
+      stats: {
+        weeklyApplications: { type: Number, default: 0 },
+        totalApplications: { type: Number, default: 0 },
+        responseRate: { type: Number, default: null },
+        interviewsScheduled: { type: Number, default: 0 },
+        offersReceived: { type: Number, default: 0 },
+        weekNumber: { type: Number, default: null },
+      },
+      generatedAt: { type: Date, default: Date.now },
+    },
+  ],
   isPhoneVerified: { type: Boolean, default: false },
   preferences: {
     emailNotifications: { type: Boolean, default: true },

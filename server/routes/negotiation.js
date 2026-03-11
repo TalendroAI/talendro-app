@@ -153,4 +153,58 @@ router.post('/analyze', authenticateToken, async (req, res) => {
   }
 });
 
+// ─── POST /api/negotiation/voice-token ──────────────────────────────────────
+// Fetches an ephemeral xAI Realtime client secret for voice salary negotiation
+// role-play. Concierge plan only.
+router.post('/voice-token', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select('plan email');
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    if (user.plan !== 'concierge' && user.plan !== 'premium') {
+      return res.status(403).json({
+        error: 'Voice salary negotiation role-play requires the Concierge plan.',
+        upgrade_required: true,
+        required_plan: 'concierge',
+      });
+    }
+
+    const XAI_API_KEY = process.env.XAI_API_KEY;
+    if (!XAI_API_KEY) {
+      console.error('[negotiation/voice-token] XAI_API_KEY not configured');
+      return res.status(500).json({ error: 'Voice service not configured' });
+    }
+
+    console.log('[negotiation/voice-token] Requesting ephemeral token for user:', user.email);
+    const response = await fetch('https://api.x.ai/v1/realtime/client_secrets', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${XAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ expires_after: { seconds: 300 } }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[negotiation/voice-token] xAI API error:', response.status, errorText);
+      return res.status(502).json({ error: `Failed to get voice token: ${response.status}` });
+    }
+
+    const data = await response.json();
+    const clientSecret = data?.value || data?.client_secret?.value;
+    if (!clientSecret) {
+      console.error('[negotiation/voice-token] Unexpected response shape:', JSON.stringify(data));
+      return res.status(502).json({ error: 'No client secret in response' });
+    }
+
+    const expiresAt = data?.expires_at || data?.client_secret?.expires_at;
+    console.log('[negotiation/voice-token] Token received, expires_at:', expiresAt);
+    return res.json({ token: clientSecret, expires_at: expiresAt });
+  } catch (error) {
+    console.error('[negotiation/voice-token] Error:', error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;
