@@ -260,101 +260,20 @@ export function SessionResultsView({
               ) : (
                 <>
                   <Button 
-                    onClick={() => window.location.href = 'https://coach.talendro.com'} 
+                    onClick={() => window.location.href = 'https://talendro.com'}
                     variant="outline"
                     className="flex-1 gap-2"
                   >
                     <Home className="h-4 w-4" />
                     Return to Home
                   </Button>
-                  
-                  {/* Session-specific upsell CTAs */}
-                  {isQuickPrep && (
-                    <Button 
-                      onClick={async () => {
-                        setIsUpsellLoading(true);
-                        try {
-                          const { data, error } = await supabase.functions.invoke('create-checkout', {
-                            body: {
-                              session_type: 'full_mock',
-                              email: email,
-                            },
-                          });
-                          if (error) throw error;
-                          if (data?.url) {
-                            window.open(data.url, '_blank');
-                          }
-                        } catch (err) {
-                          console.error('Error creating checkout:', err);
-                        } finally {
-                          setIsUpsellLoading(false);
-                        }
-                      }}
-                      disabled={isUpsellLoading}
-                      className="flex-1 gap-2"
-                    >
-                      <Sparkles className="h-4 w-4" />
-                      {isUpsellLoading ? 'Loading...' : 'Try Full Mock Interview — $29'}
-                    </Button>
-                  )}
-                  
-                  {isFullMock && (
-                    <Button 
-                      onClick={async () => {
-                        setIsUpsellLoading(true);
-                        try {
-                          const { data, error } = await supabase.functions.invoke('create-checkout', {
-                            body: {
-                              session_type: 'premium_audio',
-                              email: email,
-                            },
-                          });
-                          if (error) throw error;
-                          if (data?.url) {
-                            window.open(data.url, '_blank');
-                          }
-                        } catch (err) {
-                          console.error('Error creating checkout:', err);
-                        } finally {
-                          setIsUpsellLoading(false);
-                        }
-                      }}
-                      disabled={isUpsellLoading}
-                      className="flex-1 gap-2"
-                    >
-                      <Sparkles className="h-4 w-4" />
-                      {isUpsellLoading ? 'Loading...' : 'Try Premium Audio Mock — $49'}
-                    </Button>
-                  )}
-                  
-                  {isPremiumAudio && (
-                    <Button 
-                      onClick={async () => {
-                        setIsUpsellLoading(true);
-                        try {
-                          const { data, error } = await supabase.functions.invoke('create-checkout', {
-                            body: {
-                              session_type: 'pro',
-                              email: email,
-                            },
-                          });
-                          if (error) throw error;
-                          if (data?.url) {
-                            window.open(data.url, '_blank');
-                          }
-                        } catch (err) {
-                          console.error('Error creating checkout:', err);
-                        } finally {
-                          setIsUpsellLoading(false);
-                        }
-                      }}
-                      disabled={isUpsellLoading}
-                      className="flex-1 gap-2"
-                    >
-                      <Sparkles className="h-4 w-4" />
-                      {isUpsellLoading ? 'Loading...' : 'Upgrade to Pro — $99/month'}
-                    </Button>
-                  )}
+                  <Button 
+                    onClick={() => window.location.href = 'https://talendro.com/app/checkout'}
+                    className="flex-1 gap-2"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    Subscribe to Talendro
+                  </Button>
                 </>
               )}
             </div>
