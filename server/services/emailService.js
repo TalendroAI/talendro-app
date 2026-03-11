@@ -343,7 +343,7 @@ async function sendQuotaWarning({ toEmail, userName, plan, used, limit }) {
 // ─── 7. Documents Ready ───────────────────────────────────────────────────────
 
 async function sendDocumentsReady({ toEmail, userName, plan }) {
-  const isConcierge = plan === 'premium';
+  const isConcierge = plan === 'concierge';
 
   const html = wrapEmail(`
     <h2 style="margin:0 0 8px;font-size:24px;font-weight:800;color:${BRAND_SLATE};">Your Career Documents Are Ready 📄</h2>
@@ -472,14 +472,14 @@ async function sendRareRoleAlert({
  * @param {object} opts
  * @param {string} opts.toEmail
  * @param {string} opts.userName
- * @param {string} opts.plan  — 'basic' | 'pro' | 'premium'
+ * @param {string} opts.plan  — 'starter' | 'pro' | 'concierge'
  * @param {number} opts.applicationsThisWeek
  * @param {number} opts.jobsDiscovered
  * @param {Array<{title:string, company:string, score:number, url:string}>} opts.topMatches
  */
 async function sendWeeklyDigest({ toEmail, userName, plan, applicationsThisWeek = 0, jobsDiscovered = 0, topMatches = [] }) {
   const firstName = userName?.split(' ')[0] || 'there';
-  const planLabel = plan === 'premium' ? 'Concierge' : plan === 'pro' ? 'Pro' : 'Starter';
+  const planLabel = plan === 'concierge' ? 'Concierge' : plan === 'pro' ? 'Pro' : 'Starter';
   const dashboardUrl = `${FRONTEND_URL}/app/dashboard`;
 
   const matchRows = topMatches.slice(0, 5).map(m => `

@@ -238,8 +238,8 @@ router.get('/download-pdf', authenticateToken, async (req, res) => {
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     // ── Tier gate: HTML resume is a Pro/Concierge feature ──────────────────
-    const plan = user.plan || 'basic';
-    if (plan === 'basic') {
+    const plan = user.plan || 'starter';
+    if (plan === 'starter') {
       return res.status(403).json({
         error: 'Your Starter plan includes a plain text resume. Upgrade to Pro or Concierge to receive a beautifully formatted HTML resume.',
         upgradeRequired: true,

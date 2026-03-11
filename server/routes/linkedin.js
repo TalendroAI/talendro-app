@@ -31,8 +31,8 @@ router.post('/optimize', authenticateToken, async (req, res) => {
     const user = await User.findById(req.userId).lean();
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    // Plan gate: Concierge (premium) only
-    if (user.plan !== 'premium') {
+    // Plan gate: Concierge only
+    if (user.plan !== 'concierge') {
       return res.status(403).json({
         error: 'LinkedIn profile optimization is a Concierge-level feature. Upgrade to Concierge to unlock this service.',
         upgradeRequired: true,

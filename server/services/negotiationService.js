@@ -28,7 +28,7 @@ const MODEL = 'gpt-4.1-mini';
  */
 function buildSystemPrompt(context) {
   const { jobTitle, companyName, offeredSalary, desiredSalary, location, seniorityLevel, tier } = context;
-  const isConcierge = tier === 'premium' || tier === 'concierge';
+  const isConcierge = tier === 'concierge';
 
   const offerStr = offeredSalary
     ? `$${Number(offeredSalary).toLocaleString()}`
@@ -161,7 +161,7 @@ async function analyze({ context }) {
  */
 async function startSession({ context }) {
   const { jobTitle, companyName, offeredSalary, desiredSalary, tier } = context;
-  const isConcierge = tier === 'premium' || tier === 'concierge';
+  const isConcierge = tier === 'concierge';
 
   const openingPrompt = offeredSalary
     ? `I've received an offer for ${jobTitle || 'a position'}${companyName ? ` at ${companyName}` : ''} for $${Number(offeredSalary).toLocaleString()}. My target is $${Number(desiredSalary || offeredSalary * 1.15).toLocaleString()}. How should I approach this negotiation?`

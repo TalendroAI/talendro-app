@@ -91,8 +91,8 @@ export default function Page(){
           <h3 className="h3 mb-3">Why Choose Talendro™?</h3>
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <p className="body font-medium mb-2">For Experienced Professionals</p>
-              <p className="body text-sm">Designed specifically for mid-to-late career professionals who value their time and want premium results.</p>
+              <p className="body font-medium mb-2">For Every American Worker</p>
+              <p className="body text-sm">Built for anyone who is unemployed, underemployed, or unhappily employed — from entry-level to executive, across every industry and occupation type.</p>
             </div>
             <div>
               <p className="body font-medium mb-2">Flexible Pricing Plans</p>

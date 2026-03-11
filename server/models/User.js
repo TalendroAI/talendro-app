@@ -34,8 +34,8 @@ const UserSchema = new mongoose.Schema({
   },
   plan: {
     type: String,
-    enum: ['basic', 'pro', 'premium'],
-    default: 'pro'
+    enum: ['starter', 'pro', 'concierge'],
+    default: 'starter'
   },
   subscriptionStatus: {
     type: String,
@@ -127,8 +127,9 @@ UserSchema.index({ subscriptionStatus: 1 });
 UserSchema.index({ createdAt: -1 });
 
 UserSchema.methods.canApplyToJobs = function() {
-  if (this.plan === 'pro' || this.plan === 'premium') return true;
-  if (this.plan === 'basic') return this.stats.applicationsThisMonth < 50;
+  if (this.plan === 'concierge') return true;  // Unlimited
+  if (this.plan === 'pro') return this.stats.applicationsThisMonth < 200;
+  if (this.plan === 'starter') return this.stats.applicationsThisMonth < 50;
   return false;
 };
 

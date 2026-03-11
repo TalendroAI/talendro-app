@@ -28,7 +28,7 @@ router.post('/session', authenticateToken, async (req, res) => {
     const user = await User.findById(req.userId).lean();
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    if (user.plan !== 'concierge' && user.plan !== 'premium') {
+    if (user.plan !== 'concierge') {
       return res.status(403).json({ error: 'Weekly strategy sessions are available on the Concierge plan.' });
     }
 
@@ -84,7 +84,7 @@ router.post('/chat', authenticateToken, async (req, res) => {
     const user = await User.findById(req.userId).lean();
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    if (user.plan !== 'concierge' && user.plan !== 'premium') {
+    if (user.plan !== 'concierge') {
       return res.status(403).json({ error: 'Strategy session chat is available on the Concierge plan.' });
     }
 

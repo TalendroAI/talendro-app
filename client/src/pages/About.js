@@ -5,26 +5,26 @@ export default function Page(){
       <p className='tagline mt-2'>Your job search, automated on steroids.</p>
       
       <div className="mt-6">
-        <p className='body mb-6'>We exist to level the playing field for experienced professionals.</p>
+        <p className='body mb-6'>We exist to level the playing field for every job seeker in America — regardless of career stage, industry, or background.</p>
         
         <div className="space-y-8">
           <div className="card">
             <h3 className="h3 mb-4">Our Mission</h3>
-            <p className="body mb-4">To transform the job search experience for mid-to-late career professionals by leveraging AI technology to deliver precision matches and faster results. We believe that great experience deserves great opportunities, and we're here to make that connection happen automatically.</p>
-            <p className="body">The traditional job search is broken for experienced professionals. Companies want your expertise, but finding those opportunities requires countless hours of searching, tailoring applications, and perfect timing. Talendro™ changes that equation entirely.</p>
+            <p className="body mb-4">To transform the job search experience for every American worker by leveraging AI technology to deliver precision matches and faster results. We believe that your skills and experience deserve great opportunities — and we're here to make that connection happen automatically.</p>
+            <p className="body">The traditional job search is broken for everyone. Whether you're a recent graduate, a mid-career professional, a skilled tradesperson, a healthcare worker, or a seasoned executive — the process is the same: time-consuming, inconsistent, and stacked against you. Talendro™ changes that equation entirely.</p>
           </div>
           
           <div className="card">
             <h3 className="h3 mb-4">Why We Exist</h3>
-            <p className="body mb-4">The job search is stacked against experienced professionals. Despite having valuable skills and proven track records, seasoned professionals face unique challenges:</p>
+            <p className="body mb-4">Under- and unemployment no longer discriminates by career level. It impacts the entire US workforce — from first-time job seekers to C-suite executives. Every worker faces the same broken system:</p>
             <div className="ml-6 space-y-2">
-              <p className="body"><span className="text-talAqua mr-3">●</span>Age bias in hiring processes</p>
-              <p className="body"><span className="text-talAqua mr-3">●</span>Oversaturated job boards designed for entry-level roles</p>
-              <p className="body"><span className="text-talAqua mr-3">●</span>Time constraints from current responsibilities</p>
-              <p className="body"><span className="text-talAqua mr-3">●</span>Rapidly changing application requirements and keywords</p>
-              <p className="body"><span className="text-talAqua mr-3">●</span>The need for personalized approaches for senior-level positions</p>
+              <p className="body"><span className="text-talAqua mr-3">●</span>Job boards that bury your application under thousands of others</p>
+              <p className="body"><span className="text-talAqua mr-3">●</span>ATS systems that filter out qualified candidates before a human ever sees them</p>
+              <p className="body"><span className="text-talAqua mr-3">●</span>Time constraints — whether from current work, family, or financial pressure</p>
+              <p className="body"><span className="text-talAqua mr-3">●</span>Rapidly changing application requirements, keywords, and hiring practices</p>
+              <p className="body"><span className="text-talAqua mr-3">●</span>The sheer volume of applications required to land a single interview</p>
             </div>
-            <p className="body mt-4">Talendro™ flips the script with real-time discovery, AI-tailored résumés, and perfectly timed applications that give you the competitive edge you deserve.</p>
+            <p className="body mt-4">Talendro™ flips the script with real-time discovery across thousands of employer career sites, AI-tailored résumés, and perfectly timed applications — giving every worker the competitive edge they deserve.</p>
           </div>
           
           <div className="card">
@@ -44,7 +44,7 @@ export default function Page(){
               </div>
               <div>
                 <h4 className="font-medium mb-2 text-talBlue">To Results</h4>
-                <p className="body text-sm">Built by recruitment industry veterans who understand what it takes to get noticed, get interviews, and get offers.</p>
+                <p className="body text-sm">Built by recruitment industry veterans who understand what it takes to get noticed, get interviews, and get offers — at every level of the workforce.</p>
               </div>
             </div>
           </div>

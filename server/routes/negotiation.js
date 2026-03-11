@@ -21,7 +21,7 @@ import negotiationService from '../services/negotiationService.js';
 const router = express.Router();
 
 // ─── Plan gate helper ─────────────────────────────────────────────────────────
-const ALLOWED_PLANS = ['pro', 'premium', 'concierge'];
+const ALLOWED_PLANS = ['pro', 'concierge'];
 
 function isPlanAllowed(plan) {
   return ALLOWED_PLANS.includes(plan);
@@ -161,7 +161,7 @@ router.post('/voice-token', authenticateToken, async (req, res) => {
     const user = await User.findById(req.userId).select('plan email');
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    if (user.plan !== 'concierge' && user.plan !== 'premium') {
+    if (user.plan !== 'concierge') {
       return res.status(403).json({
         error: 'Voice salary negotiation role-play requires the Concierge plan.',
         upgrade_required: true,

@@ -20,7 +20,7 @@ export default function Page(){
                 <p className="font-medium text-talBlue mb-3">Founder & CEO</p>
                 <p className="body mb-4">Greg brings over 20 years of recruitment leadership experience, having placed thousands of professionals in roles ranging from individual contributors to C-suite executives. His career spans blue-chip companies including IBM, American Airlines, Cox Communications, and HealthTrust.</p>
                 <p className="body mb-4">As a pioneering force in AI-driven hiring at IBM, Greg earned his AI Blackbelt certification and led the transformation of talent acquisition processes for enterprise-scale organizations. He understands both the technical possibilities of AI and the human realities of career transitions.</p>
-                <p className="body">As a veteran himself, Greg is passionate about supporting fellow service members and experienced professionals who deserve better tools for advancing their careers. This personal mission drives every decision at Talendro™.</p>
+                <p className="body">As a veteran himself, Greg is passionate about supporting fellow service members and every American worker who deserves better tools for navigating the job market. This personal mission — to level the playing field for the entire US workforce — drives every decision at Talendro™.</p>
               </div>
             </div>
           </div>
@@ -60,7 +60,7 @@ export default function Page(){
               </div>
               <div>
                 <h4 className="font-medium mb-2 text-talBlue">Service Over Profit</h4>
-                <p className="body text-sm">Our commitment to veterans and experienced professionals goes beyond business metrics. We measure success by career transformations, not just revenue growth.</p>
+                <p className="body text-sm">Our commitment to veterans and every American worker goes beyond business metrics. We measure success by career transformations across every industry and career level, not just revenue growth.</p>
               </div>
               <div>
                 <h4 className="font-medium mb-2 text-talBlue">Transparency Over Marketing</h4>

@@ -7,7 +7,7 @@ services:
     buildCommand: npm run install:all && npm run build && cd server && npx playwright install chromium --with-deps
     startCommand: cd server && npm start
     envVars:
-      # ── Core ────────────────────────────────────────────────────────────────
+      # ── Core ─────────────────────────────────────────────────────────────────
       - key: NODE_ENV
         value: production
       - key: PORT
@@ -17,15 +17,15 @@ services:
       - key: DOMAIN
         value: talendro.com
 
-      # ── Database ─────────────────────────────────────────────────────────────
+      # ── Database ──────────────────────────────────────────────────────────────
       - key: MONGODB_URI
         sync: false
 
-      # ── Auth ─────────────────────────────────────────────────────────────────
+      # ── Auth ──────────────────────────────────────────────────────────────────
       - key: JWT_SECRET
         sync: false
 
-      # ── AI Services ──────────────────────────────────────────────────────────
+      # ── AI Services ───────────────────────────────────────────────────────────
       - key: OPENAI_API_KEY
         sync: false
       - key: ANTHROPIC_API_KEY
@@ -33,7 +33,7 @@ services:
       - key: XAI_API_KEY
         sync: false
 
-      # ── Stripe Billing ───────────────────────────────────────────────────────
+      # ── Stripe Billing ────────────────────────────────────────────────────────
       - key: STRIPE_SECRET_KEY
         sync: false
       # Price IDs — must match the env var names used in server/routes/stripe.js
@@ -54,13 +54,25 @@ services:
       - key: EMAIL_FROM
         value: support@talendro.com
 
-      # ── Job Sources (RapidAPI) ────────────────────────────────────────────────
-      # Required for Fantastic.jobs and JSearch ingestion (175K+ career sites)
+      # ── Job Sources: Free Direct ATS APIs (no key required) ──────────────────
+      # Greenhouse, Lever, Ashby, and SmartRecruiters are all free public APIs.
+      # No API keys needed — crawlers run automatically on startup.
+
+      # ── Job Sources: USAJobs (Federal Government) ─────────────────────────────
+      # Free API — register at https://developer.usajobs.gov/APIRequest/Index
+      # USAJOBS_USER_AGENT must be your email address (required by USAJobs API)
+      - key: USAJOBS_API_KEY
+        sync: false
+      - key: USAJOBS_USER_AGENT
+        sync: false
+
+      # ── Job Sources: RapidAPI (Fantastic.jobs + JSearch) ─────────────────────
+      # Required for Fantastic.jobs (175,000+ career sites) and JSearch (Google for Jobs)
       - key: RAPIDAPI_KEY
         sync: false
 
-      # ── Auto-Apply Engine ────────────────────────────────────────────────────
-      # Set to 'true' once the Playwright ATS adapters are implemented
+      # ── Auto-Apply Engine ─────────────────────────────────────────────────────
+      # Set to 'true' once the Playwright ATS adapters are fully tested
       - key: ENABLE_AUTO_APPLY
         value: "false"
       - key: APPLY_WORKER_CONCURRENCY

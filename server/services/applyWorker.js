@@ -35,7 +35,7 @@ const PLAN_MONTHLY_LIMITS = {
  * Returns { allowed: boolean, reason?: string }
  */
 function checkQuota(user) {
-  const plan = user.plan || 'basic';
+  const plan = user.plan || 'starter';
   const limit = PLAN_MONTHLY_LIMITS[plan] ?? 50;
   const used  = user.stats?.applicationsThisMonth ?? 0;
 
@@ -126,9 +126,9 @@ async function processJob(job) {
       await emailService.sendQuotaWarning({
         toEmail: user.email,
         userName: user.onboardingData?.s1?.firstName || user.firstName || 'there',
-        plan: user.plan || 'basic',
+        plan: user.plan || 'starter',
         used: user.stats?.applicationsThisMonth ?? 0,
-        limit: PLAN_MONTHLY_LIMITS[user.plan || 'basic'],
+        limit: PLAN_MONTHLY_LIMITS[user.plan || 'starter'],
       }).catch(() => {});
       await User.findByIdAndUpdate(userId, { 'stats.lastQuotaWarningAt': new Date() });
     }

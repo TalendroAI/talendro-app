@@ -33,7 +33,7 @@ const router = express.Router();
 function normalizePlan(plan) {
   if (!plan) return 'starter';
   const p = plan.toLowerCase();
-  if (p === 'premium' || p === 'concierge') return 'concierge';
+  if (p === 'concierge') return 'concierge';
   if (p === 'pro') return 'pro';
   return 'starter';
 }

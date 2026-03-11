@@ -14,8 +14,8 @@ const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY)
   : null;
 
-// Map Stripe plan keys to our User model enum values
-const PLAN_MAP = { starter: 'basic', pro: 'pro', concierge: 'premium' };
+// Plan keys match User model enum values directly: starter | pro | concierge
+const PLAN_MAP = { starter: 'starter', pro: 'pro', concierge: 'concierge' };
 
 // ============================================
 // PRICING CONFIGURATION

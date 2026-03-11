@@ -189,9 +189,9 @@ For each area:
 // ─── Tier gating ─────────────────────────────────────────────────────────────
 
 const TIER_ACCESS = {
-  quick_prep: ['basic', 'pro', 'premium'],
-  full_mock: ['pro', 'premium'],
-  premium_audio: ['premium'],
+  quick_prep: ['starter', 'pro', 'concierge'],
+  full_mock: ['pro', 'concierge'],
+  premium_audio: ['concierge'],
 };
 
 function checkTierAccess(plan, sessionType) {
@@ -252,7 +252,7 @@ router.post('/voice-token', authenticateToken, async (req, res) => {
       return res.status(403).json({
         error: 'Audio Mock Interview requires the Concierge plan.',
         upgrade_required: true,
-        required_plan: 'premium',
+        required_plan: 'concierge',
       });
     }
 
@@ -316,7 +316,7 @@ router.post('/chat', authenticateToken, async (req, res) => {
     }
 
     if (!checkTierAccess(user.plan, session_type)) {
-      const planNames = { basic: 'Starter', pro: 'Pro', premium: 'Concierge' };
+      const planNames = { starter: 'Starter', pro: 'Pro', concierge: 'Concierge' };
       const required = { quick_prep: 'Starter', full_mock: 'Pro', premium_audio: 'Concierge' };
       return res.status(403).json({
         error: `${required[session_type]} plan required for this feature.`,

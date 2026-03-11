@@ -3,7 +3,7 @@ import Job from '../models/Job.js';
 import Company from '../models/Company.js';
 import User from '../models/User.js';
 import { authenticateToken } from '../middleware/auth.js';
-import { getCrawlerStats, triggerDiscovery, triggerCrawl } from '../services/crawlerScheduler.js';
+import { getCrawlerStats, triggerDiscovery, triggerCrawl, triggerUSAJobs } from '../services/crawlerScheduler.js';
 import {
   classifyLocation,
   classifyRarity,
@@ -434,6 +434,12 @@ router.post('/admin/trigger-discovery', authenticateToken, async (req, res) => {
   res.json({ success: true, message: 'Discovery triggered' });
 });
 
+// ─── POST /api/jobs/admin/trigger-usajobs ────────────────────────────────────
+router.post('/admin/trigger-usajobs', authenticateToken, async (req, res) => {
+  triggerUSAJobs();
+  res.json({ success: true, message: 'USAJobs ingestion triggered' });
+});
+
 
 // ─── GET /api/jobs/matches — full above/below-the-line job matches ─────────────
 // This is the primary endpoint for the JobMatches page.
@@ -447,8 +453,8 @@ router.get('/matches', authenticateToken, async (req, res) => {
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
     const tier = (() => {
-      const p = (user.plan || 'basic').toLowerCase();
-      if (p === 'premium' || p === 'concierge') return 'concierge';
+      const p = (user.plan || 'starter').toLowerCase();
+      if (p === 'concierge') return 'concierge';
       if (p === 'pro') return 'pro';
       return 'starter';
     })();

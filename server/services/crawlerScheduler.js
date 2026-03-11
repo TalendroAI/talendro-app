@@ -4,14 +4,18 @@
  * Orchestrates all job ingestion sources on a rotating schedule:
  *
  * Sources:
- *   - Greenhouse ATS (direct API, 225 seeded companies)
- *   - Lever ATS (direct API, 230 seeded companies)
+ *   - Greenhouse ATS (direct API, 300+ seeded companies — startup/tech heavy)
+ *   - Lever ATS (direct API, 230+ seeded companies — startup/tech heavy)
+ *   - Ashby ATS (direct API, 200+ seeded companies — high-growth startups, free public API)
+ *   - SmartRecruiters ATS (direct API, 200+ seeded companies — enterprise/Fortune 500, free public API)
+ *   - USAJobs (federal government, free API with registration — requires USAJOBS_API_KEY)
  *   - Fantastic.jobs (175,000+ career sites via RapidAPI — requires RAPIDAPI_KEY)
  *   - JSearch / Google for Jobs (broad aggregation via RapidAPI — requires RAPIDAPI_KEY)
  *
  * Schedule:
- *   - Company discovery (Greenhouse + Lever): once per day at 2 AM
- *   - ATS crawl batch (Greenhouse + Lever): every 30 minutes
+ *   - Company discovery (all ATS sources): once per day at 2 AM
+ *   - ATS crawl batch (Greenhouse + Lever + Ashby + SmartRecruiters): every 30 minutes
+ *   - USAJobs ingestion: every 60 minutes (offset by 10 min)
  *   - Fantastic.jobs ingestion: every 60 minutes (offset by 15 min from ATS crawl)
  *   - JSearch ingestion: every 60 minutes (offset by 45 min from ATS crawl)
  *   - Stale job cleanup: once per day at 3 AM
@@ -24,6 +28,9 @@ import Job from '../models/Job.js';
 import User from '../models/User.js';
 import { discoverGreenhouseCompanies, crawlGreenhouseCompany } from './greenhouseCrawler.js';
 import { discoverLeverCompanies, crawlLeverCompany } from './leverCrawler.js';
+import { discoverAshbyCompanies, crawlAshbyCompany } from './ashbyCrawler.js';
+import { discoverSmartRecruitersCompanies, crawlSmartRecruitersCompany } from './smartRecruitersCrawler.js';
+import { fetchAndIngestUSAJobs } from './usajobsCrawler.js';
 import { fetchAndIngestFantasticJobs } from './fantasticJobsService.js';
 import { fetchAndIngestJSearchJobs } from './jsearchService.js';
 import { evaluateBatchForUser, TIER_CONFIG } from './jobScoringService.js';
@@ -46,6 +53,7 @@ let isDiscoveryRunning = false;
 let isCrawlRunning = false;
 let isFantasticRunning = false;
 let isJSearchRunning = false;
+let isUSAJobsRunning = false;
 
 let crawlStats = {
   lastRun: null,
@@ -56,6 +64,9 @@ let crawlStats = {
   sources: {
     greenhouse: { lastRun: null, newJobs: 0 },
     lever: { lastRun: null, newJobs: 0 },
+    ashby: { lastRun: null, newJobs: 0 },
+    smartrecruiters: { lastRun: null, newJobs: 0 },
+    usajobs: { lastRun: null, newJobs: 0, skipped: false },
     fantastic: { lastRun: null, newJobs: 0, skipped: false },
     jsearch: { lastRun: null, newJobs: 0, skipped: false }
   }
@@ -92,7 +103,7 @@ async function runSubscriberScoringPass() {
 
   try {
     const subscribers = await User.find({
-      plan: { $in: ['starter', 'pro', 'concierge', 'premium'] },
+      plan: { $in: ['starter', 'pro', 'concierge'] },
       isActive: { $ne: false },
     }).lean();
 
@@ -194,15 +205,19 @@ async function runDiscovery() {
   console.log('[Scheduler] Starting company discovery...');
 
   try {
-    const [ghResult, lvResult] = await Promise.allSettled([
+    const [ghResult, lvResult, ashbyResult, srResult] = await Promise.allSettled([
       discoverGreenhouseCompanies(),
-      discoverLeverCompanies()
+      discoverLeverCompanies(),
+      discoverAshbyCompanies(),
+      discoverSmartRecruitersCompanies()
     ]);
 
     const ghAdded = ghResult.status === 'fulfilled' ? ghResult.value.added : 0;
     const lvAdded = lvResult.status === 'fulfilled' ? lvResult.value.added : 0;
+    const ashbyAdded = ashbyResult.status === 'fulfilled' ? ashbyResult.value.added : 0;
+    const srAdded = srResult.status === 'fulfilled' ? srResult.value.added : 0;
 
-    console.log(`[Scheduler] Discovery complete: +${ghAdded} Greenhouse, +${lvAdded} Lever companies`);
+    console.log(`[Scheduler] Discovery complete: +${ghAdded} Greenhouse, +${lvAdded} Lever, +${ashbyAdded} Ashby, +${srAdded} SmartRecruiters companies`);
   } catch (err) {
     console.error('[Scheduler] Discovery error:', err.message);
   } finally {
@@ -252,6 +267,10 @@ async function runCrawlBatch() {
             result = await crawlGreenhouseCompany(company);
           } else if (company.source === 'lever') {
             result = await crawlLeverCompany(company);
+          } else if (company.source === 'ashby') {
+            result = await crawlAshbyCompany(company);
+          } else if (company.source === 'smartrecruiters') {
+            result = await crawlSmartRecruitersCompany(company);
           }
 
           if (result) {
@@ -310,6 +329,32 @@ async function runFantasticIngestion() {
     console.error('[Scheduler] Fantastic.jobs ingestion error:', err.message);
   } finally {
     isFantasticRunning = false;
+  }
+}
+
+// ─── Run USAJobs ingestion ───────────────────────────────────────────────────
+async function runUSAJobsIngestion() {
+  if (isUSAJobsRunning) {
+    console.log('[Scheduler] USAJobs ingestion already running, skipping');
+    return;
+  }
+  isUSAJobsRunning = true;
+  console.log('[Scheduler] Starting USAJobs ingestion...');
+
+  try {
+    const result = await fetchAndIngestUSAJobs();
+    crawlStats.sources.usajobs = {
+      lastRun: new Date(),
+      newJobs: result.newJobs,
+      skipped: result.skipped || false
+    };
+    if (!result.skipped) {
+      crawlStats.totalActiveJobs = await Job.countDocuments({ isActive: true });
+    }
+  } catch (err) {
+    console.error('[Scheduler] USAJobs ingestion error:', err.message);
+  } finally {
+    isUSAJobsRunning = false;
   }
 }
 
@@ -431,6 +476,12 @@ export function initCrawlerScheduler() {
     runFantasticIngestion();
   });
 
+  // USAJobs ingestion every 60 minutes, offset by 10 min
+  cron.schedule('10 * * * *', () => {
+    console.log('[Scheduler] USAJobs ingestion triggered');
+    runUSAJobsIngestion();
+  });
+
   // JSearch ingestion every 60 minutes, offset by 45 min
   cron.schedule('45 * * * *', () => {
     console.log('[Scheduler] JSearch ingestion triggered');
@@ -486,7 +537,17 @@ export function initCrawlerScheduler() {
     }
   }, 120000);
 
-  // JSearch startup ingestion — 4 minutes after server start
+  // USAJobs startup ingestion — 3 minutes after server start
+  setTimeout(async () => {
+    try {
+      console.log('[Scheduler] Running startup USAJobs ingestion...');
+      await runUSAJobsIngestion();
+    } catch (err) {
+      console.error('[Scheduler] Startup USAJobs ingestion error:', err.message);
+    }
+  }, 180000);
+
+  // JSearch startup ingestion — 5 minutes after server start
   setTimeout(async () => {
     try {
       console.log('[Scheduler] Running startup JSearch ingestion...');
@@ -494,9 +555,9 @@ export function initCrawlerScheduler() {
     } catch (err) {
       console.error('[Scheduler] Startup JSearch ingestion error:', err.message);
     }
-  }, 240000);
+  }, 300000);
 
-  console.log('[Scheduler] Crawler scheduler initialized — sources: Greenhouse, Lever, Fantastic.jobs, JSearch');
+  console.log('[Scheduler] Crawler scheduler initialized — sources: Greenhouse, Lever, Ashby, SmartRecruiters, USAJobs, Fantastic.jobs, JSearch');
 }
 
 // ─── Manual trigger endpoints (for admin use) ─────────────────────────────────
@@ -518,6 +579,10 @@ export async function triggerFantastic() {
 
 export async function triggerJSearch() {
   return runJSearchIngestion();
+}
+
+export async function triggerUSAJobs() {
+  return runUSAJobsIngestion();
 }
 
 export async function triggerScoringPass() {
