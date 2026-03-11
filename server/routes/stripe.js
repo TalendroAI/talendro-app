@@ -24,43 +24,49 @@ const PLAN_MAP = { starter: 'basic', pro: 'pro', concierge: 'premium' };
 const PLANS = {
     starter: {
         name: 'Starter',
-        price: 49,
-        priceId: process.env.STRIPE_PRICE_ID_STARTER_APPLY || 'price_1T6vTTCoFieNARvYAJmPCS4T',
+        price: 79,
+        priceId: process.env.STRIPE_PRICE_ID_STARTER_APPLY || 'price_starter_79',
         features: [
-            '24/7 automated job search',
-            'Up to 100 auto-applications/month',
-            'AI resume tailoring for each job',
+            'ATS-Optimized resume build',
+            'Resume update & optimization',
+            'Automated job search every 4 hours',
             '75%+ match threshold filtering',
-            'Email & SMS job alerts',
-            'Application tracking dashboard'
+            'Application tracking dashboard',
+            'Interview: Quick Prep',
+            'Salary negotiation: Quick Prep',
+            '7-Day money-back guarantee'
         ]
     },
     pro: {
         name: 'Pro',
-        price: 99,
-        priceId: process.env.STRIPE_PRICE_ID_PRO_APPLY || 'price_1T6vTTCoFieNARvY7qN7JUPE',
+        price: 149,
+        priceId: process.env.STRIPE_PRICE_ID_PRO_APPLY || 'price_pro_149',
         features: [
-            'Everything in Starter',
-            'Unlimited auto-applications',
-            'Real-time alerts (every 30 min)',
-            'Priority apply — first to submit',
-            'Advanced AI matching & scoring',
-            'Interview prep resources',
-            'Detailed analytics & insights'
+            'ATS + Branded resume build',
+            'Resume update & optimization',
+            'Automated job search every 1 hour',
+            '75%+ match threshold filtering',
+            'Application tracking dashboard',
+            'Interview: Full Mock (text-based)',
+            'Salary negotiation: AI text role-play',
+            '7-Day money-back guarantee'
         ]
     },
     concierge: {
         name: 'Concierge',
-        price: 499,
-        priceId: process.env.STRIPE_PRICE_ID_CONCIERGE_APPLY || 'price_1T6vTUCoFieNARvYWFtOpeeh',
+        price: 299,
+        priceId: process.env.STRIPE_PRICE_ID_CONCIERGE_APPLY || 'price_concierge_299',
         features: [
-            'Everything in Pro',
-            'Dedicated success manager',
-            'Custom outreach to hiring managers',
-            'Salary negotiation support',
+            'Executive resume package',
+            'Resume update & optimization',
+            'Automated job search every 30 minutes',
+            '75%+ match threshold filtering',
+            'Application tracking dashboard',
+            'Interview: Audio Mock (voice-based)',
+            'Salary negotiation: AI voice role-play',
             'LinkedIn profile optimization',
-            'Weekly strategy calls',
-            'Priority 24/7 support'
+            'Weekly AI strategy session',
+            '7-Day money-back guarantee'
         ]
     }
 };

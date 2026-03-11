@@ -41,8 +41,10 @@ async function apiPost(path, body) {
 
 const PLAN_TIERS = { basic: 1, pro: 2, premium: 3 };
 
+// Each interview type is exclusive to exactly one tier — no upward inheritance.
+// Starter → Quick Prep only; Pro → Full Mock only; Concierge → Audio Mock only.
 function canAccess(userPlan, requiredPlan) {
-  return (PLAN_TIERS[userPlan] || 0) >= (PLAN_TIERS[requiredPlan] || 0);
+  return (PLAN_TIERS[userPlan] || 0) === (PLAN_TIERS[requiredPlan] || 0);
 }
 
 // ─── Session type config ──────────────────────────────────────────────────────
@@ -55,7 +57,7 @@ const SESSION_TYPES = [
     tagline: 'AI-generated prep packet in minutes',
     description: 'Get a comprehensive prep packet with tailored interview questions, STAR-method answer frameworks, company research, and key talking points — all generated specifically for the job you\'re applying to.',
     requiredPlan: 'basic',
-    planLabel: 'All Plans',
+    planLabel: 'Starter',
     color: 'blue',
   },
   {
@@ -65,7 +67,7 @@ const SESSION_TYPES = [
     tagline: '10-question text interview with AI feedback',
     description: 'Practice with Sarah, your AI interview coach. She\'ll ask 10 tailored questions, give you real-time feedback on each answer, and provide a detailed performance analysis at the end.',
     requiredPlan: 'pro',
-    planLabel: 'Pro & Concierge',
+    planLabel: 'Pro',
     color: 'indigo',
   },
   {
@@ -75,7 +77,7 @@ const SESSION_TYPES = [
     tagline: 'Voice-to-voice interview with Sarah',
     description: 'The most realistic practice experience. Speak your answers naturally and Sarah responds in real-time with her voice. Includes full transcript and performance analysis.',
     requiredPlan: 'premium',
-    planLabel: 'Concierge Only',
+    planLabel: 'Concierge',
     color: 'purple',
   },
 ];

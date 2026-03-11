@@ -64,9 +64,11 @@ Talendro is **production-ready** for go-to-market. The custom domain is live wit
 
 | Plan | Price | Stripe Price ID |
 |---|---|---|
-| Starter | $49/month | `price_1T6vTTCoFieNARvYAJmPCS4T` |
-| Pro | $99/month | `price_1T6vTTCoFieNARvY7qN7JUPE` |
-| Concierge | $499/month | `price_1T6vTUCoFieNARvYWFtOpeeh` |
+| Starter | **$79/month** | `price_starter_79` ← **Update in Stripe Dashboard** |
+| Pro | **$149/month** | `price_pro_149` ← **Update in Stripe Dashboard** |
+| Concierge | **$299/month** | `price_concierge_299` ← **Update in Stripe Dashboard** |
+
+> **Action required:** Create new prices in the Stripe Dashboard for each product at the above amounts, then update `STRIPE_PRICE_ID_STARTER_APPLY`, `STRIPE_PRICE_ID_PRO_APPLY`, and `STRIPE_PRICE_ID_CONCIERGE_APPLY` in the Render environment variables with the new price IDs.
 
 ### Checkout Flow
 

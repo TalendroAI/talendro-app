@@ -48,7 +48,8 @@ export default function SalaryNegotiation() {
   const { user: authUser } = useAuth();
   const userPlan = authUser?.plan || localStorage.getItem('talendro_plan') || 'basic';
   const isConcierge = userPlan === 'premium';
-  const isPro = userPlan === 'pro' || isConcierge;
+  const isPro = userPlan === 'pro';
+  const isStarter = userPlan === 'basic';
 
   const [mode, setMode] = useState('setup'); // 'setup' | 'analyze' | 'chat'
   const [loading, setLoading] = useState(false);
@@ -174,22 +175,10 @@ export default function SalaryNegotiation() {
   };
 
   // ── Plan gate ───────────────────────────────────────────────────────────────
-  if (!isPro) {
-    return (
-      <div style={{ minHeight: '100vh', background: C.lightBg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-        <div style={{ maxWidth: 480, textAlign: 'center' }}>
-          <div style={{ fontSize: 56, marginBottom: 16 }}>💰</div>
-          <h2 style={{ fontSize: 24, fontWeight: 800, color: C.slate, marginBottom: 8, fontFamily: "'Montserrat', sans-serif" }}>Salary Negotiation Coach</h2>
-          <p style={{ fontSize: 15, color: C.gray, marginBottom: 24 }}>
-            AI-powered negotiation coaching is available on Pro and Concierge plans. Get exact counter-offer scripts, market analysis, and multi-round coaching.
-          </p>
-          <a href="/app/billing" style={{ display: 'inline-block', padding: '12px 28px', background: C.blue, color: C.white, borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: 'none' }}>
-            Upgrade to Pro →
-          </a>
-        </div>
-      </div>
-    );
-  }
+  // Starter: Quick Prep (AI prep packet only — no live coaching)
+  // Pro: AI text role-play coaching
+  // Concierge: AI voice role-play coaching
+  // All plans have access to some form of salary negotiation support.
 
   return (
     <div style={{ minHeight: '100vh', background: C.lightBg, fontFamily: "'Inter', sans-serif" }}>
@@ -203,7 +192,7 @@ export default function SalaryNegotiation() {
               Salary Negotiation Coach
             </h1>
             <p style={{ margin: '2px 0 0', fontSize: 13, color: C.gray }}>
-              {isConcierge ? 'Multi-round coaching · Concierge' : 'Counter-offer guidance · Pro'}
+              {isConcierge ? 'AI voice role-play · Concierge' : isPro ? 'AI text role-play · Pro' : 'Quick Prep · Starter'}
             </p>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
