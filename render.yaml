@@ -13,9 +13,9 @@ services:
       - key: PORT
         sync: false
       - key: FRONTEND_URL
-        sync: false
+        value: https://talendro.com
       - key: DOMAIN
-        sync: false
+        value: talendro.com
 
       # ── Database ─────────────────────────────────────────────────────────────
       - key: MONGODB_URI
@@ -36,24 +36,31 @@ services:
       # ── Stripe Billing ───────────────────────────────────────────────────────
       - key: STRIPE_SECRET_KEY
         sync: false
-      - key: STRIPE_PRICE_ID_BASIC
+      # Price IDs — must match the env var names used in server/routes/stripe.js
+      - key: STRIPE_PRICE_ID_STARTER_APPLY
         sync: false
-      - key: STRIPE_PRICE_ID_PRO
+      - key: STRIPE_PRICE_ID_PRO_APPLY
         sync: false
-      - key: STRIPE_PRICE_ID_PREMIUM
+      - key: STRIPE_PRICE_ID_CONCIERGE_APPLY
         sync: false
       - key: STRIPE_WEBHOOK_SECRET
         sync: false
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
 
       # ── Email (Resend) ────────────────────────────────────────────────────────
-      # TODO (Task 1.7): Add RESEND_API_KEY to Render dashboard and uncomment below
       - key: RESEND_API_KEY
         sync: false
       - key: EMAIL_FROM
+        value: support@talendro.com
+
+      # ── Job Sources (RapidAPI) ────────────────────────────────────────────────
+      # Required for Fantastic.jobs and JSearch ingestion (175K+ career sites)
+      - key: RAPIDAPI_KEY
         sync: false
 
       # ── Auto-Apply Engine ────────────────────────────────────────────────────
-      # Set to 'true' once the Playwright ATS adapters are implemented (Task 1.4)
+      # Set to 'true' once the Playwright ATS adapters are implemented
       - key: ENABLE_AUTO_APPLY
         value: "false"
       - key: APPLY_WORKER_CONCURRENCY
