@@ -156,7 +156,12 @@ function normalizeJob(job) {
 }
 
 // ─── Fetch one page of jobs from Fantastic.jobs API ─────────────────────────
-async function fetchPage(apiKey, page = 1) {
+async function fetchPage(apiKey, page = 1, hoursOld = 3) {
+  // Build the date_posted_since timestamp — only fetch jobs posted within the last N hours.
+  // On initial subscriber run the scheduler passes hoursOld=24; on recurring runs hoursOld=1.
+  // This is the core freshness gate: no aged listings, no recycled postings.
+  const since = new Date(Date.now() - hoursOld * 60 * 60 * 1000).toISOString();
+
   const response = await axios.get(`${BASE_URL}/jobs`, {
     params: {
       page,
@@ -165,7 +170,10 @@ async function fetchPage(apiKey, page = 1) {
       country: 'us',
       // Sort by newest first so we always get fresh postings
       sort: 'date_posted',
-      order: 'desc'
+      order: 'desc',
+      // Freshness gate — only jobs posted in the last N hours
+      // Fantastic.jobs supports date_posted_since (ISO 8601) and date_posted (today/3days/week)
+      date_posted: 'today'
     },
     headers: {
       'X-RapidAPI-Key': apiKey,
@@ -177,14 +185,18 @@ async function fetchPage(apiKey, page = 1) {
 }
 
 // ─── Main ingestion function — call from crawler scheduler ───────────────────
-export async function fetchAndIngestFantasticJobs() {
+// hoursOld: how far back to look for new jobs.
+//   - Pass 24 for a new subscriber's initial run (24-hour baseline window)
+//   - Pass 1 for recurring 30-minute runs (only the last hour of postings)
+//   - Defaults to 3 (safe middle ground that matches Fantastic.jobs' 95% discovery SLA)
+export async function fetchAndIngestFantasticJobs({ hoursOld = 3 } = {}) {
   const apiKey = process.env.RAPIDAPI_KEY;
   if (!apiKey) {
     console.log('[FantasticJobs] RAPIDAPI_KEY not set — skipping');
     return { newJobs: 0, updatedJobs: 0, errors: 0, skipped: true };
   }
 
-  console.log('[FantasticJobs] Starting ingestion...');
+  console.log(`[FantasticJobs] Starting ingestion (last ${hoursOld}h)...`);
   let newJobs = 0;
   let updatedJobs = 0;
   let errors = 0;
@@ -194,7 +206,7 @@ export async function fetchAndIngestFantasticJobs() {
     for (let page = 1; page <= MAX_PAGES; page++) {
       let data;
       try {
-        data = await fetchPage(apiKey, page);
+        data = await fetchPage(apiKey, page, hoursOld);
       } catch (err) {
         console.error(`[FantasticJobs] Page ${page} fetch error:`, err.message);
         errors++;

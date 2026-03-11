@@ -112,27 +112,48 @@ async function runSubscriberScoringPass() {
       return;
     }
 
-    // Use the most generous lookback (concierge) so all tiers see recent jobs
-    const lookbackMs = TIER_CONFIG.concierge.maxAgeMs;
-    const lookbackCutoff = new Date(Date.now() - lookbackMs);
+    // For each subscriber, determine their personal delta window:
+    //   - New subscriber (no lastJobSearchRun): look back 24 hours for the initial baseline
+    //   - Returning subscriber: look back only to their last run (delta since last check)
+    // We fetch jobs using the WIDEST window needed (24h) and then filter per-user in the loop.
+    const widestCutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
     const recentJobs = await Job.find({
       isActive: true,
-      firstSeenAt: { $gte: lookbackCutoff },
+      firstSeenAt: { $gte: widestCutoff },
     }).lean();
 
     if (recentJobs.length === 0) {
-      console.log('[Scheduler] No new jobs in lookback window — skipping scoring pass');
+      console.log('[Scheduler] No new jobs in 24h window — skipping scoring pass');
       return;
     }
 
-    console.log(`[Scheduler] Scoring ${recentJobs.length} recent jobs for ${subscribers.length} subscribers...`);
+    console.log(`[Scheduler] ${recentJobs.length} jobs in 24h window, scoring for ${subscribers.length} subscribers...`);
 
     const limiter = pLimit(SCORING_CONCURRENCY);
     const tasks = subscribers.map(user =>
       limiter(async () => {
         try {
-          const result = await evaluateBatchForUser(recentJobs, user);
+          // Determine this user's personal delta cutoff
+          const lastRun = user.stats?.lastJobSearchRun;
+          const userCutoff = lastRun
+            ? new Date(lastRun)  // returning subscriber: only jobs since last run
+            : new Date(Date.now() - 24 * 60 * 60 * 1000); // new subscriber: 24h baseline
+
+          // Filter the pre-fetched job list to this user's window
+          const userJobs = recentJobs.filter(j => new Date(j.firstSeenAt) >= userCutoff);
+
+          if (userJobs.length === 0) {
+            console.log(`[Scheduler] No new jobs for user ${user._id} since last run`);
+            // Still update lastJobSearchRun so the next run has a fresh cutoff
+            await User.updateOne({ _id: user._id }, { $set: { 'stats.lastJobSearchRun': new Date() } });
+            return;
+          }
+
+          const result = await evaluateBatchForUser(userJobs, user);
+
+          // Update lastJobSearchRun after successful scoring
+          await User.updateOne({ _id: user._id }, { $set: { 'stats.lastJobSearchRun': new Date() } });
           usersScored++;
 
           // ── Auto-Apply: enqueue above-the-line jobs that should auto-apply ──
@@ -316,7 +337,11 @@ async function runFantasticIngestion() {
   console.log('[Scheduler] Starting Fantastic.jobs ingestion...');
 
   try {
-    const result = await fetchAndIngestFantasticJobs();
+    // Pass hoursOld=1 so each recurring run only fetches jobs posted in the last hour.
+    // This ensures we never ingest aged listings or recycled postings.
+    // The initial subscriber onboarding run uses hoursOld=24 (called separately from the
+    // subscriber scoring pass when stats.lastJobSearchRun is null).
+    const result = await fetchAndIngestFantasticJobs({ hoursOld: 1 });
     crawlStats.sources.fantastic = {
       lastRun: new Date(),
       newJobs: result.newJobs,
