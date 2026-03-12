@@ -173,6 +173,37 @@ async function processJob(job) {
     coverLetter,
   });
 
+  // ── Step 5b: Handle CAPTCHA-blocked applications ────────────────────────
+  // When all adapter layers fail due to CAPTCHA, record the block and notify
+  // the user with a direct link so they can complete the application manually.
+  // This ensures zero silent failures — every blocked application is surfaced.
+  if (!result.success && result.captchaBlocked) {
+    console.warn(`[applyWorker] CAPTCHA blocked — recording and notifying user: ${applyUrl}`);
+    await Application.findOneAndUpdate(
+      { userId, jobId },
+      {
+        userId, jobId,
+        status: 'captcha_blocked',
+        errorMessage: result.error || 'Application blocked by CAPTCHA. Please complete manually.',
+        tailoredResumeSnapshot: tailoredResume,
+        coverLetterSnapshot: coverLetter,
+        atsType, applyUrl,
+        updatedAt: new Date(),
+      },
+      { upsert: true, new: true }
+    );
+    // Notify user with direct link to complete the application manually
+    await emailService.sendCaptchaBlockedNotification({
+      toEmail: user.email,
+      userName: user.onboardingData?.s1?.firstName || user.firstName || 'there',
+      jobTitle: jobDoc.title,
+      companyName: jobDoc.company,
+      applyUrl,
+      coverLetterSnapshot: coverLetter,
+    }).catch(err => console.warn('[applyWorker] CAPTCHA blocked email failed (non-fatal):', err.message));
+    return;
+  }
+
   // ── Step 6: Record application in MongoDB ────────────────────────────────
   await Application.findOneAndUpdate(
     { userId, jobId },

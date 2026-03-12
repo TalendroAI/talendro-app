@@ -41,9 +41,15 @@ const ApplicationSchema = new mongoose.Schema({
   jobUrl: { type: String, default: '' },
   source: { type: String, default: 'manual' }, // greenhouse, lever, manual, linkedin, indeed, etc.
   // Status tracking
+  // 'applied'         — auto-apply succeeded
+  // 'captcha_blocked' — CAPTCHA could not be solved; user notified to complete manually
+  // 'quota_blocked'   — user's monthly application limit reached
+  // 'error'           — general application failure
+  // 'saved'           — user saved but not yet applied
+  // All other values  — post-application pipeline stages
   status: {
     type: String,
-    enum: ['saved', 'applied', 'phone_screen', 'interview', 'technical', 'offer', 'rejected', 'withdrawn'],
+    enum: ['saved', 'applied', 'phone_screen', 'interview', 'technical', 'offer', 'rejected', 'withdrawn', 'captcha_blocked', 'quota_blocked', 'error'],
     default: 'applied',
     index: true
   },
@@ -56,6 +62,12 @@ const ApplicationSchema = new mongoose.Schema({
   notes: { type: String, default: '' },
   // Match score at time of application
   matchScore: { type: Number, default: null },
+  // Auto-apply system fields
+  atsType: { type: String, default: null },           // 'greenhouse' | 'lever' | 'generic' | etc.
+  errorMessage: { type: String, default: null },      // Error or CAPTCHA block message
+  warning: { type: String, default: null },           // Non-fatal warning (e.g., confirmation uncertain)
+  tailoredResumeSnapshot: { type: String, default: null }, // Resume text used for this application
+  coverLetterSnapshot: { type: String, default: null },    // Cover letter text used for this application
   // Flags
   isFavorite: { type: Boolean, default: false },
   // Timestamps

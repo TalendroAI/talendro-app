@@ -5,40 +5,36 @@
  *
  * Uses best-effort heuristics to fill in application forms by targeting
  * common field name patterns that appear across most ATS platforms.
- * Handles a significant percentage of simple application forms.
+ *
+ * Now includes:
+ *   - Stealth browser fingerprinting (stealthBrowser.js)
+ *   - Integrated CAPTCHA solving via CapSolver (captchaSolver.js)
+ *   - Human-like typing delays
+ *   - captcha_blocked status for unresolvable CAPTCHAs
  * ─────────────────────────────────────────────────────────────────────────────
  */
-
-import { chromium } from 'playwright';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
+import { launchStealthBrowser, humanDelay, detectCaptcha } from './stealthBrowser.js';
+import { autoSolveCaptcha } from './captchaSolver.js';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
 async function writeTempFile(content, filename) {
   const tmpDir = os.tmpdir();
   const filePath = path.join(tmpDir, `talendro_${Date.now()}_${filename}`);
   fs.writeFileSync(filePath, content, 'utf8');
   return filePath;
 }
-
 function cleanupTempFile(filePath) {
-  try {
-    if (filePath && fs.existsSync(filePath)) fs.unlinkSync(filePath);
-  } catch (e) {}
+  try { if (filePath && fs.existsSync(filePath)) fs.unlinkSync(filePath); } catch (_) {}
 }
-
 function getUserName(user) {
   const firstName = user.onboardingData?.s1?.firstName || user.firstName || (user.name || '').split(' ')[0] || '';
   const lastName  = user.onboardingData?.s1?.lastName  || user.lastName  || (user.name || '').split(' ').slice(1).join(' ') || '';
   return { firstName, lastName };
 }
 
-/**
- * Try to fill a field using multiple selector patterns.
- * Returns true if a field was found and filled.
- */
 async function tryFill(page, selectors, value) {
   if (!value) return false;
   for (const selector of selectors) {
@@ -46,31 +42,29 @@ async function tryFill(page, selectors, value) {
       const el = page.locator(selector).first();
       if (await el.count() > 0 && await el.isVisible()) {
         await el.fill(value);
+        await humanDelay(100, 300);
         return true;
       }
-    } catch (e) {}
+    } catch (_) {}
   }
   return false;
 }
 
-/**
- * Try to upload a file using multiple selector patterns.
- */
 async function tryUpload(page, selectors, filePath) {
   for (const selector of selectors) {
     try {
       const el = page.locator(selector).first();
       if (await el.count() > 0) {
         await el.setInputFiles(filePath);
+        await humanDelay(300, 800);
         return true;
       }
-    } catch (e) {}
+    } catch (_) {}
   }
   return false;
 }
 
 // ─── Main Apply Function ──────────────────────────────────────────────────────
-
 /**
  * Apply to a job posting using generic form-filling heuristics.
  * @param {Object} params
@@ -79,31 +73,35 @@ async function tryUpload(page, selectors, filePath) {
  * @param {string} params.applyUrl       - Direct URL to the application form
  * @param {string} params.tailoredResume - AI-tailored resume text for this job
  * @param {string} params.coverLetter    - AI-generated cover letter for this job
- * @returns {Promise<{success: boolean, error?: string}>}
+ * @returns {Promise<{success: boolean, error?: string, captchaBlocked?: boolean}>}
  */
 async function apply({ user, jobDoc, applyUrl, tailoredResume, coverLetter }) {
   console.log(`[genericAdapter] Attempting generic apply to: ${applyUrl}`);
-
-  let browser;
-  let resumePath;
-
+  let browser, resumePath;
   try {
-    browser = await chromium.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    });
+    const stealth = await launchStealthBrowser();
+    browser = stealth.browser;
+    const page = stealth.page;
 
-    const context = await browser.newContext({
-      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    });
-    const page = await context.newPage();
-
+    await humanDelay(500, 1500);
     await page.goto(applyUrl, { waitUntil: 'networkidle', timeout: 30000 });
+    await humanDelay(800, 2000);
 
-    const pageTitle = await page.title();
-    if (pageTitle.toLowerCase().includes('access denied') || pageTitle.toLowerCase().includes('captcha')) {
-      await browser.close();
-      return { success: false, error: 'Access denied or CAPTCHA detected. Manual application required.' };
+    // CAPTCHA check
+    let captchaType = await detectCaptcha(page);
+    if (captchaType) {
+      console.log(`[genericAdapter] CAPTCHA detected (${captchaType}) — attempting auto-solve`);
+      const solveResult = await autoSolveCaptcha(page, captchaType);
+      if (!solveResult.solved) {
+        await browser.close();
+        return { success: false, captchaBlocked: true, error: `CAPTCHA (${captchaType}) could not be auto-solved. Manual application required.` };
+      }
+      await humanDelay(1000, 2000);
+      captchaType = await detectCaptcha(page);
+      if (captchaType) {
+        await browser.close();
+        return { success: false, captchaBlocked: true, error: `CAPTCHA persists after solve attempt. Manual application required.` };
+      }
     }
 
     const { firstName, lastName } = getUserName(user);
@@ -186,7 +184,18 @@ async function apply({ user, jobDoc, applyUrl, tailoredResume, coverLetter }) {
     const requiredCheckboxes = await page.locator('input[type="checkbox"][required]').all();
     for (const checkbox of requiredCheckboxes) {
       const isChecked = await checkbox.isChecked();
-      if (!isChecked) await checkbox.check().catch(() => {});
+      if (!isChecked) { await checkbox.check(); await humanDelay(100, 300); }
+    }
+
+    // ── Pre-submit CAPTCHA check ──────────────────────────────────────────────
+    const preSubmitCaptcha = await detectCaptcha(page);
+    if (preSubmitCaptcha) {
+      const solveResult = await autoSolveCaptcha(page, preSubmitCaptcha);
+      if (!solveResult.solved) {
+        await browser.close(); cleanupTempFile(resumePath);
+        return { success: false, captchaBlocked: true, error: `Pre-submit CAPTCHA could not be solved. Manual application required.` };
+      }
+      await humanDelay(1000, 2000);
     }
 
     // ── Submit ────────────────────────────────────────────────────────────────
@@ -197,11 +206,11 @@ async function apply({ user, jobDoc, applyUrl, tailoredResume, coverLetter }) {
     ).first();
 
     if (await submitButton.count() === 0) {
-      await browser.close();
-      cleanupTempFile(resumePath);
+      await browser.close(); cleanupTempFile(resumePath);
       return { success: false, error: 'Submit button not found. This form may require manual completion.' };
     }
 
+    await humanDelay(500, 1500);
     await submitButton.click();
 
     try {
@@ -212,13 +221,11 @@ async function apply({ user, jobDoc, applyUrl, tailoredResume, coverLetter }) {
 
     const pageContent = await page.content();
     const confirmed = /thank you|application.*submitted|successfully.*applied|we.*received|confirmation/i.test(pageContent);
-
-    await browser.close();
-    cleanupTempFile(resumePath);
-
+    await browser.close(); cleanupTempFile(resumePath);
     console.log(`[genericAdapter] ${confirmed ? '✅' : '⚠️'} Generic apply to ${applyUrl} ${confirmed ? 'confirmed' : 'submitted (confirmation uncertain)'}`);
     return {
       success: true,
+      method: 'generic_browser',
       warning: confirmed ? undefined : 'Form submitted but confirmation text not detected. Application likely submitted.',
     };
 

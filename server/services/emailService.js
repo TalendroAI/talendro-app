@@ -544,7 +544,54 @@ async function sendWeeklyDigest({ toEmail, userName, plan, applicationsThisWeek 
   });
 }
 
-// ─── Exports ──────────────────────────────────────────────────────────────────
+// ─── CAPTCHA Blocked Notification ────────────────────────────────────────────────────
+
+/**
+ * Notify user that an application was blocked by CAPTCHA and needs manual completion.
+ * Includes the job link and a pre-written cover letter to make it as easy as possible.
+ */
+async function sendCaptchaBlockedNotification({ toEmail, userName, jobTitle, companyName, applyUrl, coverLetterSnapshot }) {
+  const firstName = (userName || 'there').split(' ')[0];
+  const dashboardUrl = `${FRONTEND_URL}/app/jobs`;
+
+  const bodyHtml = `
+    <h2 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#2C2F38;">One application needs your help</h2>
+    <p style="margin:0 0 20px;font-size:14px;color:#6B7280;">
+      Hi ${firstName}, Talendro tried to apply to the role below but encountered a CAPTCHA verification that requires a real person to complete. Everything else is ready — just click the button and submit.
+    </p>
+    <div style="background:#f8f9fa;border-radius:12px;padding:20px;margin-bottom:24px;border-left:4px solid ${BRAND_BLUE};">
+      <div style="font-size:16px;font-weight:700;color:#2C2F38;">${jobTitle}</div>
+      <div style="font-size:14px;color:#6B7280;margin-top:4px;">${companyName}</div>
+    </div>
+    <p style="margin:0 0 16px;font-size:14px;color:#374151;">
+      Your tailored cover letter is ready below. Click the button, complete the CAPTCHA, paste in your cover letter, and submit. It takes under two minutes.
+    </p>
+    <table cellpadding="0" cellspacing="0" style="margin:0 0 28px;">
+      <tr>
+        <td style="background:${BRAND_BLUE};border-radius:10px;padding:14px 36px;">
+          <a href="${applyUrl}" style="color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;display:block;">Complete This Application →</a>
+        </td>
+      </tr>
+    </table>
+    ${coverLetterSnapshot ? `
+    <div style="background:#f0f7ff;border-radius:12px;padding:20px;margin-bottom:24px;">
+      <div style="font-size:12px;font-weight:700;color:${BRAND_BLUE};margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px;">Your tailored cover letter (ready to paste)</div>
+      <div style="font-size:13px;color:#374151;white-space:pre-line;line-height:1.7;">${coverLetterSnapshot.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+    </div>` : ''}
+    <p style="margin:0;font-size:12px;color:#9FA6B2;">
+      This role appears as <strong>Needs Attention</strong> in your <a href="${dashboardUrl}" style="color:${BRAND_BLUE};">dashboard</a>.
+    </p>`;
+
+  const html = wrapEmail(bodyHtml, `Action needed: complete your application to ${jobTitle} at ${companyName}`);
+  return sendEmail({
+    to: toEmail,
+    subject: `⚠️ Action needed: complete your application to ${jobTitle} at ${companyName}`,
+    html,
+    text: `Hi ${firstName},\n\nTalendro tried to apply to ${jobTitle} at ${companyName} but hit a CAPTCHA that needs your help.\n\nComplete the application here: ${applyUrl}\n\nYour cover letter:\n${coverLetterSnapshot || '(not available)'}`,
+  });
+}
+
+// ─── Exports ────────────────────────────────────────────────────────────────────────────────
 
 export default {
   sendApplicationConfirmation,
@@ -556,4 +603,5 @@ export default {
   sendDocumentsReady,
   sendRareRoleAlert,
   sendWeeklyDigest,
+  sendCaptchaBlockedNotification,
 };
