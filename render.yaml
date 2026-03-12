@@ -72,8 +72,8 @@ services:
         sync: false
 
       # ── Auto-Apply Engine ─────────────────────────────────────────────────────
-      # Set to 'true' once the Playwright ATS adapters are fully tested
+      # Auto-apply engine is active — stealth browser + CAPTCHA solver + IQA service
       - key: ENABLE_AUTO_APPLY
-        value: "false"
+        value: "true"
       - key: APPLY_WORKER_CONCURRENCY
         value: "2"
