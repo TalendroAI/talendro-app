@@ -9,7 +9,7 @@ export default function Page(){
         <div className="space-y-6">
           <div className="card">
             <h3 className="h3 mb-3">Who is Talendro™ for?</h3>
-            <p className="body">Anyone in the US workforce who is unemployed, underemployed, or unhappily employed and wants to find a better opportunity. Talendro™ serves every career level — from entry-level candidates to C-suite executives, across every industry and occupation type. If you need a job and want the process automated, Talendro™ is built for you.</p>
+            <p className="body">Anyone in the US workforce who is unemployed, underemployed, or unhappily employed and wants to find a better opportunity. Talendro™ serves every career level and occupation type, across every industry. If you need a job and want the process automated, Talendro™ is built for you.</p>
           </div>
           
           <div className="card">
@@ -39,7 +39,7 @@ export default function Page(){
           
           <div className="card">
             <h3 className="h3 mb-3">What makes this different from other job sites?</h3>
-            <p className="body">Unlike passive job boards, Talendro™ actively searches, tailors, and applies on your behalf — 24 hours a day, 7 days a week. Built by recruitment industry veterans with 20+ years of placement experience across every level of the workforce, from entry-level to executive.</p>
+            <p className="body">Unlike passive job boards, Talendro™ actively searches, tailors, and applies on your behalf — 24 hours a day, 7 days a week. Built by recruitment industry veterans with 20+ years of placement experience across every level and type of work.</p>
           </div>
           
           <div className="card">

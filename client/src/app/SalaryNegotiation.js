@@ -253,12 +253,11 @@ export default function SalaryNegotiation() {
                   style={{ width: '100%', border: '1.5px solid #e5e7eb', borderRadius: 8, padding: '10px 12px', fontSize: 14, fontFamily: "'Inter', sans-serif", background: C.white, outline: 'none' }}
                 >
                   <option value="">Select level...</option>
-                  <option value="entry">Entry Level (0–2 years)</option>
-                  <option value="mid">Mid Level (3–5 years)</option>
-                  <option value="senior">Senior (6–10 years)</option>
-                  <option value="staff">Staff / Principal (10+ years)</option>
-                  <option value="director">Director / VP</option>
-                  <option value="executive">C-Suite / Executive</option>
+                  <option value="entry">0–2 years</option>
+                  <option value="mid">3–5 years</option>
+                  <option value="senior">6–10 years</option>
+                  <option value="staff">11–20 years</option>
+                  <option value="director">20+ years</option>
                 </select>
               </div>
 

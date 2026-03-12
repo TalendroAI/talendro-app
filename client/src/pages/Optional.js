@@ -39,10 +39,10 @@ export default function Page(){
           
           <div className="card">
             <h3 className="h3 mb-3">🤝 AI Career Concierge</h3>
-            <p className="body mb-4">White-glove career management for executives and senior professionals. Dedicated support for complex career decisions and strategic moves.</p>
+            <p className="body mb-4">White-glove career management for anyone navigating a complex or high-stakes career move. Dedicated support for strategic decisions at any level.</p>
             <div className="space-y-2">
               <p className="body text-sm flex items-start"><span className="text-talAqua mr-3">●</span>One-on-one strategic career consulting</p>
-              <p className="body text-sm flex items-start"><span className="text-talAqua mr-3">●</span>Executive search firm relationship management</p>
+              <p className="body text-sm flex items-start"><span className="text-talAqua mr-3">●</span>Recruiter and search firm relationship management</p>
               <p className="body text-sm flex items-start"><span className="text-talAqua mr-3">●</span>Confidential career transition planning</p>
             </div>
           </div>

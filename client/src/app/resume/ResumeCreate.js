@@ -271,7 +271,7 @@ export default function ResumeCreate() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" }}>
         <Input label="Target Job Title *" value={goals.targetTitle} onChange={v => setGoals(p => ({ ...p, targetTitle: v }))} placeholder="Senior Product Manager" />
         <Input label="Target Industry" value={goals.targetIndustry} onChange={v => setGoals(p => ({ ...p, targetIndustry: v }))} placeholder="Technology, Healthcare, Finance..." />
-        <Select label="Career Level" value={goals.careerLevel} onChange={v => setGoals(p => ({ ...p, careerLevel: v }))} options={["Entry Level (0–2 years)", "Mid Level (3–7 years)", "Senior Level (8–15 years)", "Executive / Director", "C-Suite"]} placeholder="Select level..." />
+        <Select label="Years of Experience" value={goals.careerLevel} onChange={v => setGoals(p => ({ ...p, careerLevel: v }))} options={["0–2 years", "3–5 years", "6–10 years", "11–20 years", "20+ years"]} placeholder="Select level..." />
         <Select label="Employment Type" value={goals.workType} onChange={v => setGoals(p => ({ ...p, workType: v }))} options={["Full-Time", "Part-Time", "Contract / Freelance", "Internship", "Temporary"]} placeholder="Select type..." />
         <Select label="Work Arrangement" value={goals.arrangement} onChange={v => setGoals(p => ({ ...p, arrangement: v }))} options={["On-site", "Remote", "Hybrid", "Open to Any"]} placeholder="Select arrangement..." />
         <div />

@@ -18,7 +18,7 @@ export default function Page(){
               <div className="md:w-2/3">
                 <h3 className="h3 mb-2">K. Greg Jackson</h3>
                 <p className="font-medium text-talBlue mb-3">Founder & CEO</p>
-                <p className="body mb-4">Greg brings over 20 years of recruitment leadership experience, having placed thousands of professionals in roles ranging from individual contributors to C-suite executives. His career spans blue-chip companies including IBM, American Airlines, Cox Communications, and HealthTrust.</p>
+                <p className="body mb-4">Greg brings over 20 years of recruitment leadership experience, having placed thousands of people in roles across every level and industry—from entry-level positions to senior leadership. His career spans blue-chip companies including IBM, American Airlines, Cox Communications, and HealthTrust.</p>
                 <p className="body mb-4">As a pioneering force in AI-driven hiring at IBM, Greg earned his AI Blackbelt certification and led the transformation of talent acquisition processes for enterprise-scale organizations. He understands both the technical possibilities of AI and the human realities of career transitions.</p>
                 <p className="body">As a veteran himself, Greg is passionate about supporting fellow service members and every American worker who deserves better tools for navigating the job market. This personal mission — to level the playing field for the entire US workforce — drives every decision at Talendro™.</p>
               </div>
@@ -38,7 +38,7 @@ export default function Page(){
               </div>
               <div>
                 <h4 className="font-medium mb-2 text-talBlue">Career Transition Specialists</h4>
-                <p className="body text-sm">Executive coaches and career counselors with decades of experience helping professionals navigate complex career changes and transitions.</p>
+                <p className="body text-sm">Career coaches and counselors with decades of experience helping people at every level navigate career changes and transitions.</p>
               </div>
               <div>
                 <h4 className="font-medium mb-2 text-talBlue">Veteran Advocates</h4>

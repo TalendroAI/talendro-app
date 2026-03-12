@@ -59,7 +59,7 @@ const PLAN_DETAILS = {
     bg: '#FFFBEB',
     price: '$249/mo',
     features: [
-      'Executive resume package',
+      'AI-optimized resume package',
       'Resume update & optimization',
       'Job search every 30 minutes',
       '75%+ match threshold filtering',
@@ -328,7 +328,7 @@ export default function Billing() {
             <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)', margin: '0 0 20px' }}>
               {plan === 'starter'
                 ? 'Get unlimited applications, interview coaching, and priority matching.'
-                : 'Get a dedicated job search agent, personalized outreach, and white-glove support.'}
+                : 'Get a dedicated job search agent, personalized outreach, and premium concierge support.'}
             </p>
             <button
               className="billing-btn"

@@ -73,7 +73,7 @@ export default function Page(){
           
           <div className="card">
             <h3 className="h3 mb-3">🎯 Smart Match Scoring</h3>
-            <p className="body">Intelligent algorithms score every opportunity based on your experience, preferences, and career goals. Focus your energy on the best-fit positions.</p>
+            <p className="body">Intelligent algorithms score every opportunity based on your experience, preferences, and target roles. Focus your energy on the best-fit positions.</p>
           </div>
           
           <div className="card">
@@ -92,7 +92,7 @@ export default function Page(){
           <div className="grid gap-4 md:grid-cols-2">
             <div>
               <p className="body font-medium mb-2">For Every American Worker</p>
-              <p className="body text-sm">Built for anyone who is unemployed, underemployed, or unhappily employed — from entry-level to executive, across every industry and occupation type.</p>
+              <p className="body text-sm">Built for anyone in the US workforce who is unemployed, underemployed, or unhappily employed — across every industry, occupation type, and pay grade.</p>
             </div>
             <div>
               <p className="body font-medium mb-2">Flexible Pricing Plans</p>
