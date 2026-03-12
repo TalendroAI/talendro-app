@@ -9,6 +9,7 @@
  * Now includes:
  *   - Stealth browser fingerprinting (stealthBrowser.js)
  *   - Integrated CAPTCHA solving via CapSolver (captchaSolver.js)
+ *   - Intelligent Question Answering (iqaService.js) for open-ended questions
  *   - Human-like typing delays
  *   - captcha_blocked status for unresolvable CAPTCHAs
  * ─────────────────────────────────────────────────────────────────────────────
@@ -18,6 +19,7 @@ import path from 'path';
 import os from 'os';
 import { launchStealthBrowser, humanDelay, detectCaptcha } from './stealthBrowser.js';
 import { autoSolveCaptcha } from './captchaSolver.js';
+import iqaService from '../iqaService.js';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 async function writeTempFile(content, filename) {
@@ -64,6 +66,24 @@ async function tryUpload(page, selectors, filePath) {
   return false;
 }
 
+// ─── IQA: Resolve label text for a form element ──────────────────────────────
+async function resolveLabel(page, el) {
+  const id          = await el.getAttribute('id');
+  const placeholder = await el.getAttribute('placeholder') || '';
+  const name        = await el.getAttribute('name') || '';
+  let labelText     = placeholder;
+  if (id) {
+    try {
+      const label = page.locator(`label[for="${id}"]`);
+      if (await label.count() > 0) {
+        labelText = (await label.textContent())?.trim() || placeholder;
+      }
+    } catch (_) {}
+  }
+  if (!labelText && name) labelText = name.replace(/[_-]/g, ' ');
+  return labelText.trim();
+}
+
 // ─── Main Apply Function ──────────────────────────────────────────────────────
 /**
  * Apply to a job posting using generic form-filling heuristics.
@@ -87,7 +107,7 @@ async function apply({ user, jobDoc, applyUrl, tailoredResume, coverLetter }) {
     await page.goto(applyUrl, { waitUntil: 'networkidle', timeout: 30000 });
     await humanDelay(800, 2000);
 
-    // CAPTCHA check
+    // ── CAPTCHA check ─────────────────────────────────────────────────────────
     let captchaType = await detectCaptcha(page);
     if (captchaType) {
       console.log(`[genericAdapter] CAPTCHA detected (${captchaType}) — attempting auto-solve`);
@@ -179,6 +199,72 @@ async function apply({ user, jobDoc, applyUrl, tailoredResume, coverLetter }) {
       'textarea[placeholder*="Cover letter"]',
       'textarea[name*="message"]', 'textarea[name*="additional"]',
     ], coverLetter);
+
+    // ── IQA: Autonomously answer all remaining open-ended textarea questions ──
+    // Any textarea that is still empty and has a label that looks like a question
+    // is answered by the Intelligent Question Answering service using the user's
+    // profile and the job context. This handles questions like:
+    //   "Why do you want to work for Presbyterian Health Services?"
+    //   "Describe your management style."
+    //   "What is your greatest professional achievement?"
+    const textareas = await page.locator('textarea').all();
+    for (const textarea of textareas) {
+      try {
+        const currentValue = await textarea.inputValue();
+        if (currentValue && currentValue.trim().length > 0) continue; // already filled
+        const labelText = await resolveLabel(page, textarea);
+        if (!labelText) continue;
+        // Skip fields that are clearly for resume or cover letter (already handled)
+        if (/resume|cover.?letter|cv/i.test(labelText)) continue;
+        const result = await iqaService.answerQuestion({
+          question: labelText,
+          fieldType: 'textarea',
+          user,
+          jobDoc,
+        });
+        if (result.classification === 'answerable' && result.answer) {
+          await textarea.fill(result.answer);
+          await humanDelay(200, 500);
+          console.log(`[genericAdapter] IQA answered textarea: "${labelText.slice(0, 60)}"`);
+        } else if (result.classification === 'unanswerable') {
+          console.log(`[genericAdapter] IQA: unanswerable question (will escalate if needed): "${labelText.slice(0, 60)}"`);
+        }
+      } catch (iqaErr) {
+        console.warn('[genericAdapter] IQA textarea error (non-fatal):', iqaErr.message);
+      }
+    }
+
+    // ── IQA: Autonomously answer open-ended single-line text questions ────────
+    // Only targets inputs whose labels contain question-like language.
+    // Standard fields (name, email, phone, address, etc.) are excluded by selector.
+    const openTextInputs = await page.locator(
+      'input[type="text"]:not([name*="name"]):not([name*="email"]):not([name*="phone"])' +
+      ':not([name*="linkedin"]):not([name*="website"]):not([name*="address"])' +
+      ':not([name*="city"]):not([name*="zip"]):not([name*="postal"])'
+    ).all();
+    for (const input of openTextInputs) {
+      try {
+        const currentValue = await input.inputValue();
+        if (currentValue && currentValue.trim().length > 0) continue;
+        const labelText = await resolveLabel(page, input);
+        if (!labelText) continue;
+        // Only answer if the label contains question-like language
+        if (!/why|how|what|describe|tell|explain|share|list|experience|style|goal|strength|weakness|achiev|motivat/i.test(labelText)) continue;
+        const result = await iqaService.answerQuestion({
+          question: labelText,
+          fieldType: 'text',
+          user,
+          jobDoc,
+        });
+        if (result.classification === 'answerable' && result.answer) {
+          await input.fill(result.answer);
+          await humanDelay(150, 400);
+          console.log(`[genericAdapter] IQA answered text input: "${labelText.slice(0, 60)}"`);
+        }
+      } catch (iqaErr) {
+        console.warn('[genericAdapter] IQA text input error (non-fatal):', iqaErr.message);
+      }
+    }
 
     // ── Required checkboxes ───────────────────────────────────────────────────
     const requiredCheckboxes = await page.locator('input[type="checkbox"][required]').all();

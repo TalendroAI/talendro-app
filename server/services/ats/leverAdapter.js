@@ -26,6 +26,7 @@ import fetch from 'node-fetch';
 import FormData from 'form-data';
 import { launchStealthBrowser, humanDelay, humanType, detectCaptcha } from './stealthBrowser.js';
 import { autoSolveCaptcha } from './captchaSolver.js';
+import iqaService from '../iqaService.js';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 async function writeTempFile(content, filename) {
@@ -42,6 +43,8 @@ function getUserName(user) {
   const lastName  = user.onboardingData?.s1?.lastName  || user.lastName  || (user.name || '').split(' ').slice(1).join(' ') || '';
   return { firstName, lastName };
 }
+// Fast-path answers for structured/factual questions.
+// Returns null for open-ended questions — those are handled by the IQA service.
 function answerCustomQuestion(questionText, user) {
   const q = questionText.toLowerCase();
   const s1 = user.onboardingData?.s1 || {};
@@ -49,16 +52,16 @@ function answerCustomQuestion(questionText, user) {
   const s8 = user.onboardingData?.s8 || {};
   if (q.includes('authorized') || q.includes('work in the us') || q.includes('eligible to work')) return s2.workAuth === 'Yes' ? 'Yes' : 'No';
   if (q.includes('sponsorship') || q.includes('visa')) return s2.sponsorNow === 'Yes' ? 'Yes' : 'No';
-  if (q.includes('salary') || q.includes('compensation') || q.includes('pay')) return s8.salaryMin || '';
-  if (q.includes('start date') || q.includes('available')) return s8.startDate || '';
+  if (q.includes('salary') || q.includes('compensation') || q.includes('pay')) return s8.salaryMin ? String(s8.salaryMin) : null;
+  if (q.includes('start date') || q.includes('available')) return s8.startDate || null;
   if (q.includes('relocate') || q.includes('relocation')) return s8.relocate === 'Yes' ? 'Yes' : 'No';
-  if (q.includes('linkedin')) return s1.linkedin || '';
-  if (q.includes('website') || q.includes('portfolio')) return s1.website || '';
-  if (q.includes('github')) return s1.github || '';
+  if (q.includes('linkedin')) return s1.linkedin || null;
+  if (q.includes('website') || q.includes('portfolio')) return s1.website || null;
+  if (q.includes('github')) return s1.github || null;
   if (q.includes('veteran') || q.includes('military')) return 'I am not a veteran';
   if (q.includes('disability') || q.includes('disabled')) return 'I do not wish to self-identify';
   if (q.includes('gender') || q.includes('race') || q.includes('ethnicity')) return 'I do not wish to self-identify';
-  return null;
+  return null; // null = hand off to IQA service for open-ended questions
 }
 
 /**
@@ -201,13 +204,33 @@ async function applyViaBrowser({ user, jobDoc, applyUrl, tailoredResume, coverLe
     const additionalInfo = page.locator('[data-qa="additional-information"], textarea[name*="comments"], textarea[name*="cover"]').first();
     if (await additionalInfo.count() > 0) { await additionalInfo.fill(coverLetter); await humanDelay(300, 800); }
 
-    // Custom questions
+    // Custom questions: fast-path for structured answers, IQA for open-ended ones.
     const customCards = await page.locator('.application-question, [data-qa*="question"]').all();
     for (const card of customCards) {
       try {
         const label = await card.locator('label, .question-label').first().textContent().catch(() => '');
-        const answer = answerCustomQuestion(label || '', user);
+        const labelText = (label || '').trim();
+        if (!labelText) continue;
+
+        // Try fast-path first (work auth, salary, LinkedIn, etc.)
+        let answer = answerCustomQuestion(labelText, user);
+
+        // If fast-path returns null, use IQA for open-ended questions
+        if (answer === null) {
+          const iqaResult = await iqaService.answerQuestion({
+            question: labelText,
+            fieldType: 'textarea',
+            user,
+            jobDoc,
+          }).catch(() => ({ classification: 'error', answer: null }));
+          if (iqaResult.classification === 'answerable' && iqaResult.answer) {
+            answer = iqaResult.answer;
+            console.log(`[leverAdapter] IQA answered: "${labelText.slice(0, 60)}"`);
+          }
+        }
+
         if (!answer) continue;
+
         const textInput = card.locator('input[type="text"]').first();
         if (await textInput.count() > 0) { await humanType(textInput, answer); await humanDelay(150, 400); continue; }
         const textarea = card.locator('textarea').first();

@@ -8,6 +8,7 @@ import Application from '../models/Application.js';
 import Job from '../models/Job.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { sendVerificationEmail, sendWelcomeEmail } from '../utils/email.js';
+import portalPasswordService from '../services/portalPasswordService.js';
 
 const router = express.Router();
 
@@ -72,6 +73,9 @@ router.post('/register', async (req, res) => {
       user.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
       await user.save();
       console.log(`[auth/register] New user created: ${normalizedEmail}`);
+      // Generate portal password immediately (fire-and-forget — non-blocking)
+      // This ensures every user has a portal password ready before their first auto-apply.
+      portalPasswordService.getOrCreate(user._id).catch(e => console.error('[auth/register] Portal password generation failed (non-fatal):', e));
       // Send verification email (fire-and-forget — don't block registration)
       sendVerificationEmail(user, verifyToken).catch(e => console.error('[auth/register] Failed to send verification email:', e));
     }

@@ -18,6 +18,7 @@ import { tailor as tailorResume } from './resumeTailorService.js';
 import coverLetterService from './coverLetterService.js';
 import emailService from './emailService.js';
 import smsService from './smsService.js';
+import portalPasswordService from './portalPasswordService.js';
 import { getAdapterForAts } from './ats/index.js';
 import User from '../models/User.js';
 import Job from '../models/Job.js';
@@ -175,10 +176,11 @@ async function processJob(job) {
 
   // ── Step 5b: Handle CAPTCHA-blocked applications ────────────────────────
   // When all adapter layers fail due to CAPTCHA, record the block and notify
-  // the user with a direct link so they can complete the application manually.
+  // the user via SMS with their portal credentials so they can complete the
+  // application themselves in under two minutes.
   // This ensures zero silent failures — every blocked application is surfaced.
   if (!result.success && result.captchaBlocked) {
-    console.warn(`[applyWorker] CAPTCHA blocked — recording and notifying user: ${applyUrl}`);
+    console.warn(`[applyWorker] CAPTCHA blocked — recording and notifying user via SMS: ${applyUrl}`);
     await Application.findOneAndUpdate(
       { userId, jobId },
       {
@@ -192,15 +194,20 @@ async function processJob(job) {
       },
       { upsert: true, new: true }
     );
-    // Notify user with direct link to complete the application manually
-    await emailService.sendCaptchaBlockedNotification({
-      toEmail: user.email,
-      userName: user.onboardingData?.s1?.firstName || user.firstName || 'there',
+    // Retrieve (or generate) the user's portal password
+    const portalPassword = await portalPasswordService.getOrCreate(userId).catch(() => null);
+    // Notify user via SMS with credentials and direct link
+    const userPhone = user.onboardingData?.s1?.phone || user.onboardingData?.phone || user.phone || null;
+    const userName = user.onboardingData?.s1?.firstName || user.firstName || 'there';
+    await smsService.sendCaptchaBlockedSms({
+      toPhone: userPhone,
+      userName,
       jobTitle: jobDoc.title,
       companyName: jobDoc.company,
       applyUrl,
-      coverLetterSnapshot: coverLetter,
-    }).catch(err => console.warn('[applyWorker] CAPTCHA blocked email failed (non-fatal):', err.message));
+      portalEmail: user.email,
+      portalPassword,
+    }).catch(err => console.warn('[applyWorker] CAPTCHA blocked SMS failed (non-fatal):', err.message));
     return;
   }
 

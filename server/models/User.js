@@ -110,6 +110,19 @@ const UserSchema = new mongoose.Schema({
     },
   ],
   isPhoneVerified: { type: Boolean, default: false },
+
+  // ─── Portal Password (for employer ATS portals) ───────────────────────────
+  // A unique, human-readable password generated at account creation.
+  // Talendro uses this when registering the user on an employer's ATS portal.
+  // When a CAPTCHA or missing-info situation requires the user to log in manually,
+  // this password is sent to them via SMS so they can complete the application.
+  // Stored in plaintext intentionally — it is a portal credential, not the
+  // user's Talendro account password, and must be readable to pass to forms.
+  portalPassword: {
+    plain: { type: String, default: null },
+    generatedAt: { type: Date, default: null },
+  },
+
   preferences: {
     emailNotifications: { type: Boolean, default: true },
     smsNotifications: { type: Boolean, default: true },
