@@ -216,6 +216,7 @@ import resumeRoutes from './routes/resume.js'
 import negotiationRoutes from './routes/negotiation.js'
 import linkedinRoutes from './routes/linkedin.js'
 import strategyRoutes from './routes/strategy.js'
+import adminRoutes from './routes/admin.js'
 import { startApplyWorker } from './services/applyWorker.js'
 import { parseResumeData } from './_archive/resume-parser-ultimate.js' // archived
 import crypto from 'crypto'
@@ -327,6 +328,7 @@ app.use('/api/linkedin', linkedinRoutes)
 
 // --- Weekly Strategy Session Routes ---
 app.use('/api/strategy', strategyRoutes)
+app.use('/api/admin', adminRoutes)
 
 // --- Mock API ---
 app.get('/api/health', (req,res)=> res.json({ ok:true, service:'talendro-server' }))

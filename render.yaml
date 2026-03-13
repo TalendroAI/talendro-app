@@ -77,3 +77,33 @@ services:
         value: "true"
       - key: APPLY_WORKER_CONCURRENCY
         value: "2"
+      # ── CAPTCHA Solving (CapSolver) ───────────────────────────────────────────
+      # Required for automated CAPTCHA bypass on employer application portals
+      # Register at https://capsolver.com — $0.80/1000 reCAPTCHA solves
+      - key: CAPSOLVER_API_KEY
+        sync: false
+      # ── SMS Notifications (Twilio) ────────────────────────────────────────────
+      # Required for CAPTCHA-blocked and payment-failed SMS alerts to users
+      # Register at https://twilio.com
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_FROM_NUMBER
+        sync: false
+      # ── Redis (BullMQ Queue) ──────────────────────────────────────────────────
+      # Required for production-grade job queue (replaces in-memory queue)
+      # Provision a Redis instance in Render.com and copy the internal URL here
+      - key: REDIS_URL
+        sync: false
+      # ── Admin Panel ───────────────────────────────────────────────────────────
+      # Secret key for the operator admin dashboard — set to a long random string
+      - key: ADMIN_SECRET_KEY
+        sync: false
+      # ── Optional: Additional Job Sources ─────────────────────────────────────
+      # ZipRecruiter — contact ZipRecruiter for partner API access
+      - key: ZIPRECRUITER_API_KEY
+        sync: false
+      # Greenhouse API key — for posting jobs (not required for reading public boards)
+      - key: GREENHOUSE_API_KEY
+        sync: false

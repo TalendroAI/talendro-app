@@ -8,20 +8,22 @@
  * Supported ATS types (expand as new adapters are built):
  *   - 'greenhouse'
  *   - 'lever'
- *   - 'workday'     (TODO: Task 1.3 — future)
- *   - 'icims'       (TODO: Task 1.3 — future)
- *   - 'ashby'       (TODO: Task 1.3 — future)
+ *   - 'workday'     (IMPLEMENTED — multi-step Workday form automation)
+ *   - 'icims'       (future — falls back to generic)
+ *   - 'ashby'       (future — falls back to generic)
  *   - 'generic'     (fallback — generic form filler)
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
 import greenhouseAdapter from './greenhouseAdapter.js';
 import leverAdapter from './leverAdapter.js';
+import workdayAdapter from './workdayAdapter.js';
 import genericAdapter from './genericAdapter.js';
 
 const ADAPTERS = {
   greenhouse: greenhouseAdapter,
   lever: leverAdapter,
+  workday: workdayAdapter,
   generic: genericAdapter,
 };
 

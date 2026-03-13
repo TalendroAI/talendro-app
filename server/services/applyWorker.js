@@ -53,18 +53,14 @@ function checkQuota(user) {
  * Start the worker. Call this once from server/index.js.
  */
 export function startApplyWorker() {
-  console.log('[applyWorker] Worker started. Listening for jobs...');
+  console.log('[applyWorker] Worker started. Registering processor...');
 
-  applicationQueue.on('job', async (job, done) => {
+  // registerWorker handles both BullMQ (Redis) and in-memory modes transparently.
+  // In BullMQ mode it creates a Redis-backed Worker with automatic retries.
+  // In in-memory mode it listens to the EventEmitter 'job' event.
+  applicationQueue.registerWorker(async (job) => {
     console.log(`[applyWorker] Processing job ${job.id}`);
-    try {
-      await processJob(job);
-      done();
-    } catch (err) {
-      console.error(`[applyWorker] Error on job ${job.id}:`, err.message);
-      applicationQueue.retry(job);
-      done();
-    }
+    await processJob(job);
   });
 
   applicationQueue.on('job:failed', async (job) => {
