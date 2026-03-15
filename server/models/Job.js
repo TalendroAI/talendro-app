@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const JobSchema = new mongoose.Schema({
   // Unique identifier combining source + external ID
   externalId: { type: String, required: true },
-  source: { type: String, required: true, enum: ['greenhouse', 'lever', 'workday', 'icims', 'taleo', 'successfactors', 'fantastic', 'jsearch', 'google', 'ashby', 'smartrecruiters', 'bamboohr', 'rippling', 'jobvite', 'other'] },
+  source: { type: String, required: true, enum: ['greenhouse', 'lever', 'workday', 'icims', 'taleo', 'successfactors', 'fantastic', 'jsearch', 'usajobs', 'ziprecruiter', 'google', 'ashby', 'smartrecruiters', 'bamboohr', 'rippling', 'jobvite', 'other'] },
 
   // Compound unique index: one record per job per source
   // externalId + source must be unique
