@@ -87,15 +87,16 @@ async function trySelect(page, selectors, value) {
   return false;
 }
 async function resolveLabel(page, el) {
-  const id          = await el.getAttribute('id');
-  const placeholder = await el.getAttribute('placeholder') || '';
-  const name        = await el.getAttribute('name') || '';
-  let labelText     = placeholder;
+  const id          = await el.getAttribute('id').catch(() => null);
+  const placeholder = await el.getAttribute('placeholder').catch(() => '') || '';
+  const name        = await el.getAttribute('name').catch(() => '') || '';
+  const ariaLabel   = await el.getAttribute('aria-label').catch(() => '') || '';
+  let labelText     = ariaLabel || placeholder;
   if (id) {
     try {
       const label = page.locator(`label[for="${id}"]`);
       if (await label.count() > 0) {
-        labelText = (await label.textContent())?.trim() || placeholder;
+        labelText = (await label.textContent())?.trim() || labelText;
       }
     } catch (_) {}
   }
@@ -511,23 +512,6 @@ async function checkSubmissionConfirmation(page) {
     return true;
   }
   return false;
-}
-
-async function resolveLabel(page, el) {
-  const id          = await el.getAttribute('id').catch(() => null);
-  const placeholder = await el.getAttribute('placeholder').catch(() => '') || '';
-  const name        = await el.getAttribute('name').catch(() => '') || '';
-  const ariaLabel   = await el.getAttribute('aria-label').catch(() => '') || '';
-  let labelText     = ariaLabel || placeholder;
-  if (id) {
-    try {
-      const label = page.locator(`label[for="${id}"]`);
-      if (await label.count() > 0) {
-        labelText = (await label.textContent())?.trim() || labelText;
-      }
-    } catch (_) {}
-  }
-  return labelText || name;
 }
 
 export default { apply };
